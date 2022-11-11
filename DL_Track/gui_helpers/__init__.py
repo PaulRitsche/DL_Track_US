@@ -12,12 +12,12 @@ __all__ = [
 
 __author__ = "Paul Ritsche, Olivier Seynnes, Neil Cronin"
 
-from DL_Track.gui_helpers import calculate_architecture
-from DL_Track.gui_helpers import calculate_architecture_video
-from DL_Track.gui_helpers import calibrate 
-from DL_Track.gui_helpers import calibrate_video 
-from DL_Track.gui_helpers import do_calculations 
-from DL_Track.gui_helpers import do_calculations_video 
-from DL_Track.gui_helpers import image_quality 
-from DL_Track.gui_helpers import manual_tracing 
-from DL_Track.gui_helpers import model_training 
+from DL_Track.gui_helpers.calculate_architecture import *
+from DL_Track.gui_helpers.calculate_architecture_video import *
+from DL_Track.gui_helpers.calibrate import *
+from DL_Track.gui_helpers.calibrate_video import *
+from DL_Track.gui_helpers.do_calculations import *
+from DL_Track.gui_helpers.do_calculations_video import *
+from DL_Track.gui_helpers.image_quality import *
+from DL_Track.gui_helpers.manual_tracing import *
+from DL_Track.gui_helpers.model_training import *
