@@ -1,7 +1,7 @@
 Contributing
 ============
 
-We are happy whenever you decide to contribute to DL_Track. However, when contributing to DL_Track, please first file an issue in our Github [`issue section <https://github.com/PaulRitsche/DLTrack/issues>`_. Label the issue with "improvement" and describe your suggestion. Please formulate the title of the issue similar to this: Contribution - Your contribution idea. Please also state in the issue wheter you want to implement it yourself / already implemented it in your code or if you would like us to implement it. We will be in touch with you.
+We are happy whenever you decide to contribute to DL_Track. However, when contributing to DL_Track, please first file an issue in our Github `issue section <https://github.com/PaulRitsche/DLTrack/issues>`_. Label the issue with "improvement" and describe your suggestion. Please formulate the title of the issue similar to this: Contribution - Your contribution idea. Please also state in the issue wheter you want to implement it yourself / already implemented it in your code or if you would like us to implement it. We will be in touch with you.
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
 In case you have decided to implement your suggestion yourself and we agreed that you should file a pull request, take a look at the steps listed below.
