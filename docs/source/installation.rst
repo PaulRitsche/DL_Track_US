@@ -11,12 +11,12 @@ Download the DL\_Track executable
 3. Download both pre-trained models (model-apo-VGG-BCE-512.h5 & model-VGG16-fasc-BCE-512.h5).
 4. Download the DL_Track_example.zip file.
 5. Create a specified DL_Track directory and put the DL_Track.exe, the model files and the example file in seperate subfolders (for example "Executable", "Models" and "Example"). Moreover, unpack the DL_Track_example.zip file.
-6. Open the DL_Track GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (we will get to that down below, see section Examples and Testing).
+6. Open the DL_Track GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_).
 
 Install DL_Track via Github, pip and Pypi.org
 ---------------------------------------------
 
-In case you want to use this way to install and run DL_Track, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information on contributing see Usage directory DL_Track_contribute.md).
+In case you want to use this way to install and run DL_Track, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information see `Contributing Guidelines <https://dltrack.readthedocs.io/en/latest/contribute.html>`_).
 
 1. Anaconda setup (only before first usage and if Anaconda/minicoda is not already installed).
 
@@ -40,7 +40,7 @@ This will initialize a git repository and allows you to continue. If run into pr
 
 This will clone the entire repository to your local computer. To make sure that everything worked, see if the files in your local directory match the ones you can find in the Github DL_Track repository. If you run into problem, check this `website <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>`_.
 
-Alternatively, you can only download the environment.yml file and continue to the next step.
+Alternatively, you can only download the environment.yml file from the `DL_Track repo <https://github.com/PaulRitsche/DLTrack/>`_ and continue to the next step.
 
 5. Create the virtual environment required for DL_Track.
 
@@ -54,11 +54,11 @@ The environment should be successfully created. We will see how to verify this i
 
 ``conda create -n DL_Track python=3.10``
 
-Activat the environment as described in the next section. Then you can install the requirements of DL_Track with: 
+Activate the environment as described in the next section. Then you can install the requirements of DL_Track with: 
 
 ``pip install -r requirements.txt``
 
-6. Activate and verifyinf the environment for usage of DL_Track.
+6. Activate and verify the environment for usage of DL_Track.
 
 You can now activate the virtual environment by typing:
 
@@ -70,7 +70,7 @@ You can verify whether the environment was correctly created by typen the follow
 
 ``conda list``
 
-Now, all packages included in the DL_Track environment will be listed and you can check if all packages listed in the environment.yml file under the section "- pip" are included in the DL_Track environmen.
+Now, all packages included in the DL_Track environment will be listed and you can check if all packages listed in the environment.yml file under the section "- pip" are included in the DL_Track environment.
 
 7. The First option of running DL_Track is installing the DL_Track package from Pypi.org. You do not need the whole cloned repository for this, only the active DL_Track environment. You do moreover not need be any specific directory.
 
@@ -86,14 +86,20 @@ The main GUI should now open. If you run into problems, open a discussion in the
 
 8. The second option of running DL_Track is using the DLTrack_GUI python script. This requires you to clone the whole directory and navigate to the directory where the DLTrack_GUI.py file is located. Moreover, you need the active DL_Track environment.
 
-The DLTrack_GUI.py file is located at DL_Track/src/DL_Track. To execute the module type the following command in your bash terminal.
+The DLTrack_GUI.py file is located at the `DL_Track <https://github.com/PaulRitsche/DLTrack/DL_Track>`_ folder. To execute the module type the following command in your bash terminal.
 
 ``python DLTrack_GUI.py``
 
-The main GUI should now open. If you run into problems, open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack_US/discussions/categories/q-a>`_ and assign the label "Problem". You can find an example discussion there. For usage of DL_Track please take a look at the [`docs <https://github.com/PaulRitsche/DLTrack/tree/main/docs/usage>`_ directory in the Github repository.
+The main GUI should now open. If you run into problems, open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack_US/discussions/categories/q-a>`_ and assign the label "Problem". You can find an example discussion there. For usage of DL_Track please take a look at the `docs <https://github.com/PaulRitsche/DLTrack/tree/main/docs/usage>`_ directory in the Github repository.
 
 
-GPU/CUDA setup
---------------
+GPU setup
+---------
 
-The processing speed of a single or video frame analyzed with DL_Track is highly dependent on computing power. While possible, model inference and model training using a CPU only will decrese processing speed and prolong the model training process. Therefore, we advise to use a GPU whenever possible. Prior to using a GPU it needs to be set up. Firstly the GPU drivers must be locally installed on your computer. You can find out which drivers are right for your GPU `here <https://www.nvidia.com/Download/index.aspx?lang=en-us>`_. Subsequent to installing the drivers, you need to install the interdependant CUDA and cuDNN software packages. To use DL_Track with tensorflow version 2.10 you need to install CUDA version 11.2 from `here <https://developer.nvidia.com/cuda-11.2.0-download-archive>`_ and cuDNN version 8.5 for CUDA version 11.x from `here <https://developer.nvidia.com/rdp/cudnn-archive>`_ (you may need to create an nvidia account). As a next step, you need to be your own installation wizard. We refer to this `video <https://www.youtube.com/watch?v=OEFKlRSd8Ic>`_ (up to date, minute 9 to minute 13) or this `video <https://www.youtube.com/watch?v=IubEtS2JAiY&list=PLZbbT5o_s2xrwRnXk_yCPtnqqo4_u2YGL&index=2>`_ (older, entire video but replace CUDA and cuDNN versions). There are procedures at the end of each video testing whether a GPU is detected by tensorflow or not. If you run into problems with the GPU/CUDA setup, please open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack_US/discussions/categories/q-a>`_ and assign the label "Problem". You can find an example discussion there.
+**Attention: The next section is only relevant for windows users!**
+
+The processing speed of a single image or video frame analyzed with DL_Track is highly dependent on computing power. While possible, model inference and model training using a CPU only will decrese processing speed and prolong the model training process. Therefore, we advise to use a GPU whenever possible. Prior to using a GPU it needs to be set up. Firstly the GPU drivers must be locally installed on your computer. You can find out which drivers are right for your GPU `here <https://www.nvidia.com/Download/index.aspx?lang=en-us>`_. Subsequent to installing the drivers, you need to install the interdependant CUDA and cuDNN software packages. To use DL_Track with tensorflow version 2.10 you need to install CUDA version 11.2 from `here <https://developer.nvidia.com/cuda-11.2.0-download-archive>`_ and cuDNN version 8.5 for CUDA version 11.x from `here <https://developer.nvidia.com/rdp/cudnn-archive>`_ (you may need to create an nvidia account). As a next step, you need to be your own installation wizard. We refer to this `video <https://www.youtube.com/watch?v=OEFKlRSd8Ic>`_ (up to date, minute 9 to minute 13) or this `video <https://www.youtube.com/watch?v=IubEtS2JAiY&list=PLZbbT5o_s2xrwRnXk_yCPtnqqo4_u2YGL&index=2>`_ (older, entire video but replace CUDA and cuDNN versions). There are procedures at the end of each video testing whether a GPU is detected by tensorflow or not. If you run into problems with the GPU/CUDA setup, please open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack_US/discussions/categories/q-a>`_ and assign the label "Problem".
+
+**Attention : The next section is only relevant for MacOS users!**
+
+In case you want to make use of you M1 / M2 chips for model training and / or inference, we refer you to this `tutorial <https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706>`_. There you will find a detailed description of how to install tensorflow on you Mac.
