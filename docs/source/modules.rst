@@ -1,6 +1,4 @@
 **Welcome to the DLTrack user information page. Please choose the section where you want to head!**
-===========================================================================================
-======
 
 Installation
 ============
