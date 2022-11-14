@@ -3,6 +3,7 @@
 Installation
 ============
 Here you can find all relevant information concerning the installation of DL_Track.
+
 .. toctree::
    :maxdepth: 1
 
@@ -11,6 +12,7 @@ Here you can find all relevant information concerning the installation of DL_Tra
 Usage Guidelines
 ================
 Here you can find all relevant information concerning the usage of DL_Track.
+
 .. toctree::
    :maxdepth: 1
 
@@ -19,6 +21,7 @@ Here you can find all relevant information concerning the usage of DL_Track.
 Test Guidelines
 ===============
 Here you can find all relevant information concerning the testing of DL_Track.
+
 .. toctree::
    :maxdepth: 1
 
@@ -27,6 +30,7 @@ Here you can find all relevant information concerning the testing of DL_Track.
 Contributing Guidelines
 =======================
 Here you can find all relevant information concerning contributing to DL_Track.
+
 .. toctree::
    :maxdepth: 1
 
