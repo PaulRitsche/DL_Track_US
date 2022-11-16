@@ -6,10 +6,10 @@ We offer two possible installation approaches for our DL_Track software. The fir
 Download the DL\_Track executable
 ---------------------------------
 
-1. Got to the Zenodo webpage containing the DL_Track executable, the pre-trained models and the example file using this link (LINK).
-2. Download the DL_Track.exe file. (Note that this is only an executable, not an installer.)
+1. Got to the Zenodo webpage containing the DL_Track executable, the pre-trained models and the example files using this `link <https://zenodo.org/record/7318089#.Y3S2qKSZOUk>`_.
+2. Download the DL_Track_example.zip
 3. Download both pre-trained models (model-apo-VGG-BCE-512.h5 & model-VGG16-fasc-BCE-512.h5).
-4. Download the DL_Track_example.zip file.
+4. Find the DL_Track.exe Executable in the DLTrack_example/executable folder.
 5. Create a specified DL_Track directory and put the DL_Track.exe, the model files and the example file in seperate subfolders (for example "Executable", "Models" and "Example"). Moreover, unpack the DL_Track_example.zip file.
 6. Open the DL_Track GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_).
 
@@ -113,4 +113,4 @@ The processing speed of a single image or video frame analyzed with DL_Track is 
 
 **Attention : The next section is only relevant for MacOS users!**
 
-In case you want to make use of you M1 / M2 chips for model training and / or inference, we refer you to this `tutorial <https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706>`_. There you will find a detailed description of how to install tensorflow on you Mac.
+In case you want to make use of you M1 / M2 chips for model training and / or inference, we refer you to this `tutorial <https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706>`_. There you will find a detailed description of how to enable GPU support for tensorflow. It is not strictly necessary to do that for model training or inference, but will speed up the process. 
