@@ -16,7 +16,7 @@ requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent"
+    "Operating System :: windows OS"
 ]
 requires = [
     "jupyter==1.0.0",

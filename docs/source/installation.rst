@@ -50,13 +50,16 @@ DL_Track is bound to several external depencies. To make your life easy, we prov
 
 The environment should be successfully created. We will see how to verify this in the next steps. If you run into problems with the .yml please file an issue in the issue section of the DL_Track repository (see docs directory on how to correctly file an issue for DL_Track).
 
-**Attention:** In case you are using MacOS, we advise you to use the provided requirements.txt file for environment creation. You need to slightly modify it. Change *tensorflow==2.10.0* to *tensorflow-macos=2.10.0*. You need to create and activate the environment first:
+**Attention MacOS users:** 
+We advise you to use the provided requirements.txt file for environment creation. You need to slightly modify it. Change *tensorflow==2.10.0* to *tensorflow-macos=2.10.0*. You need to create and activate the environment first:
 
 ``conda create -n DL_Track python=3.10``
 
 Activate the environment as described in the next section. Then you can install the requirements of DL_Track with: 
 
 ``pip install -r requirements.txt``
+
+There are some more steps necessary for DL_Track usage, you'll finde the instructions in the `usage <https://dltrack.readthedocs.io/en/latest/usage.html>`_ section. 
 
 6. Activate and verify the environment for usage of DL_Track.
 
