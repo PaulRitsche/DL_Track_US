@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "DL_Track"
+name = "DL_Track_US"
 version = "0.1.0"
 authors = [
   { name="Paul Ritsche", email="paul.ritsche@unibas.ch" },
@@ -16,9 +16,9 @@ requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: windows OS"
+    "Operating System :: Microsoft :: Windows"
 ]
-requires = [
+dependencies = [
     "jupyter==1.0.0",
     "Keras==2.10.0",
     "matplotlib==3.6.1",
