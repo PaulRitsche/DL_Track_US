@@ -20,6 +20,8 @@ calibrateDistanceStatic
     in pixel units to centimeters.
 """
 import math
+import tkinter as tk
+from sys import platform
 
 import cv2
 import numpy as np
@@ -99,6 +101,15 @@ def calibrateDistanceManually(img: np.ndarray, spacing: int):
     >>> calibrateDistanceManually(img=([[[[0.22414216 0.19730392 0.22414216] ... [0.2509804  0.2509804  0.2509804 ]]]), 5)
     99, 5 mm corresponds to 99 pixels
     """
+    # Check platform for imshow and if MacOS, break
+    if platform == "darwin":
+        tk.messagebox.showerror(
+            "Information",
+            "Manual scaling not available on MacOS"
+            + "\n Contine with 'No Scaling' Scaing Type.",
+        )
+        return None, None
+
     img2 = np.uint8(img)
 
     # display the image and wait for a keypress

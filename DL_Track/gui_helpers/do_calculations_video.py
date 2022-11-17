@@ -32,6 +32,7 @@ from __future__ import division
 
 import math
 import tkinter as tk
+from sys import platform
 
 import cv2
 import matplotlib.pyplot as plt
@@ -602,7 +603,13 @@ def doCalculationsVideo(
                     (249, 249, 249),
                 )
 
-            cv2.imshow("Analysed image", comb)
+            # Check platform for imshow
+            # Windows
+            if platform == "win3":
+                cv2.imshow("Analysed image", comb)
+            # MacOS
+            elif platform == "darwin":
+                print("Analysed image cannot be displayed on MacOS.")
 
             # Press 'q' to stop the analysis
             if cv2.waitKey(10) & 0xFF == ord("q"):

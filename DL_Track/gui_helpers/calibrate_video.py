@@ -20,6 +20,9 @@ See Also
 --------
 calibrate.py
 """
+import tkinter as tk
+from sys import platform
+
 import cv2
 import numpy as np
 
@@ -95,6 +98,15 @@ def calibrateDistanceManually(cap, spacing: int):
     >>> calibrateDistanceManually(cap=VideoCapture 000002A261ADC590, 5)
     99, 5 mm corresponds to 99 pixels
     """
+    # Check platform for imshow and if MacOS, break
+    if platform == "darwin":
+        tk.messagebox.showerror(
+            "Information",
+            "Manual scaling not available on MacOS"
+            + "\n Contine with 'No Scaling' Scaing Type.",
+        )
+        return None, None
+
     # Get global variable
     global mlocs
     mlocs = []
