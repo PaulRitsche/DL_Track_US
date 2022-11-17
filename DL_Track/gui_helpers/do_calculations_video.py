@@ -605,7 +605,7 @@ def doCalculationsVideo(
 
             # Check platform for imshow
             # Windows
-            if platform == "win32":
+            if platform in ("win32", "linux"):
                 cv2.imshow("Analysed image", comb)
             # MacOS
             elif platform == "darwin":

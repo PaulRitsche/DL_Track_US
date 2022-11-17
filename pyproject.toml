@@ -4,19 +4,19 @@ build-backend = "hatchling.build"
 
 [project]
 name = "DL_Track_US"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="Paul Ritsche", email="paul.ritsche@unibas.ch" },
   { name="Olivier Seynnes", email="oliviers@nih.no" },
   { name="Neil Cronin", email="neil.j.cronin@jyu.fi" },
 ]
 description = "Automatic analysis of logitudinal muscle ultrasonography images"
-readme = "README.md"
+readme = "README_Pypi.md"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: Microsoft :: Windows"
+    "Operating System :: OS Independent"
 ]
 dependencies = [
     "jupyter==1.0.0",

@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 project = 'DLTrack'
 copyright = '2022, Paul Ritsche, Olivier Seynnes, Neil Cronin'
 author = 'Paul Ritsche, Olivier Seynnes, Neil Cronin'
-release = '0.1.0'
+release = '0.1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
