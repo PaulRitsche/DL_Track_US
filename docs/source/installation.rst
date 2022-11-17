@@ -18,15 +18,15 @@ Install DL_Track via Github, pip and Pypi.org
 
 In case you want to use this way to install and run DL_Track, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information see `Contributing Guidelines <https://dltrack.readthedocs.io/en/latest/contribute.html>`_).
 
-1. Anaconda setup (only before first usage and if Anaconda/minicoda is not already installed).
+*Step 1.* Anaconda setup (only before first usage and if Anaconda/minicoda is not already installed).
 
 Install `Anaconda <https://www.anaconda.com/distribution/>`_ (click ‘Download’ and be sure to choose ‘Python 3.X Version’ (where the X represents the latest version being offered. IMPORTANT: Make sure you tick the ‘Add Anaconda to my PATH environment variable’ box).
 
-2. **(Optional, only required for contributing or development)** Git setup (only before first usage and if Git is not already installed). This is optional and only required when you want to clone the whole DL_Track Github repository.
+*Step 2.* **(Optional, only required for contributing or development)** Git setup (only before first usage and if Git is not already installed). This is optional and only required when you want to clone the whole DL_Track Github repository.
 
 In case you have never used Git before on you computer, please install it using the instructions provided `here <https://git-scm.com/download>`_.
 
-3. **(Optional, only required for contributing or development)** Create a directory for DL_Track.
+*Step 3.* **(Optional, only required for contributing or development)** Create a directory for DL_Track.
 
 On your computer create a specific directory for DL_Track (for example "DL_Track") and navigate there. You can use Git as a version control system. Once there open a git bash with right click and then "Git Bash Here". In the bash terminal, type the following:
 
@@ -34,7 +34,7 @@ On your computer create a specific directory for DL_Track (for example "DL_Track
 
 This will initialize a git repository and allows you to continue. If run into problems, check this `website <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>`_.
 
-4. **(Optional, only required for contributing or development)** Clone the DL_Track Github repository into a pre-specified folder (for example "DL_Track) by typing the following code in your bash window:
+*Step 4.* **(Optional, only required for contributing or development)** Clone the DL_Track Github repository into a pre-specified folder (for example "DL_Track) by typing the following code in your bash window:
 
 ``git clone https://github.com/PaulRitsche/DL_Track.git``
 
@@ -42,7 +42,7 @@ This will clone the entire repository to your local computer. To make sure that 
 
 Alternatively, you can only download the environment.yml file from the `DL_Track repo <https://github.com/PaulRitsche/DLTrack/>`_ and continue to the next step.
 
-5. Create the virtual environment required for DL_Track.
+*Step 5.* Create the virtual environment required for DL_Track.
 
 DL_Track is bound to a specific python version (3.10). You now need to open an Anaconda terminal. Type the following command in your search window:
 
@@ -52,7 +52,7 @@ Select the app named "Anaconda Powershell Prompt". By clicking on it, a black te
 
 ``conda create -n DL_Track python=3.10``
 
-6. Activate the environment for usage of DL_Track.
+*Step 6.* Activate the environment for usage of DL_Track.
 
 You can now activate the virtual environment by typing:
 
@@ -60,11 +60,11 @@ You can now activate the virtual environment by typing:
 
 An active conda environment is visible in () brackets befor your current path in the bash terminal. In this case, this should look something like (DL_Track) C:/user/.../DL_Track.Then, download the DL_Track package by typing:
 
-7. Install the DL_Track package.
+*Step 7.* Install the DL_Track package.
 
 You can directly install the DL_Track package from Pypi. To do so, type the following command in your prompt:
 
-``pip install DL-Track-US`` 
+``pip install DL-Track-US==0.1.1`` 
 
 All the package dependencies will be installed automatically. You can verify whether the environment was correctly created by typing the following command in your bash terminal:
 
@@ -73,7 +73,8 @@ All the package dependencies will be installed automatically. You can verify whe
 Now, all packages included in the DL_Track environment will be listed and you can check if all packages listed in the "DLTrack/environment.yml" file under the section "- pip" are included in the DL_Track environment.
 If you run into problems open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a>`_ and assign the label "Problem".
 
-**Attention MacOS users:** 
+**Attention: The next part of Step 7 is only relevant for MacOS users:**
+
 Do not install the DL_Track package from Pypi. We advise you to use the provided requirements.txt file for environment creation. You need to slightly modify it. Change *tensorflow==2.10.0* to *tensorflow-macos=2.10.0*.  You need to create and activate the environment first:
 
 ``conda create -n DL_Track python=3.10``
@@ -82,20 +83,20 @@ Activate the environment as described in the next section. Then you can install 
 
 ``pip install -r requirements.txt``
 
+Install the DL_Track package locally to make use of its functionalities with:
+
+``python -m pip install -e .``
+
+As a MacOS user, you can ignore step 8 and skip to step 9.
 There are some more steps necessary for DL_Track usage, you'll finde the instructions in the `usage <https://dltrack.readthedocs.io/en/latest/usage.html>`_ section. 
 
-
-
-
-
-
-7. The First option of running DL_Track is installing the DL_Track package from Pypi.org. You do not need the whole cloned repository for this, only the active DL_Track environment. You do moreover not need be any specific directory. Type in your bash terminal:
+*Step 8.* (**Not relevant for MacOS users**) The First option of running DL_Track is installing the DL_Track package from Pypi.org. You do not need the whole cloned repository for this, only the active DL_Track environment. You do moreover not need be any specific directory. Type in your bash terminal:
 
 ``python -m DL_Track``
 
 The main GUI should now open. If you run into problems, open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a>`_ and assign the label "Problem".  For usage of DL_Track please take a look at the `docs <https://github.com/PaulRitsche/DLTrack/tree/main/docs/usage>`_ directory in the Github repository.
 
-8. The second option of running DL_Track is using the DLTrack_GUI python script. This requires you to clone the whole directory and navigate to the directory where the DLTrack_GUI.py file is located. Moreover, you need the active DL_Track environment.
+*Step 9.* The second option of running DL_Track is using the DLTrack_GUI python script. This requires you to clone the whole directory and navigate to the directory where the DLTrack_GUI.py file is located. Moreover, you need the active DL_Track environment.
 
 The DLTrack_GUI.py file is located at the `DL_Track <https://github.com/PaulRitsche/DLTrack/DL_Track>`_ folder. To execute the module type the following command in your bash terminal.
 
