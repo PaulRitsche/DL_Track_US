@@ -58,6 +58,8 @@ An active conda environment is visible in () brackets befor your current path in
 
 *Step 7.* Install the DL_Track package.
 
+**Attention: The next part of Step 7 is NOT relevant for MacOS users:**
+
 You can directly install the DL_Track package from Pypi. To do so, type the following command in your bash terminal:
 
 ``pip install DL-Track-US==0.1.1`` 
@@ -69,9 +71,9 @@ All the package dependencies will be installed automatically. You can verify whe
 Now, all packages included in the DL_Track environment will be listed and you can check if all packages listed in the "DLTrack/environment.yml" file under the section "- pip" are included in the DL_Track environment.
 If you run into problems open a discussion in the Q&A section of `DL_Track discussions <https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a>`_ and assign the label "Problem".
 
-**Attention: The next part of Step 7 is only relevant for MacOS users:**
+**Attention: The next part of Step 7 is ONLY relevant for MacOS users:**
 
-Do not install the DL_Track package from Pypi. We advise you to use the provided requirements.txt file for environment creation. You need to slightly modify it. Change *tensorflow==2.10.0* to *tensorflow-macos=2.10.0*.  You need to create and activate the environment first (see Step 5 & 6) and navigate into the folder that you cloned from Github (DLTrack) with the bash terminal. You can do that by typing "cd" followed by the path to the folder containing the requirements.txt file. This should look something like:
+Do not install the DL_Track package from Pypi. We advise you to use the provided requirements.txt file for environment creation. You need to create and activate the environment first (see Step 5 & 6) and navigate into the folder that you cloned from Github (DLTrack) with the bash terminal. You can do that by typing "cd" followed by the path to the folder containing the requirements.txt file. This should look something like:
 
 ``cd /.../.../DL_Track/DLTrack``
 
