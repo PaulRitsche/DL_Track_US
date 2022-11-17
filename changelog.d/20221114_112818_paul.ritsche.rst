@@ -1,0 +1,35 @@
+.. A new scriv changelog fragment.
+..
+.. Uncomment the header that is right (remove the leading dots).
+..
+.. Removed
+.. -------
+..
+.. - A bullet item for the Removed category.
+..
+.. Added
+.. -----
+..
+.. - Figures for Github
+..
+.. Changed
+.. -------
+..
+.. - Usage & Test .pdf files
+.. - Readme.md
+..
+.. Deprecated
+.. ----------
+..
+.. - A bullet item for the Deprecated category.
+..
+.. Fixed
+.. -----
+..
+.. - Readthedocs documentation
+..
+.. Security
+.. --------
+..
+.. - A bullet item for the Security category.
+..
