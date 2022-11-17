@@ -2,3 +2,4 @@ Paper/
 docs/build
 dist/
 DL_Track/__pycache__
+DL_Track/gui_helpers/__pycache__
