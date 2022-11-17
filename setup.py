@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
 	name="DL_Track",
-	version="0.1.0",
+	version="0.1.1",
 	include_package_data=True,
 	classifiers=[
         'Programming Language :: Python :: 3',
