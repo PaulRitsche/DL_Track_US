@@ -10,5 +10,5 @@ pre-commit==2.17.0
 scikit-image==0.19.3
 scikit-learn==1.1.2
 sewar==0.4.5
-tensorflow==2.10.0
+tensorflow-macos==2.10.0
 tqdm==4.64.1
