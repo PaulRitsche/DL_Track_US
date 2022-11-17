@@ -1,3 +1,0 @@
-In order for all imports to work from a command promt, it is necessary to locally install DL_Track as a package. This will later be unnecessary, as we will include DL_Track directly in the environment.
-To to so, navigate to the root folder containint the setup.py & setup.cfg files. Activate the DL_Track environment and make shure you have installes setuptools (pip install setuptools) and build (pip install build).
-Then type: "python -m pip install -e ." and the package should be included locally in your environment. Then you can run the DLTrack_GUI.py file from the prompt as usual when navigated to the respective folder containing the file.
