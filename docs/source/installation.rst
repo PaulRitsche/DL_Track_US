@@ -36,7 +36,7 @@ This will initialize a git repository and allows you to continue. If run into pr
 
 *Step 4.* **(Only required for MacOS users, contributing or development)** Clone the DL_Track Github repository into a pre-specified folder (for example "DL_Track) by typing the following code in your bash window:
 
-``git clone https://github.com/PaulRitsche/DL_Track.git``
+``git clone https://github.com/PaulRitsche/DLTrack.git``
 
 This will clone the entire repository to your local computer. To make sure that everything worked, see if the files in your local directory match the ones you can find in the Github DL_Track repository. If you run into problem, check this `website <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>`_.
 
