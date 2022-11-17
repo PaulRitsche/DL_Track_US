@@ -85,10 +85,9 @@ Install the DL_Track package locally to make use of its functionalities with:
 
 ``python -m pip install -e .``
 
-As a MacOS user, you can ignore step 8 and skip to step 9.
 There are some more steps necessary for DL_Track usage, you'll finde the instructions in the `usage <https://dltrack.readthedocs.io/en/latest/usage.html>`_ section. 
 
-*Step 8.* (**Not relevant for MacOS users**) The First option of running DL_Track is installing the DL_Track package from Pypi.org. You do not need the whole cloned repository for this, only the active DL_Track environment. You do moreover not need be any specific directory. Type in your bash terminal:
+*Step 8.* The First option of running DL_Track is installing the DL_Track package from Pypi.org. You do not need the whole cloned repository for this, only the active DL_Track environment. You do moreover not need be any specific directory. Type in your bash terminal:
 
 ``python -m DL_Track``
 
