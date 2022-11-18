@@ -23,7 +23,7 @@ Regardless of the used method, the GUI should open. For detailed the desciption 
 
 ## Testing
 
-We have not yet integrated unit testing for DL_Track. Nonetheless, we have provided instructions to objectively test whether DL_Track, once installed, is functionable. Do perform the testing procedures yourself, check out the [test instructions](https://github.com/PaulRitsche/DLTrack/tests).
+We have not yet integrated unit testing for DL_Track. Nonetheless, we have provided instructions to objectively test whether DL_Track, once installed, is functionable. To perform the testing procedures yourself, check out the [test instructions](https://github.com/PaulRitsche/DLTrack/tests).
 
 ## Code documentation 
 
