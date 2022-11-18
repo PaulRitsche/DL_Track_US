@@ -1,6 +1,7 @@
 # DL_Track
 
 [![Documentation Status](https://readthedocs.org/projects/dltrack/badge/?version=latest)](https://dltrack.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7318089.svg)](https://doi.org/10.5281/zenodo.7318089)
 
 ![DL_Track image](./Figures/home_im.png)
 
