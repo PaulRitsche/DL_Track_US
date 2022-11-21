@@ -20,7 +20,7 @@ Once installed, DL_Track can be started from the command prompt with the respect
 
 In case you have downloaded the executable, simply double-click the DL_Track icon.
 
-Regardless of the used method, the GUI should open. For detailed the desciption of our GUI as well as usage examples, please take a look at the [user instruction](https://github.com/PaulRitsche/DLTrack/docs/usage).
+Regardless of the used method, the GUI should open. For detailed the desciption of our GUI as well as usage examples, please take a look at the [user instruction](https://github.com/PaulRitsche/DLTrack/blob/main/docs/usage/DL_Track_tutorial.pdf).
 
 ## Testing
 
