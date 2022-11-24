@@ -30,7 +30,7 @@ We have not yet integrated unit testing for DL_Track. Nonetheless, we have provi
 
 ## Code documentation 
 
-In order to see the detailled scope and description of the modules and functions included in the DL_Track package, you can do so either directly in the code, or in the [documentation]([https://dltrack.readthedocs.io/en/latest/modules.html#documentation](https://dltrack.readthedocs.io/en/latest/DL_Track.html#module-DL_Track.DLTrack_GUI)) section of our online documentation.
+In order to see the detailled scope and description of the modules and functions included in the DL_Track package, you can do so either directly in the code, or in the [documentation]([https://dltrack.readthedocs.io/en/latest/modules.html#documentation](https://dltrack.readthedocs.io/en/latest/DL_Track.html#module-DL_Track.DLTrack_GUI) section of our online documentation.
 
 ## Previous research
 
@@ -47,7 +47,6 @@ Bland-Altman plots of the results obtained with our approach versus the results 
 ![Video comparison](./Figures/Figure_video.png)
 
 A comparison of fascicle lengths computed using DL_Track with those from [UltraTrack](https://sites.google.com/site/ultratracksoftware/home)(Farris & Lichtwark, 2016, DOI:10.1016/j.cmpb.2016.02.016), a semi-automated method of identifying muscle fascicles. Each row shows trials from a particular task (3 examples per task from different individuals, shown in separate columns). For DL_Track, the length of each individual fascicle detected in every frame is denoted by a gray dot. Solid black lines denote the mean length of all detected fascicles by DL_Track. Red dashed lines show the results of tracking a single fascicle with Ultratrack.
-
 
 ## Community guidelines
 
