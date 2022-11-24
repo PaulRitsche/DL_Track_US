@@ -30,7 +30,7 @@ We have not yet integrated unit testing for DL_Track. Nonetheless, we have provi
 
 ## Code documentation 
 
-In order to see the detailled scope and description of the modules and functions included in the DL_Track package, you can do so either directly in the code, or in the [Documentation](https://dltrack.readthedocs.io/en/latest/modules.html#documentation) section of our online documentation.
+In order to see the detailled scope and description of the modules and functions included in the DL_Track package, you can do so either directly in the code, or in the [documentation]([https://dltrack.readthedocs.io/en/latest/modules.html#documentation](https://dltrack.readthedocs.io/en/latest/DL_Track.html#module-DL_Track.DLTrack_GUI)) section of our online documentation.
 
 ## Previous research
 
