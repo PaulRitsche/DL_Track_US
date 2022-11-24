@@ -41,6 +41,6 @@ Documentation
 Here you can find the code documentation of DL_Track.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    DL_Track

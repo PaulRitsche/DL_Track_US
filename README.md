@@ -1,6 +1,7 @@
 # DL_Track
 
 [![Documentation Status](https://readthedocs.org/projects/dltrack/badge/?version=latest)](https://dltrack.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7318089.svg)](https://doi.org/10.5281/zenodo.7318089)
 
 ![DL_Track image](./Figures/home_im.png)
 
@@ -25,7 +26,7 @@ Regardless of the used method, the GUI should open. For detailed the desciption 
 
 ## Testing
 
-We have not yet integrated unit testing for DL_Track. Nonetheless, we have provided instructions to objectively test whether DL_Track, once installed, is functionable. Do perform the testing procedures yourself, check out the [test instructions](https://github.com/PaulRitsche/DLTrack/tests).
+We have not yet integrated unit testing for DL_Track. Nonetheless, we have provided instructions to objectively test whether DL_Track, once installed, is functionable. To perform the testing procedures yourself, check out the [test instructions](https://github.com/PaulRitsche/DLTrack/blob/main/tests/DL_Track_tests.pdf).
 
 ## Code documentation 
 
