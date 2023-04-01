@@ -2,7 +2,7 @@
 Description
 -----------
 This module contains functions to calculate muscle architectural
-parameters based on binary segmentations by convolutional neural networks (CNNs).
+parameters based on binary segmentations by convolutional neural networks.
 The parameters include muscle thickness, pennation angle and fascicle length.
 First, input images are segmented by the CNNs. Then the predicted aponeuroses
 and fascicle fragments are thresholded and filtered. Fascicle fragments
@@ -41,8 +41,7 @@ plt.style.use("ggplot")
 
 
 def sortContours(cnts: list):
-    """
-    Function to sort detected contours from proximal to distal.
+    """Function to sort detected contours from proximal to distal.
 
     The input contours belond to the aponeuroses and are sorted
     based on their coordinates, from smallest to largest.
@@ -65,7 +64,8 @@ def sortContours(cnts: list):
 
     Examples
     --------
-    >>> sortContours(cnts=[array([[[928, 247]], ... [[929, 247]]], dtype=int32),
+    >>> sortContours(cnts=[array([[[928, 247]], ... [[929, 247]]],
+    dtype=int32),
     ((array([[[228,  97]], ... [[229,  97]]], dtype=int32),
     (array([[[228,  97]], ... [[229,  97]]], dtype=int32),
     (array([[[928, 247]], ... [[929, 247]]], dtype=int32)),
@@ -76,15 +76,15 @@ def sortContours(cnts: list):
     # construct the list of bounding boxes and sort them from top to bottom
     bounding_boxes = [cv2.boundingRect(c) for c in cnts]
     (cnts, bounding_boxes) = zip(
-        *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i], reverse=False)
+        *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i],
+                reverse=False)
     )
 
     return (cnts, bounding_boxes)
 
 
 def contourEdge(edge: str, contour: list) -> np.ndarray:
-    """
-    Function to find only the coordinates representing one edge
+    """Function to find only the coordinates representing one edge
     of a contour.
 
     Either the upper or lower edge of the detected contours is
@@ -113,7 +113,8 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
     Examples
     --------
     >>> contourEdge(edge="T", contour=[[[195 104]] ... [[196 104]]])
-    [196 197 198 199 200 ... 952 953 954 955 956 957], [120 120 120 120 120 ... 125 125 125 125 125 125]
+    [196 197 198 199 200 ... 952 953 954 955 956 957],
+    [120 120 120 120 120 ... 125 125 125 125 125 125]
     """
     # Turn tuple into list
     pts = list(contour)
@@ -133,7 +134,7 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
     leng = len(un) - 1
     x = []
     y = []
-    for each in range(5, leng - 5):  # Ignore 1st and last 5 points to avoid any curves
+    for each in range(5, leng - 5):  # Ignore 1st and last 5 points 
         indices = [i for i, x in enumerate(allx) if x == un[each]]
         if edge == "T":
             loc = indices[0]
@@ -158,8 +159,7 @@ def doCalculations(
     scale_statement: str,
     dictionary: dict,
 ):
-    """
-    Function to compute muscle architectural parameters based on
+    """Function to compute muscle architectural parameters based on
     convolutional neural network segmentation in images.
 
     Firstly, images are segmented by the network. Then, predictions
@@ -198,9 +198,11 @@ def doCalculations(
         String value containing the name of the input image, not the
         entire path.
     apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis neural network.
+        String variable containing the absolute path to the aponeurosis
+        neural network.
     fasc_modelpath : str
-        String variable containing the absolute path to the fascicle neural network.
+        String variable containing the absolute path to the fascicle
+        neural network.
     scale_statement : str
         String variable containing a statement how many milimeter
         correspond to how many pixels. If calib_dist is "None", scale statement
@@ -283,7 +285,7 @@ def doCalculations(
 
     # load the aponeurosis model
     pred_apo = model_apo.predict(img)
-    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)  # SET APO THRESHOLD
+    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)  # SET APO THS
     pred_apo = resize(pred_apo, (1, h, w, 1))
     pred_apo = np.reshape(pred_apo, (h, w))
     pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
@@ -292,7 +294,7 @@ def doCalculations(
 
     # load the fascicle model
     pred_fasc = model_fasc.predict(img)
-    pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THRESHOLD
+    pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THS
     pred_fasc = resize(pred_fasc, (1, h, w, 1))
     pred_fasc = np.reshape(pred_fasc, (h, w))
     pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
@@ -397,10 +399,11 @@ def doCalculations(
         else:
             low_x, low_y = contourEdge("T", contoursE[2])
 
-        upp_y_new = savgol_filter(upp_y, 81, 2)  # window size 51, polynomial order 3
+        upp_y_new = savgol_filter(upp_y, 81, 2)  # window size 51, polynomial 3
         low_y_new = savgol_filter(low_y, 81, 2)
 
-        # Make a binary mask to only include fascicles within the region between the 2 aponeuroses
+        # Make a binary mask to only include fascicles within the region
+        # between the 2 aponeuroses
         ex_mask = np.zeros(thresh.shape, np.uint8)
         ex_1 = 0
         ex_2 = np.minimum(len(low_x), len(upp_x))
@@ -413,7 +416,8 @@ def doCalculations(
             ex_mask[ymax:, ii] = 0
             ex_mask[ymin:ymax, ii] = 255
 
-        # Calculate slope of central portion of each aponeurosis & use this to compute muscle thickness
+        # Calculate slope of central portion of each aponeurosis & use this to
+        # compute muscle thickness
         Alist = list(set(upp_x).intersection(low_x))
         Alist = sorted(Alist)
         Alen = len(
@@ -434,7 +438,8 @@ def doCalculations(
                 continue
             else:
                 dist = math.dist(
-                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val], low_y_new[val])
+                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val],
+                                                           low_y_new[val])
                 )
                 if dist < mindist:
                     mindist = dist
@@ -445,7 +450,7 @@ def doCalculations(
         zLA = np.polyfit(low_x, low_y_new, 2)
         h = np.poly1d(zLA)
 
-        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle of the aponeurosis
+        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle 
         x1 = np.linspace(
             low_x[0] - 700, low_x[-1] + 700, 10000
         )  # Extrapolate polynomial fits to either side of the mid-point
@@ -534,9 +539,8 @@ def doCalculations(
                 )  # Angle relative to horizontal
             Apoangle = 90.0 + abs(Apoangle)
 
-            # Don't include fascicles that are completely outside of the field of view or
+            # Don't include fascicles that are completely outside of the FoV
             # those that don't pass through central 1/3 of the image
-            #     if np.sum(coordsX) > 0 and coordsX[-1] > 0 and coordsX[0] < np.maximum(upp_x[-1],low_x[-1]) and coordsX[-1] - coordsX[0] < w and Apoangle != float('nan'):
             if (
                 np.sum(coordsX) > 0
                 and coordsX[-1] > 0
@@ -558,23 +562,26 @@ def doCalculations(
 
                 if (
                     ActualAng <= max_pennation and ActualAng >= min_pennation
-                ):  # Don't include 'fascicles' beyond a range of pennation angles
+                ):  # Don't include 'fascicles' beyond a range of PA
                     length1 = np.sqrt(
-                        (newX[locU] - newX[locL]) ** 2 + (y_UA[locU] - y_LA[locL]) ** 2
+                        (newX[locU] - newX[locL]) ** 2 +
+                        (y_UA[locU] - y_LA[locL]) ** 2
                     )
                     fasc_l.append(length1[0])  # Calculate fascicle length
                     pennation.append(Apoangle - FascAng)
                     x_low1.append(coordsX[0].astype("int32"))
                     x_high1.append(coordsX[-1].astype("int32"))
                     coords = np.array(
-                        list(zip(coordsX.astype("int32"), coordsY.astype("int32")))
+                        list(zip(coordsX.astype("int32"),
+                                 coordsY.astype("int32")))
                     )
                     plt.plot(coordsX, coordsY, ":w", linewidth=6)
         # cv2.polylines(imgT, [coords], False, (20, 15, 200), 3)
 
         # DISPLAY THE RESULTS
         plt.imshow(img_copy, cmap="gray")
-        plt.title(f"Image ID: {filename}" + f"\n{scale_statement}", fontsize=25)
+        plt.title(f"Image ID: {filename}" + f"\n{scale_statement}",
+                  fontsize=25)
         plt.plot(
             low_x, low_y_new, marker="p", color="w", linewidth=10
         )  # Plot the aponeuroses
@@ -583,7 +590,8 @@ def doCalculations(
         xplot = 125
         yplot = 700
 
-        # Store the results for each frame and normalise using scale factor (if calibration was done above)
+        # Store the results for each frame and normalise using scale factor
+        # (if calibration was done above)
         try:
             midthick = mindist[0]  # Muscle thickness
         except:

@@ -7,11 +7,9 @@ Download the DL\_Track executable
 ---------------------------------
 
 1. Got to the Zenodo webpage containing the DL_Track executable, the pre-trained models and the example files using this `link <https://zenodo.org/record/7318089#.Y3S2qKSZOUk>`_.
-2. Download the DL_Track_example.zip
-3. Download both pre-trained models (model-apo-VGG-BCE-512.h5 & model-VGG16-fasc-BCE-512.h5).
-4. Find the DL_Track.exe Executable in the DLTrack_example/executable folder.
-5. Create a specified DL_Track directory and put the DL_Track.exe, the model files and the example file in seperate subfolders (for example "Executable", "Models" and "Example"). Moreover, unpack the DL_Track_example.zip file.
-6. Open the DL_Track GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_).
+2. Download the DL_Track_example.zip folder and unpack the file.
+3. Find the DL_Track.exe executable located in the DLTrack_example/executable folder.
+4. Open the DL_Track GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_). In case you get an anti-virus notification, trust us and click it away. We assure you the software is harmless. 
 
 Install DL_Track via Github, pip and Pypi.org
 ---------------------------------------------

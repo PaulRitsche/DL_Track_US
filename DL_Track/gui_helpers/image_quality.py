@@ -2,16 +2,16 @@
 Description
 -----------
 This module contains a class to augment image brightness, contrast and noise.
-Moreover, using the class, the quality of images can be evaluated. The quality score
-is calculated based on mean pixel intensity, standard deviation or pixel intensity,
-noise estimation, blur estimation and signal-to-noise ratio.
+Moreover, using the class, the quality of images can be evaluated. The quality
+score is calculated based on mean pixel intensity, standard deviation or pixel
+intensity, noise estimation, blur estimation and signal-to-noise ratio.
 These parameters were selected because we believe that they are most
 relevant for the evaluation of ultrasound images.
 The module was specifically designed to be executed from a GUI, but each
 function can be used separately.
-When used from the GUI, only the image evaluation funtions are used. A .xlsx file
-containing the parameters will be saved to a specified directory. This is the
-directory where all images to be evaluated should be.
+When used from the GUI, only the image evaluation funtions are used. A .xlsx
+file containing the parameters will be saved to a specified directory. This
+is the directory where all images to be evaluated should be.
 
 Functions scope
 ---------------
@@ -26,6 +26,7 @@ functions docstrings.
 import glob
 import os
 import time
+import cv2
 
 import numpy as np
 import pandas as pd

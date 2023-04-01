@@ -31,8 +31,7 @@ mlocs = []
 
 
 def mclick(event, x_val, y_val, flags, param):
-    """
-    Instance method to detect mouse click coordinates in image.
+    """Instance method to detect mouse click coordinates in image.
 
     This instance is used when the image to be analyzed should be
     cropped. Upon clicking the mouse button, the coordinates
@@ -63,8 +62,7 @@ def mclick(event, x_val, y_val, flags, param):
 
 
 def calibrateDistanceManually(cap, spacing: int):
-    """
-    Function to manually calibrate an image to convert measurements
+    """Function to manually calibrate an image to convert measurements
     in pixel units to centimeters.
 
     The function calculates the distance in pixel units between two

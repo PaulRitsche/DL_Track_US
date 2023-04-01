@@ -4,13 +4,14 @@ Description
 This module contains a class to manually annotate longitudinal ultrasonography
 images and videos. When the class is initiated, a graphical user interface is
 opened. There, the user can annotate muscle fascicle length, pennation angle
-and muscle thickness. Moreover, the images can be scaled in order to get measurements
-in centimeters rather than pixels. By clicking the respective buttons in the GUI,
-the user can switch between the different parameters to analyze. The analysis is
-not restricted to any specific muscles. However, its use is restricted to a specific
-method for assessing muscle thickness, fascicle length and pennation angles.
-Moreover, each video frame is analyzed separately. An .xlsx file is retuned containing
-the analysis results for muscle fascicle length, pennation angle and muscle thickness.
+and muscle thickness. Moreover, the images can be scaled in order to get
+measurements in centimeters rather than pixels. By clicking the respective
+buttons in the GUI, the user can switch between the different parameters to
+analyze. The analysis is not restricted to any specific muscles. However,
+its use is restricted to a specific method for assessing muscle thickness,
+fascicle length and pennation angles. Moreover, each video frame is analyzed
+separately. An .xlsx file is retuned containing the analysis results for
+muscle fascicle length, pennation angle and muscle thickness.
 
 Functions scope
 ---------------
@@ -22,7 +23,6 @@ Additional information and usage examples can be found at the respective
 functions docstrings.
 """
 
-import glob
 import math
 import os
 import tkinter as tk
@@ -35,97 +35,103 @@ from scipy.spatial import distance
 
 
 class ManualAnalysis:
-    """
-    Python class to manually annotate longitudinal muscle
+    """Python class to manually annotate longitudinal muscle
     ultrasonography images/videos of human lower limb muscles.
     An analysis tkinter GUI is opened upon initialization of the class.
     By clicking the buttons, the user can switch between different
     parameters to analyze in the images.
 
     - Muscle thickness:
-                       Exactly one segment reaching from the superficial to the
-                       deep aponeuroses of the muscle must be drawn. If multiple
-                       measurement are drawn, these are averaged. Drawing can
-                       be started by clickling the left mouse button and keeping
-                       it pressed until it is not further required to draw the line
-                       (i.e., the other aponeurosis border is reached). Only the
-                       respective y-coordinates of the points where the cursor
-                       was clicked and released are considered for calculation of
-                       muscle thickness.
+                       Exactly one segment reaching from the superficial to
+                       the deep aponeuroses of the muscle must be drawn.
+                       If multiple measurement are drawn, these are averaged.
+                       Drawing can be started by clickling the left mouse
+                       button and keeping it pressed until it is not further
+                       required to draw the line (i.e., the other aponeurosis
+                       border is reached). Only the respective y-coordinates
+                       of the points where the cursor was clicked and released
+                       are considered for calculation of muscle thickness.
     - Fascicle length:
-                      Exactly three segments along the fascicleof the muscle must
-                      be drawn. If multiple fascicle are drawn, their lengths are
-                      averaged. Drawing can be started by clickling the left mouse
-                      button and keeping it pressed until one segment is finished
-                      (mostly where fascicle curvature occurs the other aponeurosis
-                      border is reached). Using the euclidean distance, the total
+                      Exactly three segments along the fascicleof the muscle
+                      must be drawn. If multiple fascicle are drawn, their
+                      lengths are averaged. Drawing can be started by
+                      clickling the left mouse button and keeping it pressed
+                      until one segment is finished (mostly where fascicle
+                      curvature occurs the other aponeurosis border is
+                      reached). Using the euclidean distance, the total
                       fascicle length is computed as a sum of the segments.
     - Pennation angle:
-                      Exactly two segments, one along the fascicle orientation, the
-                      other along the aponeurosis orientation must be drawn. The line
-                      along the aponeurosis must be started where the line along the
-                      fascicle ends. If multiple angle are drawn, they are averaged.
-                      Drawing can be started by clickling the left mouse button and keeping
-                      it pressed until it is not further required to draw the line
-                      (i.e., the aponeurosis border is reached by the fascicle). The
-                      angle is calculated using the arc-tan function.
-    In order to scale the image/video frame, it is required to draw a line of length 10 milimeter
-    somewhere in the image. The line can be drawn in the same fashion as for example
-    the muscle thickness. Here however, the euclidean distance is used to calculate
-    the pixel / centimeter ratio. This has to be done for every frame.
-    We also provide the functionality to extend the muscle aponeuroses to more easily
-    extrapolate fascicles. The lines can be drawn in the same fashion as for example
-    the muscle thickness. During the analysis process, care must be taken to not
-    accidentally click the left mouse button as those coordinates might mess up the
-    results given that calculations are based on a strict analysis protocol.
+                      Exactly two segments, one along the fascicle
+                      orientation, the other along the aponeurosis orientation
+                      must be drawn. The line along the aponeurosis must be
+                      started where the line along the fascicle ends. If
+                      multiple angle are drawn, they are averaged. Drawing
+                      can be started by clickling the left mouse button and
+                      keeping it pressed until it is not further required to
+                      draw the line (i.e., the aponeurosis border is reached
+                      by the fascicle). The angle is calculated using the
+                      arc-tan function.
+    In order to scale the image/video frame, it is required to draw a line
+    of length 10 milimeter somewhere in the image. The line can be drawn in
+    the same fashion as for example the muscle thickness. Here however, the
+    euclidean distance is used to calculate the pixel / centimeter ratio.
+    This has to be done for every frame. We also provide the functionality
+    to extend the muscle aponeuroses to more easily extrapolate fascicles.
+    The lines can be drawn in the same fashion as for example the muscle
+    thickness. During the analysis process, care must be taken to not
+    accidentally click the left mouse button as those coordinates might
+    mess up the results given that calculations are based on a strict
+    analysis protocol.
 
     Attributes
     ----------
     self.image_list : list
-        A list variable containing the absolute paths to all images / video to be
-        analyzed.
+        A list variable containing the absolute paths to all images / video to
+        be analyzed.
     self.rootpath : str
         Path to root directory where images / videos for the analysis are
         saved.
     self.lines : list
-        A list variable containing all lines that are drawn upon the
-        image by the user. The list is emptied each time the analyzed
-        parameter is changed.
+        A list variable containing all lines that are drawn upon the image
+        by the user. The list is emptied each time the analyzed parameter
+        is changed.
     self.scale_coords : list
-        A list variable containing the xy-coordinates coordinates of the scaling
-        line start- and endpoints to calculate the distance between.
+        A list variable containing the xy-coordinates coordinates of the
+        scaling line start- and endpoints to calculate the distance between.
         The list is emptied each time a new image is scaled.
     self.thick_coords : list
-        A list variable containing the xy-coordinates coordinates of the muscle
-        thickness line start- and endpoints to calculate the distance between.
-        The list is emptied each time a new image is scaled. Only the y-coordintes
-        are used for further analysis.
+        A list variable containing the xy-coordinates coordinates of the
+        muscle thickness line start- and endpoints to calculate the distance
+        between. The list is emptied each time a new image is scaled. Only
+        the y-coordintes are used for further analysis.
     self.fasc_coords : list
-        A list variable containing the xy-coordinates coordinates of the fascicle
-        length line segments start- and endpoints to calculate the total length
-        of the fascicle. The list is emptied each time a new image is analyzed.
+        A list variable containing the xy-coordinates coordinates of the
+        fascicle length line segments start- and endpoints to calculate
+        the total length of the fascicle. The list is emptied each time a
+        new image is analyzed.
     self.pen_coords : list
-        A list variable containing the xy-coordinates coordinates of the pennation
-        angle line segments start- and endpoints to calculate the angle
-        of the fascicle. The list is emptied each time a new image is analyzed.
+        A list variable containing the xy-coordinates coordinates of the
+        pennation angle line segments start- and endpoints to calculate
+        the angle of the fascicle. The list is emptied each time a new
+        image is analyzed.
     self.coords : dict
-        Dictionary variable storing the xy-coordinates of mouse events during
-        analysis. Mouse events are clicking and releasing of the left mouse
-        button as well as dragging of the cursor.
+        Dictionary variable storing the xy-coordinates of mouse events
+        during analysis. Mouse events are clicking and releasing of the
+        left mouse button as well as dragging of the cursor.
     self.count : int, default = 0
-        Index of image / video frame currently analysis in the list of image
-        file / video frame paths. The default is 0 as the first image / frame
-        analyzed alwas has the idex 0 in the list.
+        Index of image / video frame currently analysis in the list of
+        image file / video frame paths. The default is 0 as the first
+        image / frame analyzed always has the idex 0 in the list.
     self.dataframe : pd.DataFrame
-        Panadas dataframe that stores the analysis results such as file name,
-        fascicle length, pennation angle and muscle thickness. This dataframe
-        is then saved in an .xlsx file.
+        Panadas dataframe that stores the analysis results such as file
+        name, fascicle length, pennation angle and muscle thickness.
+        This dataframe is then saved in an .xlsx file.
     self.head : tk.TK
-        tk.Toplevel instance opening a window containing the manual image
-        analysis options.
+        tk.Toplevel instance opening a window containing the manual
+        image analysis options.
     self.mode : tk.Stringvar, default = thick
-        tk.Stringvar variable containing the current parameter analysed by
-        the user. The parameters are
+        tk.Stringvar variable containing the current parameter analysed
+        by the user. The parameters are
         - muscle thickness : thick
         - fascicle length : fasc
         - pennation angle : pen
@@ -141,37 +147,35 @@ class ManualAnalysis:
         analyzed. It is necessary to load the image in this way in order
         to plot the image.
     self.dist : int
-        Integer variable containing the length of the scaling line
-        in pixel units. This variable is then used to scale the image.
+        Integer variable containing the length of the scaling line in
+        pixel units. This variable is then used to scale the image.
 
     Methods
     -------
     __init__
-        Instance method to initialize the class
+        Instance method to initialize the class.
     calculateBatchManual
-        Instance method creating the GUI for manual
-        image analysis
+        Instance method creating the GUI for manual image analysis.
     """
-
     def __init__(self, img_list: str, rootpath: str):
-        """
-        Instance method to initialize the Manual Analysis class.
+        """Instance method to initialize the Manual Analysis class.
 
         Parameters
         ----------
         img_list : str
-            A list variable containing the absolute paths to all images / video to be
-            analyzed.
+            A list variable containing the absolute paths to all images /
+            video to be analyzed.
         rootpath : str
             Path to root directory where images / videos for the analysis are
             saved.
 
         Examples
         --------
-        >>> man_analysis = ManualAnalysis(img_list=["C:/user/Dokuments/images/image1.tif",
-                                                    "C:/user/Dokuments/images/image2.tif",
-                                                    "C:/user/Dokuments/images/image3.tif"],
-                                          rootpath="C:/user/Dokuments/images")
+        >>> man_analysis = ManualAnalysis(
+            img_list=["C:/user/Dokuments/images/image1.tif",
+            "C:/user/Dokuments/images/image2.tif",
+            "C:/user/Dokuments/images/image3.tif"],
+            rootpath="C:/user/Dokuments/images")
         """
         # Get input images
         self.image_list = img_list
@@ -198,17 +202,18 @@ class ManualAnalysis:
         )
 
     def calculateBatchManual(self):
-        """
-        Instance method creating a GUI for manual annotation of longitudinal ultrasoud
-        images of human lower limb muscles.
+        """Instance method creating a GUI for manual annotation of longitudinal
+        ultrasoud images of human lower limb muscles.
 
-        The GUI contains several analysis options for the current image openend. The
-        user is able to switch between analysis of muscle thickness, fascicle length
-        and pennation angle. Moreover, the image can be scaled and the aponeuroses
-        can be extendet to easy fascicle extrapolation. When one image is finished,
-        the GUI updated by clicking "next image". The Results can be saved by clicking
-        "save results". It is possible to save each image seperately. The GUI can be
-        closed by clicking "break analysis" or simply close the window.
+        The GUI contains several analysis options for the current image
+        openend. The user is able to switch between analysis of muscle
+        thickness, fascicle length and pennation angle. Moreover, the
+        image can be scaled and the aponeuroses can be extendet to easy
+        fascicle extrapolation. When one image is finished, the GUI
+        updated by clicking "next image". The Results can be saved by
+        clicking "save results". It is possible to save each image
+        seperately. The GUI can be closed by clicking "break analysis"
+        or simply close the window.
 
         Notes
         -----
@@ -298,15 +303,21 @@ class ManualAnalysis:
         pennation.pack(side="left")
 
         # Define Button fot break
-        stop = ttk.Button(toolbar, text="Break Analysis", command=self.stopAnalysis)
+        stop = ttk.Button(
+            toolbar, text="Break Analysis", command=self.stopAnalysis
+        )
         stop.pack(side="right")
 
         # Define Button for next image
-        next_img = ttk.Button(toolbar, text="Next Image", command=self.updateImage)
+        next_img = ttk.Button(
+            toolbar, text="Next Image", command=self.updateImage
+        )
         next_img.pack(side="right")
 
         # Define Button for save image
-        save = ttk.Button(toolbar, text="Save Results", command=self.saveResults)
+        save = ttk.Button(
+            toolbar, text="Save Results", command=self.saveResults
+        )
         save.pack(side="right")
 
         # Define Canvas for image
@@ -323,7 +334,9 @@ class ManualAnalysis:
             resized_img,
             master=self.canvas,
         )
-        my_image = self.canvas.create_image(750, 500, anchor="center", image=self.img)
+        my_image = self.canvas.create_image(
+            750, 500, anchor="center", image=self.img
+        )
 
         # Bind mouse events to canvas
         self.canvas.bind("<ButtonPress-1>", self.click)
@@ -334,12 +347,11 @@ class ManualAnalysis:
         # the command prompt
         # self.head.mainloop()
 
-    # --------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Functionalities used in head
 
     def click(self, event: str):
-        """
-        Instance method to record mouse clicks on canvas.
+        """Instance method to record mouse clicks on canvas.
 
         When the left mouse button is clicked on the canvas, the
         xy-coordinates are stored for further analysis. When the button
@@ -382,8 +394,7 @@ class ManualAnalysis:
             self.pen_coords.append([self.coords["x"], self.coords["y"]])
 
     def release(self, event: str):
-        """
-        Instance method to record mouse button releases on canvas.
+        """Instance method to record mouse button releases on canvas.
 
         When the left mouse button is released on the canvas, the
         xy-coordinates are stored for further analysis. When the button
@@ -414,8 +425,7 @@ class ManualAnalysis:
             self.pen_coords.append([self.coords["x2"], self.coords["y2"]])
 
     def drag(self, event: str):
-        """
-        Instance method to record mouse cursor dragging on canvas.
+        """Instance method to record mouse cursor dragging on canvas.
 
         When the cursor is dragged on the canvas, the
         xy-coordinates are stored and updated for further analysis.
@@ -437,7 +447,8 @@ class ManualAnalysis:
         self.coords["x2"] = self.canvas.canvasx(event.x)
         self.coords["y2"] = self.canvas.canvasy(event.y)
 
-        # Change the coordinates of the last created line to the new coordinates
+        # Change the coordinates of the last created line to the new
+        # coordinates
         self.canvas.coords(
             self.lines[-1],
             self.coords["x"],
@@ -447,8 +458,7 @@ class ManualAnalysis:
         )
 
     def setScale(self):
-        """
-        Instance method to display the instructions for image scaling.
+        """Instance method to display the instructions for image scaling.
 
         This function is bound to the "Scale Image" radiobutton and
         appears each time the button is selected. In this way, the user
@@ -461,8 +471,7 @@ class ManualAnalysis:
         )
 
     def setApo(self):
-        """
-        Instance method to display the instructions for aponeuroses
+        """Instance method to display the instructions for aponeuroses
         extending.
 
         This function is bound to the "Draw Aponeurosis" radiobutton and
@@ -487,8 +496,7 @@ class ManualAnalysis:
         )
 
     def setFascicles(self):
-        """
-        Instance method to display the instructions for muscle fascicle
+        """Instance method to display the instructions for muscle fascicle
         analysis.
 
         This function is bound to the "Muscle Fascicles" radiobutton and
@@ -503,8 +511,7 @@ class ManualAnalysis:
         )
 
     def setAngles(self):
-        """
-        Instance method to display the instructions for pennation angle
+        """Instance method to display the instructions for pennation angle
         analysis.
 
         This function is bound to the "Pennation Angle" radiobutton and
@@ -519,8 +526,7 @@ class ManualAnalysis:
         )
 
     def saveResults(self):
-        """
-        Instance Method to save the analysis results to a pd.DataFrame.
+        """Instance Method to save the analysis results to a pd.DataFrame.
 
         A list of each variable to be saved must be used. The list must
         contain the coordinates of the recorded events during
@@ -537,7 +543,8 @@ class ManualAnalysis:
 
         See Also
         --------
-        self.calculateThickness, self.calculateFascicle, self.calculatePennation
+        self.calculateThickness, self.calculateFascicle,
+        self.calculatePennation
         """
         # Get results
         thickness = self.calculateThickness(self.thick_coords)
@@ -546,7 +553,9 @@ class ManualAnalysis:
 
         # Check number of input images and counter
         if len(self.scale_coords) >= 1:
-            self.dist = np.abs(self.scale_coords[0][1] - self.scale_coords[1][1])
+            self.dist = np.abs(
+                self.scale_coords[0][1] - self.scale_coords[1][1]
+            )
 
             # Save Results with scaling
             dataframe2 = pd.DataFrame(
@@ -575,9 +584,23 @@ class ManualAnalysis:
 
             self.dataframe = pd.concat([self.dataframe, dataframe2], axis=0)
 
+        # Save the drawing on the canvas to an image
+        # Define coordinates for cropping
+        x = (
+            self.head.winfo_rootx() + self.head.winfo_x()
+        )  # Top x of root + head
+        y = (
+            self.head.winfo_rooty() + self.head.winfo_y()
+        )  # Top y of root + head
+        x1 = x + 2 * self.head.winfo_width()  # include twice the width
+        y1 = y + 2 * self.head.winfo_height()  # include twice the height
+        # Save the screenshot to root location
+        ImageGrab.grab().crop((x, y, x1, y1)).save(
+            self.rootpath + f"/{self.image_list[self.count]}_analyzed.png"
+        )
+
     def updateImage(self):
-        """
-        Instance method to update the current image displayed
+        """Instance method to update the current image displayed
         on the canvas in the GUI.
 
         The image is updated upon clicking of "Next Image"
@@ -616,8 +639,7 @@ class ManualAnalysis:
             self.closeWindow()
 
     def stopAnalysis(self):
-        """
-        Instance method to stop the current analysis
+        """Instance method to stop the current analysis
         on the canvas in the GUI.
 
         The analysis is stopped upon clicking of "Break Analysis"
@@ -629,31 +651,32 @@ class ManualAnalysis:
         # Save results
         self.compileSaveResults()
         # Terminate analysis
-        messagebox.askyesno("Attention", "Would you like to stop the Analysis?")
+        messagebox.askyesno(
+            "Attention", "Would you like to stop the Analysis?"
+        )
         self.closeWindow()
 
     # --------------------------------------------------------------------------------------------------------------------
     # Utilities used by functionalities in head
 
     def getAngle(self, a: list, b: list, c: list):
-        """
-        Instance method to calculate angle between three points.
+        """Instance method to calculate angle between three points.
 
-        The angle is calculated using the arc tangent. The arc tangent is used to
-        find the slope in radians when Y and X co-ordinates are given. The output is
-        the arc tangent of y/x in radians, which is between PI and -PI. Then the
-        output is converted to degrees.
+        The angle is calculated using the arc tangent. The arc tangent is used
+        to find the slope in radians when Y and X co-ordinates are given. The
+        output is the arc tangent of y/x in radians, which is between PI and
+        -PI. Then the output is converted to degrees.
 
         Parameters
         ----------
         a : list
-            List variable containing the xy-coordinates of the first mouse click event
-            of the pennation angle annotation. This must be the point
-            at the beginning of the fascicle segment.
+            List variable containing the xy-coordinates of the first mouse
+            click event of the pennation angle annotation. This must be the
+            point at the beginning of the fascicle segment.
         b : list
-            List variable containing the xy-coordinates of the second mouse click event
-            of the pennation angle annotation. This must be the point
-            at the intersection between fascicle and aponeurosis.
+            List variable containing the xy-coordinates of the second mouse
+            click event of the pennation angle annotation. This must be the
+            point at the intersection between fascicle and aponeurosis.
         c : list
             List variable containing the xy-coordinates of the fourth
             mouse event of the pennation angle annotation. This must be
@@ -672,7 +695,8 @@ class ManualAnalysis:
         25.6
         """
         ang = math.degrees(
-            math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0])
+            math.atan2(c[1] - b[1], c[0] - b[0])
+            - math.atan2(a[1] - b[1], a[0] - b[0])
         )
 
         if ang < 0:
@@ -681,23 +705,24 @@ class ManualAnalysis:
         return ang if ang < 180 else 360 - ang
 
     def calculateThickness(self, thick_list: list):
-        """
-        Instance method to calculate distance between deep and superficial
+        """Instance method to calculate distance between deep and superficial
         muscle aponeuroses, also known as muscle thickness.
 
         The length of the segment is calculated by determining the absolute
         distance of the y-coordinates of two points.
-        Here, the muscle thickness is calculated considering only the y-coordinates
-        of the start and end points of the drawn segments. In this way,
-        incorrect placement of the segments by drawing skewed lines can be
-        accounted for. Then the thickness is outputted in pixel units.
+        Here, the muscle thickness is calculated considering only the
+        y-coordinates of the start and end points of the drawn segments.
+        In this way, incorrect placement of the segments by drawing skewed
+        lines can be accounted for. Then the thickness is outputted in
+        pixel units.
 
         Parameters
         ----------
         thick_list : list
-            List variable containing the xy-coordinates of the first mouse click event
-            and the mouse release event of the muscle thickness annotation.
-            This must be the points at the beginning and end of the thickness segment.
+            List variable containing the xy-coordinates of the first mouse
+            click event and the mouse release event of the muscle thickness
+            annotation. This must be the points at the beginning and end of
+            the thickness segment.
 
         Returns
         -------
@@ -728,21 +753,22 @@ class ManualAnalysis:
         return thickness
 
     def calculateFascicles(self, fasc_list: list):
-        """
-        Instance method to calculate muscle fascicle legth as a sum of three
+        """Instance method to calculate muscle fascicle legth as a sum of three
         annotated segments.
 
-        The length of three line segment is calculated by summing their individual
-        length. Here, the length of a single annotated fascicle is calculated considering the three
-        drawn segments of the respective fascicle. The euclidean distance between
-        the start and endpoint of each segment is calculated and summed.
-        Then the length of the fascicle is outputted in pixel units.
+        The length of three line segment is calculated by summing their
+        individual length. Here, the length of a single annotated fascicle
+        is calculated considering the three drawn segments of the respective
+        fascicle. The euclidean distance between the start and endpoint of
+        each segment is calculated and summed. Then the length of the
+        fascicle is outputted in pixel units.
 
         Parameters
         ----------
         fasc_list : list
-            List variable containing the xy-coordinates of the first mouse click event
-            and the mouse release event of each annotated fascicle segment.
+            List variable containing the xy-coordinates of the first mouse
+            click event and the mouse release event of each annotated fascicle
+            segment.
 
         Returns
         -------
@@ -754,10 +780,14 @@ class ManualAnalysis:
 
         Example
         -------
-        >>> calculateFascicles(fasc_list=[[392.0, 622.0], [632.0, 544.0], [632.0, 544.0],
-                                          [1090.0, 415.0], [1090.0, 415.0], [1274.0, 381.0],
-                                          [449.0, 627.0], [748.0, 541.0], [748.0, 541.0],
-                                          [1109.0, 429.0], [1109.0, 429.0], [1297.0, 390.0]])
+        >>> calculateFascicles(fasc_list=[[392.0, 622.0], [632.0, 544.0],
+                                          [632.0, 544.0],
+                                          [1090.0, 415.0], [1090.0, 415.0],
+                                          [1274.0, 381.0],
+                                          [449.0, 627.0], [748.0, 541.0],
+                                          [748.0, 541.0],
+                                          [1109.0, 429.0], [1109.0, 429.0],
+                                          [1297.0, 390.0]])
         [915.2921723246823, 881.0996335404545]
         """
         # turn list to array
@@ -772,12 +802,16 @@ class ManualAnalysis:
         for _ in range(0, int(len(fasc_list) / 6)):
 
             # Iterate through segments to calculate and draw one fascicle
-            # and iterate three times because a fascicle consists of three segments
+            # and iterate three times because a fascicle consists of three
+            # segments
             fascicle = []  # Segment length are stored here
             for _ in range(3):
 
-                # calculate the distance between two points belonging to one segment
-                dist = distance.euclidean(fasc_list[count], fasc_list[count + 1])
+                # calculate the distance between two points belonging to one
+                # segment
+                dist = distance.euclidean(
+                    fasc_list[count], fasc_list[count + 1]
+                )
                 fascicle.append(dist)
                 # increase count to jump to next segment
                 count += 2
@@ -788,20 +822,21 @@ class ManualAnalysis:
         return fascicles
 
     def calculatePennation(self, pen_list: list):
-        """
-        Instance method to calculate muscle pennation angle between three points
+        """Instance method to calculate muscle pennation angle between three
+        points.
 
         The angle between three points is calculated using the arc tangent.
-        Here, the points used for calculation are the start and endpoint of the
-        line segment drawn alongside the fascicle as well as the endpoint of the
-        segment drawn along the aponeurosis. The pennation angle
+        Here, the points used for calculation are the start and endpoint of
+        the line segment drawn alongside the fascicle as well as the endpoint
+        of the segment drawn along the aponeurosis. The pennation angle
         is outputted in degrees.
 
         Parameters
         ----------
         pen_list : list
-            List variable containing the xy-coordinates of the first mouse click event
-            and the mouse release event of each annotated pennation angle segment.
+            List variable containing the xy-coordinates of the first mouse
+            click event and the mouse release event of each annotated
+            pennation angle segment.
 
         Returns
         -------
@@ -816,9 +851,11 @@ class ManualAnalysis:
 
         Example
         -------
-        >>> calculateFascicles(pen_list=[[760.0, 579.0], [620.0, 629.0], [620.0, 629.0],
+        >>> calculateFascicles(pen_list=[[760.0, 579.0], [620.0, 629.0],
+                                         [620.0, 629.0],
                                          [780.0, 631.0], [533.0, 571.0],
-                                         [378.0, 627.0], [378.0, 627.0], [558.0, 631.0]] )
+                                         [378.0, 627.0], [378.0, 627.0],
+                                         [558.0, 631.0]] )
         [20.369984003523715, 21.137327423466722]
         """
         # Keep track of angles
@@ -842,8 +879,7 @@ class ManualAnalysis:
         return pen_angles
 
     def compileSaveResults(self):
-        """
-        Instance method to save the analysis results.
+        """Instance method to save the analysis results.
 
         A pd.DataFrame object must be used. The results
         inculded in the dataframe are saved to an .xlsx file. Depending
@@ -868,8 +904,7 @@ class ManualAnalysis:
                 data.to_excel(writer, sheet_name="Results")
 
     def closeWindow(self):
-        """
-        Instance method to close window upon call.
+        """Instance method to close window upon call.
 
         This method is evoked by clicking the button "Break Analysis".
         It is necessary to use a different function, otherwise
@@ -878,9 +913,11 @@ class ManualAnalysis:
         self.head.destroy()
 
 
-# When using standalone uncomment To do so, uncomment the lines 231 (self.head = tk.Tk()) and 314 (self.head.mainloop())
+# When using standalone uncomment To do so, uncomment the lines 231
+# (self.head = tk.Tk()) and 314 (self.head.mainloop())
 # and comment the line 233 (self.head = tk.Toplevel()).
-# The class can then be initalized by typing "python manual_tracing.py" and specifying the filetype and rootpath
+# The class can then be initalized by typing
+# "python manual_tracing.py" and specifying the filetype and rootpath
 # in the code below. The whole codeblock below must be uncommented
 
 # if __name__ == "__main__":

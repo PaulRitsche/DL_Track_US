@@ -27,11 +27,12 @@ compileSaveResults
      Function to save the analysis results to a .xlsx file.
 IoU
     Function to compute the intersection over union score (IoU),
-    a measure of prediction accuracy. This is sometimes also called Jaccard score.
+    a measure of prediction accuracy. This is sometimes also called Jaccard
+    score.
 calculateBatch
-    Function to calculate muscle architecture in longitudinal ultrasonography images
-    of human lower limb muscles. The values computed are fascicle length (FL),
-    pennation angle (PA), and muscle thickness (MT).
+    Function to calculate muscle architecture in longitudinal ultrasonography
+    images of human lower limb muscles. The values computed are fascicle
+    length (FL), pennation angle (PA), and muscle thickness (MT).
 calculateBatchManual
     Function used for manual calculation of fascicle length, muscle thickness
     and pennation angles in longitudinal ultrasonography images of human lower
@@ -71,8 +72,7 @@ plt.switch_backend("agg")
 
 
 def importAndReshapeImage(path_to_image: str, flip: int):
-    """
-    Function to import and reshape an image. Moreover, based upon
+    """Function to import and reshape an image. Moreover, based upon
     user specification the image might be flipped.
 
     Usually flipping is only required when the imported image is of
@@ -140,8 +140,7 @@ def importAndReshapeImage(path_to_image: str, flip: int):
 
 
 def importImageManual(path_to_image: str, flip: int):
-    """
-    Function to import an image.
+    """Function to import an image.
 
     This function is used when manual analysis of the
     image is selected in the GUI. For manual analysis,
@@ -168,7 +167,8 @@ def importImageManual(path_to_image: str, flip: int):
     Examples
     --------
     >>> importImageManual(path_to_image="C:/Desktop/Test/Img1.tif", flip=0)
-    [[[28 26 25] [28 26 25] [28 26 25] ... [[ 0  0  0] [ 0  0  0] [ 0  0  0]]], Img1.tif
+    [[[28 26 25] [28 26 25] [28 26 25] ... [[ 0  0  0] [ 0  0  0] [ 0  0  0]]],
+    Img1.tif
     """
     # Load image
     filename = os.path.splitext(os.path.basename(path_to_image))[0]
@@ -182,8 +182,7 @@ def importImageManual(path_to_image: str, flip: int):
 
 
 def getFlipFlagsList(flip_flag_path: str) -> list:
-    """
-    Function to retrieve flip values from a .txt file.
+    """Function to retrieve flip values from a .txt file.
 
     The flip flags decide wether an image should be flipped or not.
     The flags can be 0 (image not flipped) or 1 (image is flipped).
@@ -221,8 +220,7 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
 
 
 def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
-    """
-    Function to save the analysis results to a .xlsx file.
+    """Function to save the analysis results to a .xlsx file.
 
     A pd.DataFrame object must be inputted. The results
     inculded in the dataframe are saved to an .xlsx file.
@@ -248,7 +246,8 @@ def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
 
     # Check if file already existing and write .xlsx
     if os.path.exists(excelpath):
-        with pd.ExcelWriter(excelpath, mode="a", if_sheet_exists="replace") as writer:
+        with pd.ExcelWriter(excelpath,
+                            mode="a", if_sheet_exists="replace") as writer:
             data = dataframe
             data.to_excel(writer, sheet_name="Results")
     else:
@@ -258,13 +257,13 @@ def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
 
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
-    """
-    Function to compute the intersection of union score (IoU),
-    a measure of prediction accuracy. This is sometimes also called Jaccard score.
+    """Function to compute the intersection of union score (IoU),
+    a measure of prediction accuracy. This is sometimes also called Jaccard
+    score.
 
     The IoU can be used as a loss metric during binary segmentation when
-    convolutional neural networks are applied. The IoU is calculated for both, the
-    training and validation set.
+    convolutional neural networks are applied. The IoU is calculated for both,
+    the training and validation set.
 
     Parameters
     ----------
@@ -290,8 +289,10 @@ def IoU(y_true, y_pred, smooth: int = 1) -> float:
 
     Examples
     --------
-    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
-             y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0", shape=(1, 512, 512, 1), dtype=float32),
+    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1),
+             dtype=float32),
+             y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
+             shape=(1, 512, 512, 1), dtype=float32),
              smooth=1)
     Tensor("truediv:0", shape=(1, 512, 512), dtype=float32)
     """
@@ -321,14 +322,15 @@ def calculateBatch(
     max_pennation: int,
     gui,
 ) -> None:
-    """
-    Function to calculate muscle architecture in longitudinal ultrasonography images
-    of human lower limb muscles. The values computed are fascicle length (FL),
-    pennation angle (PA), and muscle thickness (MT).
+    """Function to calculate muscle architecture in longitudinal
+    ultrasonography images of human lower limb muscles. The values
+    computed are fascicle length (FL), pennation angle (PA),
+    and muscle thickness (MT).
 
-    The scope of this function is limited. Images of the vastus lateralis, tibialis anterior
-    soleus and gastrocnemius  muscles can be analyzed. This is due to the limited amount of
-    training data for our convolutional neural networks. This functions makes extensive use
+    The scope of this function is limited. Images of the vastus lateralis,
+    tibialis anterior soleus and gastrocnemius  muscles can be analyzed.
+    This is due to the limited amount of training data for our convolutional
+    neural networks. This functions makes extensive use
     of several other functions and was designed to be executed from a GUI.
 
     Parameters
@@ -337,13 +339,15 @@ def calculateBatch(
         String variable containing the path to the folder where all images
         to be analyzed are saved.
     apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis neural network.
+        String variable containing the absolute path to the aponeurosis
+        neural network.
     fasc_modelpath : str
-        String variable containing the absolute path to the fascicle neural network.
+        String variable containing the absolute path to the fascicle
+        neural network.
     flip_flag_path : str
         String variabel containing the absolute path to the flip flag
-        .txt file containing the flip flags. Flipping is necessary as the models were trained
-        on images of with specific fascicle orientation.
+        .txt file containing the flip flags. Flipping is necessary as the
+        models were trained on images of with specific fascicle orientation.
     filetype : str
         String variable containg the respective type of the images.
         This is needed to select only the relevant image files
@@ -362,38 +366,40 @@ def calculateBatch(
         This is needed to compute the pixel/cm ratio and therefore report
         the results in centimeter rather than pixel units.
     apo_threshold : float
-        Float variable containing the threshold applied to predicted aponeurosis
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as aponeurosis as the threshold for classifying
+        Float variable containing the threshold applied to predicted
+        aponeurosis pixels by our neural networks. By varying this
+        threshold, different structures will be classified as
+        aponeurosis as the threshold for classifying
         a pixel as aponeurosis is changed. Must be non-zero and
         non-negative.
     fasc_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for classifying
-        a pixel as fascicle is changed.
+        structures will be classified as fascicle as the threshold for
+        classifying a pixel as fascicle is changed.
     fasc_cont_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer fascicle segments
-        will be considered, by lowering shorter segments. Must be non-zero and
-        non-negative.
+        structures will be classified as fascicle. By increasing, longer
+        fascicle segments will be considered, by lowering shorter segments.
+        Must be non-zero and non-negative.
     min_width : int
-        Integer variable containing the minimal distance between aponeuroses to be
-        detected. The aponeuroses must be at least this distance apart to be
-        detected. The distance is specified in pixels. Must be non-zero and non-negative.
+        Integer variable containing the minimal distance between aponeuroses
+        to be detected. The aponeuroses must be at least this distance apart
+        to be detected. The distance is specified in pixels.
+        Must be non-zero and non-negative.
     min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Fascicles with lower pennation
-        angles will be excluded. The pennation angle is calculated as the amgle
-        of insertion between extrapolated fascicle and detected aponeurosis. Must
-        be non-negative.
-    min_pennation : int
-        Integer variable containing the maximal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Fascicles with higher pennation
-        angles will be excluded. The pennation angle is calculated as the amgle
-        of insertion between extrapolated fascicle and detected aponeurosis. Must
-        be non-negative and larger than min_pennation.
+        Integer variable containing the mininmal (physiological) acceptable
+        pennation angle occuring in the analyzed image/muscle. Fascicles
+        with lower pennation angles will be excluded.
+        The pennation angle is calculated as the amgle of insertion between
+        extrapolated fascicle and detected aponeurosis. Must be non-negative.
+    max_pennation : int
+        Integer variable containing the maximal (physiological) acceptable
+        pennation angle occuring in the analyzed image/muscle. Fascicles
+        with higher pennation angles will be excluded.
+        The pennation angle is calculated as the amgle of insertion between
+        extrapolated fascicle and detected aponeurosis. Must be non-negative.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -410,9 +416,9 @@ def calculateBatch(
     function docstrings in this module. To see an examplenary PDF output
     and .xlsx file take at look at the examples provided in the "examples"
     directory.
-    This function is called by the GUI. Note that the functioned was specifically
-    designed to be called from the GUI. Thus, tk.messagebox will pop up when errors are
-    raised even if the GUI is not started.
+    This function is called by the GUI. Note that the functioned was
+    specifically designed to be called from the GUI. Thus, tk.messagebox
+    will pop up when errors are raised even if the GUI is not started.
 
     Examples
     --------
@@ -420,7 +426,8 @@ def calculateBatch(
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
-                       filetype="/**/*.tif, scaline="bar", spacing=10, apo_threshold=0.1,
+                       filetype="/**/*.tif, scaline="bar", spacing=10,
+                       apo_threshold=0.1,
                        fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
                        min_pennation=10, max_pennation=35,
                        gui=<__main__.DLTrack object at 0x000002BFA7528190>)
@@ -434,7 +441,8 @@ def calculateBatch(
         model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
 
     except OSError:
-        tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
+        tk.messagebox.showerror("Information",
+                                "Apo/Fasc model path is incorrect.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
@@ -523,7 +531,8 @@ def calculateBatch(
                             nonflipped_img, spacing
                         )
 
-                        # Append warning to failed images when no error was found
+                        # Append warning to failed images when no error was
+                        # found
                         if calib_dist is None:
                             fail = f"Scalingbars not found in {imagepath}"
                             failed_files.append(fail)
@@ -557,8 +566,8 @@ def calculateBatch(
                         dic,
                     )
 
-                    # Append warning to failes files when no aponeurosis was found and
-                    # and continue analysis
+                    # Append warning to failes files when no aponeurosis was
+                    # found and continue analysis
                     if fasc_l is None:
                         fail = f"No two aponeuroses found in {imagepath}"
                         failed_files.append(fail)
@@ -594,13 +603,15 @@ def calculateBatch(
                 print(f"duration total analysis: {duration}")
 
             except FileNotFoundError:
-                tk.messagebox.showerror("Information", "Input directory is incorrect.")
+                tk.messagebox.showerror("Information",
+                                        "Input directory is incorrect.")
                 gui.should_stop = False
                 gui.is_running = False
                 gui.do_break()
                 return
 
-            # Subsequent to analysis of all images, results are saved and the GUI is stopped
+            # Subsequent to analysis of all images, results are saved and
+            # the GUI is stopped
             finally:
 
                 # Save predicted area results
@@ -631,56 +642,61 @@ def calculateBatch(
         # Filpflage != number of images
         else:
             tk.messagebox.showerror(
-                "Information", "Number of flipflags must match number of images."
+                "Information",
+                "Number of flipflags must match number of images."
             )
             gui.should_stop = False
             gui.is_running = False
 
 
 def calculateBatchManual(rootpath: str, filetype: str, gui):
-    """
-    Function used for manual calculation of fascicle length, muscle thickness
-    and pennation angles in longitudinal ultrasonography images of human lower
-    limb muscles.
+    """Function used for manual calculation of fascicle length,
+    muscle thickness and pennation angles in longitudinal
+    ultrasonography images of human lower limb muscles.
 
-    This function is not restricted to any specific muscles. However, its use is
-    restricted to a specific method for assessing muscle thickness fascicle
-    length and pennation angles.
+    This function is not restricted to any specific muscles. However,
+    its use is restricted to a specific method for assessing muscle
+    thickness fascicle length and pennation angles.
 
     - Muscle thickness:
                        Exactly one segment reaching from the superficial to the
-                       deep aponeuroses of the muscle must be drawn. If multiple
-                       measurement are drawn, these are averaged. Drawing can
-                       be started by clickling the left mouse button and keeping
-                       it pressed until it is not further required to draw the line
-                       (i.e., the other aponeurosis border is reached). Only the
-                       respective y-coordinates of the points where the cursor
-                       was clicked and released are considered for calculation of
-                       muscle thickness.
+                       deep aponeuroses of the muscle must be drawn.
+                       If multiple measurement are drawn, these are averaged.
+                       Drawing can be started by clickling the left mouse
+                       button and keeping it pressed until it is not further
+                       required to draw the line (i.e., the other aponeurosis
+                       border is reached). Only the respective y-coordinates
+                       of the points where the cursor was clicked and released
+                       are considered for calculation of muscle thickness.
     - Fascicle length:
-                      Exactly three segments along the fascicleof the muscle must
-                      be drawn. If multiple fascicle are drawn, their lengths are
-                      averaged. Drawing can be started by clickling the left mouse
-                      button and keeping it pressed until one segment is finished
-                      (mostly where fascicle curvature occurs the other aponeurosis
-                      border is reached). Using the euclidean distance, the total
-                      fascicle length is computed as a sum of the segments.
+                      Exactly three segments along the fascicleof the muscle
+                      must be drawn. If multiple fascicle are drawn, their
+                      lengths are averaged. Drawing can be started by clickling
+                      the left mouse button and keeping it pressed until one
+                      segment is finished (mostly where fascicle curvature
+                      occurs the other aponeurosis border is reached). Using
+                      the euclidean distance, the total fascicle length is
+                      computed as a sum of the segments.
     - Pennation angle:
-                      Exactly two segments, one along the fascicle orientation, the
-                      other along the aponeurosis orientation must be drawn. The line
-                      along the aponeurosis must be started where the line along the
-                      fascicle ends. If multiple angle are drawn, they are averaged.
-                      Drawing can be started by clickling the left mouse button and keeping
-                      it pressed until it is not further required to draw the line
-                      (i.e., the aponeurosis border is reached by the fascicle). The
-                      angle is calculated using the arc-tan function.
-    In order to scale the image, it is required to draw a line of length 10 milimeter
-    somewhere in the image. The line can be drawn in the same fashion as for example
-    the muscle thickness. Here however, the euclidean distance is used to calculate
-    the pixel / centimeter ratio.
-    We also provide the functionality to extent the muscle aponeuroses to more easily
-    extrapolate fascicles. The lines can be drawn in the same fashion as for example
-    the muscle thickness.
+                      Exactly two segments, one along the fascicle
+                      orientation, the other along the aponeurosis orientation
+                      must be drawn. The line along the aponeurosis must be
+                      started where the line along the fascicle ends. If
+                      multiple angle are drawn, they are averaged. Drawing can
+                      be started by clickling the left mouse button and keeping
+                      it pressed until it is not further required to draw the
+                      line (i.e., the aponeurosis border is reached by the
+                      fascicle). The angle is calculated using the arc-tan
+                      function.
+    In order to scale the frame, it is required to draw a line of length 10
+    milimeter somewhere in the image. The line can be drawn in the same
+    fashion as for example the muscle thickness. Here however, the euclidean
+    distance is used to calculate the pixel / centimeter ratio. This has to
+    be done for every frame.
+
+    We also provide the functionality to extent the muscle aponeuroses to more
+    easily extrapolate fascicles. The lines can be drawn in the same fashion as
+    for example the muscle thickness.
 
     Parameters
     ----------
@@ -713,7 +729,8 @@ def calculateBatchManual(rootpath: str, filetype: str, gui):
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information", "No image files founds." + "\nEnter correct file type"
+            "Information", "No image files founds." +
+            "\nEnter correct file type"
         )
         gui.do_break()
         gui.should_stop = False

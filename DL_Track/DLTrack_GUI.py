@@ -1,19 +1,23 @@
 """
 Description
 -----------
-This module contains a class with methods to automatically and manually annotate
-longitudinal ultrasonography images and videos. When the class is initiated,
-a graphical user interface is opened. This is the main GUI of the DL_Track package.
+This module contains a class with methods to automatically and manually
+annotate longitudinal ultrasonography images and videos. When the class
+is initiated,a graphical user interface is opened.
+This is the main GUI of the DL_Track package.
 From here, the user is able to navigate all functionalities of the package.
-These extend the methods in this class. The main functionalities of the GUI contained
-in this module are automatic and manual evalution of muscle ultrasonography images.
+These extend the methods in this class. The main functionalities of the GUI
+contained in this module are automatic and manual evalution of muscle
+ultrasonography images.
 Inputted images or videos are analyzed and the parameters muscle fascicle
-length, pennation angle and muscle thickness are returned for each image or video frame.
+length, pennation angle and muscle thickness are returned for each image
+or video frame.
 The parameters are analyzed using convolutional neural networks (U-net, VGG16).
-This module and all submodules contained in the /gui_helpers modality are extensions
-and improvements of the work presented in Cronin et al. (2020). There, the core functionalities
-of this code are already outlined and the comparability of the model segmentations to
-manual analysis (current gold standard) is described. Here, we have improved the code by
+This module and all submodules contained in the /gui_helpers modality
+are extensions and improvements of the work presented in Cronin et al. (2020).
+There, the core functionalities of this code are already outlined and the
+comparability of the model segmentations to manual analysis (current gold
+standard) is described. Here, we have improved the code by
 integrating everything into a graphical user interface.
 
 Functions scope
@@ -27,9 +31,9 @@ tutorials provided for this package.
 
 References
 ----------
-VGG16: Simonyan, Karen, and Andrew Zisserman. “Very deep convolutional networks for large-scale image recognition.” arXiv preprint arXiv:1409.1556 (2014)
-U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
-DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
+[1] VGG16: Simonyan, Karen, and Andrew Zisserman. “Very deep convolutional networks for large-scale image recognition.” arXiv preprint arXiv:1409.1556 (2014)
+[2] U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
+[3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
 
 import tkinter as tk
@@ -45,8 +49,8 @@ class DLTrack:
     ultrasonography images/videos of human lower limb muscles.
     An analysis tkinter GUI is opened upon initialization of the class.
     By clicking the buttons, the user can switch between different
-    analysis modes for image/video analysis and model training. The GUI consists
-    of the following elements.
+    analysis modes for image/video analysis and model training.
+    The GUI consists of the following elements.
     - Input Directory:
     By pressing the "Input" button, the user is asked to select
     an input directory containing all images/videos to be
@@ -61,11 +65,12 @@ class DLTrack:
     model path can be entered directly in the enty field as well.
     - Analysis Type:
     The analysis type can be selected. There are four analysis types,
-    the selection of which will trigger more analysis parameters to be displayed.
+    the selection of which will trigger more analysis parameters
+    to be displayed.
     Image (automatic image analysis), Video (automatic video analysis),
     Image Manual (manual image analysis), Video Manual (manual image analysis).
     - Break:
-    By pressing the "break" button, the user is able to stop the analysis process
+    By pressing the "break" button, the user can stop the analysis process
     after each finished image or image frame analysis.
     - Run:
     By pressing the "run" button, the user can start the analysis process.
@@ -77,7 +82,8 @@ class DLTrack:
     Attributes
     ----------
     self._lock : _thread.lock
-        Thread object to lock the self._lock variable for access by another thread.
+        Thread object to lock the self._lock variable for access by another
+        thread.
     self._is_running : bool, default = False
         Boolen variable determining the active state
         of the GUI. If False, the is not running. If True
@@ -130,28 +136,29 @@ class DLTrack:
         fascicle pixels by our neural networks. Must be non-zero and
         non-negative.
     self.fasc_cont_threshold : tk.Stringvar
-        tk.Stringvariable containing the threshold applied to predicted fascicle
-        segments by our neural networks. Must be non-zero and
+        tk.Stringvariable containing the threshold applied to predicted
+        fascicle segments by our neural networks. Must be non-zero and
         non-negative.
     self.min_width : tk.stringvar
-        tk.Stringvariablecontaining the minimal distance between aponeuroses to be
-        detected. Must be non-zero and non-negative.
+        tk.Stringvariablecontaining the minimal distance between aponeuroses
+        to be detected. Must be non-zero and non-negative.
     self.min_pennation : tk.Stringvar
-        tk.Stringvariable containing the mininmal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Must be non-negative.
+        tk.Stringvariable containing the mininmal (physiological) acceptable
+        pennation angle occuring in the analyzed image/muscle.
+        Must be non-negative.
     self.max_pennation : tk.Stringvariable
-        tk.Stringvariable containing the maximal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Must be non-negative and
-        larger than min_pennation.
+        tk.Stringvariable containing the maximal (physiological)
+        acceptable pennation angle occuring in the analyzed image/muscle.
+        Must be non-negative and larger than min_pennation.
     self.train_image_dir : tk.Stringvar
-        tk.Straingvar containing the path to the directory of the training images.
-        Image must be in RGB format.
+        tk.Straingvar containing the path to the directory of the training
+        images. Image must be in RGB format.
     self.mask_path : tk.Stringvar
-        tk.Stringvariable containing the path to the directory of the mask images.
-        Masks must be binary.
+        tk.Stringvariable containing the path to the directory of the mask
+        images. Masks must be binary.
     self.out_dir : tk.Stringvar
-        tk.Stringvariable containing the path to the directory where the trained model
-        should be saved.
+        tk.Stringvariable containing the path to the directory where the
+        trained model should be saved.
     self.batch_size : tk.Stringvar
         tk.Stringvariable containing the batch size per iteration through the
         network during model training. Must be non-negative and non-zero.
@@ -160,9 +167,11 @@ class DLTrack:
         Must be non-negative and non-zero.
     self.epochs : tk.Stringvar
         tk.Straingvariable containing the amount of epochs that the model
-        is trained befor training is aborted. Must be non-negative and non-zero.
+        is trained befor training is aborted. Must be non-negative and
+        non-zero.
     self.loss : tk.Stringvar
-        tk.Stringvariable containing the loss function that is used during training.
+        tk.Stringvariable containing the loss function that is used during
+        training.
 
     Methods
     -------
@@ -284,9 +293,10 @@ class DLTrack:
             background="papaya whip",
             foregrund="black",
         )
-        style.configure("TCombobox", background="sea green", foreground="black")
+        style.configure("TCombobox", background="sea green",
+                        foreground="black")
 
-        ## Entryboxes
+        # Entryboxes
         # Input directory
         self.input = StringVar()
         input_entry = ttk.Entry(self.main, width=30, textvariable=self.input)
@@ -295,17 +305,19 @@ class DLTrack:
 
         # Apo Model path
         self.apo_model = StringVar()
-        apo_model_entry = ttk.Entry(self.main, width=30, textvariable=self.apo_model)
+        apo_model_entry = ttk.Entry(self.main, width=30,
+                                    textvariable=self.apo_model)
         apo_model_entry.grid(column=2, row=7, columnspan=3, sticky=(W, E))
         self.apo_model.set("C:/Users/admin/Documents")
 
         # Fasc Model path
         self.fasc_model = StringVar()
-        fasc_model_entry = ttk.Entry(self.main, width=30, textvariable=self.fasc_model)
+        fasc_model_entry = ttk.Entry(self.main, width=30,
+                                     textvariable=self.fasc_model)
         fasc_model_entry.grid(column=2, row=8, columnspan=3, sticky=(W, E))
         self.fasc_model.set("C:/Users/admin/Documents")
 
-        ## Radiobuttons
+        # Radiobuttons
         # Analysis Type
         self.analysis_type = StringVar()
         image = ttk.Radiobutton(
@@ -341,9 +353,10 @@ class DLTrack:
         )
         video_manual.grid(column=3, row=11, sticky=(W, E))
 
-        ## Buttons
+        # Buttons
         # Input directory
-        input_button = ttk.Button(self.main, text="Input", command=self.get_input_dir)
+        input_button = ttk.Button(self.main, text="Input",
+                                  command=self.get_input_dir)
         input_button.grid(column=5, row=6, sticky=E)
 
         # Apo model path
@@ -359,7 +372,8 @@ class DLTrack:
         fasc_model_button.grid(column=5, row=8, sticky=E)
 
         # Break button
-        break_button = ttk.Button(self.main, text="Break", command=self.do_break)
+        break_button = ttk.Button(self.main, text="Break",
+                                  command=self.do_break)
         break_button.grid(column=2, row=20, sticky=(W, E))
 
         # Run button
@@ -372,7 +386,7 @@ class DLTrack:
         )
         training.grid(column=5, row=20, sticky=E)
 
-        ## Labels
+        # Labels
         ttk.Label(self.main, text="Directories", font=("Verdana", 14)).grid(
             column=1, row=5, sticky=(W, E)
         )
@@ -386,12 +400,11 @@ class DLTrack:
         for child in self.main.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
-    ## Methods used in main GUI window when respective buttons are pressed.
+    # Methods used in main GUI window when respective buttons are pressed.
 
     # Determine input directory
     def get_input_dir(self):
-        """
-        Instance method to ask the user to select the input directory.
+        """Instance method to ask the user to select the input directory.
         All image files (of the same specified filetype) in
         the input directory are analysed.
         """
@@ -400,8 +413,7 @@ class DLTrack:
 
     # Get path of aponeurosis model
     def get_apo_model_path(self):
-        """
-        Instance method to ask the user to select the apo model path.
+        """Instance method to ask the user to select the apo model path.
         This must be an absolute path and the model must be a .h5 file.
         """
         apo_model_dir = filedialog.askopenfilename()
@@ -409,8 +421,7 @@ class DLTrack:
 
     # Get path of fascicle model
     def get_fasc_model_path(self):
-        """
-        Instance method to ask the user to select the fascicle model path.
+        """Instance method to ask the user to select the fascicle model path.
         This must be an absolute path and the model must be a .h5 file.
         """
         fasc_model_dir = filedialog.askopenfilename()
@@ -419,8 +430,7 @@ class DLTrack:
     # Analysis type selection
 
     def image_analysis(self):
-        """
-        Instance method to display the required parameters
+        """Instance method to display the required parameters
         that need to be entered by the user when images
         are automatically analyzed.
 
@@ -450,7 +460,8 @@ class DLTrack:
         will have an influence on computation outcomes.
         """
         # Labels
-        ttk.Label(self.main, text="Image Properties", font=("Verdana", 14)).grid(
+        ttk.Label(self.main, text="Image Properties",
+                  font=("Verdana", 14)).grid(
             column=1, row=9, sticky=(W, E)
         )
         ttk.Label(self.main, text="Image Type").grid(column=1, row=13)
@@ -496,7 +507,8 @@ class DLTrack:
             "/**/*.jpeg",
             "/**/*.jpg",
         )
-        filetype_entry = ttk.Combobox(self.main, width=10, textvariable=self.filetype)
+        filetype_entry = ttk.Combobox(self.main, width=10,
+                                      textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
@@ -505,7 +517,8 @@ class DLTrack:
         # Spacing
         self.spacing = StringVar()
         spacing = (5, 10, 15, 20)
-        spacing_entry = ttk.Combobox(self.main, width=10, textvariable=self.spacing)
+        spacing_entry = ttk.Combobox(self.main, width=10,
+                                     textvariable=self.spacing)
         spacing_entry["values"] = spacing
         spacing_entry["state"] = "readonly"
         spacing_entry.grid(column=2, row=15, sticky=(W, E))
@@ -527,13 +540,13 @@ class DLTrack:
         # Entry
         # Flip File path
         self.flipflag = StringVar()
-        flipflag_entry = ttk.Entry(self.main, width=30, textvariable=self.flipflag)
+        flipflag_entry = ttk.Entry(self.main, width=30,
+                                   textvariable=self.flipflag)
         flipflag_entry.grid(column=2, row=16, columnspan=2, sticky=(W, E))
         self.flipflag.set("Desktop/DL_Track/FlipFlags.txt")
 
     def video_analysis(self):
-        """
-        Instance method to display the required parameters
+        """Instance method to display the required parameters
         that need to be entered by the user when videos
         are automatically analyzed. Several parameters are
         displayed:
@@ -567,7 +580,8 @@ class DLTrack:
         self.flip = None
 
         # Labels
-        ttk.Label(self.main, text="Video Properties ", font=("Verdana", 14)).grid(
+        ttk.Label(self.main, text="Video Properties ",
+                  font=("Verdana", 14)).grid(
             column=1, row=9, sticky=(W, E)
         )
         ttk.Label(self.main, text="Video Type").grid(column=1, row=13)
@@ -627,7 +641,8 @@ class DLTrack:
         # Filetype
         self.filetype = StringVar()
         filetype = ("/**/*.avi", "/**/*.mp4")
-        filetype_entry = ttk.Combobox(self.main, width=10, textvariable=self.filetype)
+        filetype_entry = ttk.Combobox(self.main, width=10,
+                                      textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
@@ -636,7 +651,8 @@ class DLTrack:
         # Spacing
         self.spacing = StringVar()
         spacing = (5, 10, 15, 20)
-        spacing_entry = ttk.Combobox(self.main, width=10, textvariable=self.spacing)
+        spacing_entry = ttk.Combobox(self.main, width=10,
+                                     textvariable=self.spacing)
         spacing_entry["values"] = spacing
         spacing_entry["state"] = "readonly"
         spacing_entry.grid(column=2, row=15, sticky=(W, E))
@@ -658,8 +674,7 @@ class DLTrack:
         analysis.grid(column=5, row=18, sticky=W, pady=5)
 
     def image_manual(self):
-        """
-        Instance method to display the required parameters
+        """Instance method to display the required parameters
         that need to be entered by the user when images are
         evaluated manually.
         - Image type:
@@ -668,7 +683,8 @@ class DLTrack:
         The formatting must be kept constant.
         """
         # Labels
-        ttk.Label(self.main, text="Image Properties", font=("Verdana", 14)).grid(
+        ttk.Label(self.main, text="Image Properties",
+                  font=("Verdana", 14)).grid(
             column=1, row=9, sticky=(W, E)
         )
         ttk.Label(self.main, text="  Image Type  ").grid(column=1, row=13)
@@ -705,15 +721,15 @@ class DLTrack:
             "/**/*.jpg",
             "/**/*.avi",
         )
-        filetype_entry = ttk.Combobox(self.main, width=10, textvariable=self.filetype)
+        filetype_entry = ttk.Combobox(self.main, width=10,
+                                      textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
         self.filetype.set("/**/*.tif")
 
     def video_manual(self):
-        """
-        Instance method to display the required parameters
+        """Instance method to display the required parameters
         that need to be entered by the user when videos are
         evaluated manually.
         - File path:
@@ -721,7 +737,8 @@ class DLTrack:
                     video file to be analyzed.
         """
         # Labels
-        ttk.Label(self.main, text="Video Properties ", font=("Verdana", 14)).grid(
+        ttk.Label(self.main, text="Video Properties ",
+                  font=("Verdana", 14)).grid(
             column=1, row=9, sticky=(W, E)
         )
         ttk.Label(self.main, text="  File Path  ").grid(column=1, row=13)
@@ -751,12 +768,12 @@ class DLTrack:
 
         # Buttons
         # Get video path
-        vpath = ttk.Button(self.main, text="Video Path", command=self.get_video_path)
+        vpath = ttk.Button(self.main, text="Video Path",
+                           command=self.get_video_path)
         vpath.grid(column=5, row=13, sticky=E)
 
     def get_flipfile_path(self):
-        """
-        Instance method to ask the user to select the flipfile path.
+        """Instance method to ask the user to select the flipfile path.
         The flipfile should contain the flags used for flipping each
         image. If 0, the image is not flipped, if 1 the image is
         flipped. This must be an absolute path.
@@ -765,8 +782,7 @@ class DLTrack:
         self.flipflag.set(flipflag_dir)
 
     def get_video_path(self):
-        """
-        Instance method to ask the user to select the video path
+        """Instance method to ask the user to select the video path
         for manual video analysis.
         This must be an absolute path.
         """
@@ -775,8 +791,7 @@ class DLTrack:
         return video_path
 
     def run_code(self):
-        """
-        Instance method to execute the analysis process when the
+        """Instance method to execute the analysis process when the
         "run" button is pressed.
 
         Which analysis process is executed depends on the user
@@ -814,7 +829,8 @@ class DLTrack:
 
             # Make sure some kind of input directory is specified.
             if len(selected_input_dir) < 3:
-                tk.messagebox.showerror("Information", "Input directory is incorrect.")
+                tk.messagebox.showerror("Information",
+                                        "Input directory is incorrect.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
@@ -830,7 +846,8 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    tk.messagebox.showerror("Information",
+                                            "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -872,7 +889,8 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    tk.messagebox.showerror("Information",
+                                            "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -882,7 +900,8 @@ class DLTrack:
 
                 # Make sure some kind of step is specified.
                 if len(selected_step) < 1 or int(selected_step) < 1:
-                    tk.messagebox.showerror("Information", "Frame Steps is invalid.")
+                    tk.messagebox.showerror("Information",
+                                            "Frame Steps is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -925,7 +944,8 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    tk.messagebox.showerror("Information",
+                                            "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -969,7 +989,8 @@ class DLTrack:
                 "Check input parameters."
                 + "\nPotential error sources:"
                 + "\n - Invalid specified directory."
-                "\n - Analysis Type not set" + "\n - Analysis parameters not set.",
+                "\n - Analysis Type not set" +
+                "\n - Analysis parameters not set.",
             )
             self.do_break()
             self.should_stop = False
@@ -999,15 +1020,15 @@ class DLTrack:
 
         except ValueError:
             tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
+                "Information", "Analysis parameter entry fields" +
+                " must not be empty."
             )
             self.do_break()
             self.should_stop = False
             self.is_running = False
 
     def do_break(self):
-        """
-        Instance method to break the analysis process when the
+        """Instance method to break the analysis process when the
         button "break" is pressed.
 
         This changes the instance attribute self.should_stop
@@ -1022,8 +1043,7 @@ class DLTrack:
     # Open new toplevel instance for analysis parameter specification
 
     def open_window(self):
-        """
-        Instance method to open new window for analysis parameter input.
+        """Instance method to open new window for analysis parameter input.
         The window is opened upon pressing of the "analysis parameters"
         button.
 
@@ -1039,8 +1059,8 @@ class DLTrack:
         The user must input the fascicle threshold
         either by selecting from the dropdown list or
         entering a value. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for classifying
-        a pixel as fascicle is changed.
+        structures will be classified as fascicle as the threshold for
+        classifying a pixel as fascicle is changed.
         Float, must be non-negative and non-zero.
         - Fasc Cont Threshold:
         The user must input the fascicle contour threshold
@@ -1052,16 +1072,16 @@ class DLTrack:
         - Minimal Width:
         The user must input the minimal with either by selecting from the
         dropdown list or entering a value. The aponeuroses must be at least
-        this distance apart to be detected. The distance is specified in pixels.
-        Integer, must be non-zero and non-negative.
+        this distance apart to be detected. The distance is specified in
+        pixels. Integer, must be non-zero and non-negative.
         - Min Pennation:
-        The user must enter the minimal pennation angle physiologically acceptable
+        The user must enter the minimal pennation angle physiologically apt
         occuring in the analyzed image/video. Fascicles with lower pennation
         angles will be excluded. The pennation angle is calculated as the angle
         of insertion between extrapolated fascicle and detected aponeurosis.
         Integer, must be non-negative.
         - Max Pennation:
-        The user must enter the minimal pennation angle physiologically acceptable
+        The user must enter the minimal pennation angle physiologically apt
         occuring in the analyzed image/video. Fascicles with lower pennation
         angles will be excluded. The pennation angle is calculated as the angle
         of insertion between extrapolated fascicle and detected aponeurosis.
@@ -1076,7 +1096,8 @@ class DLTrack:
         window.grab_set()
 
         # Labels
-        ttk.Label(window, text="Analysis Parameters", font=("Verdana", 14)).grid(
+        ttk.Label(window, text="Analysis Parameters",
+                  font=("Verdana", 14)).grid(
             column=1, row=11, padx=10
         )
         ttk.Label(window, text="Apo Threshold").grid(column=1, row=12)
@@ -1089,7 +1110,8 @@ class DLTrack:
         # Apo threshold
         self.apo_threshold = StringVar()
         athresh = (0.1, 0.3, 0.5, 0.7, 0.9)
-        apo_entry = ttk.Combobox(window, width=10, textvariable=self.apo_threshold)
+        apo_entry = ttk.Combobox(window, width=10,
+                                 textvariable=self.apo_threshold)
         apo_entry["values"] = athresh
         apo_entry.grid(column=2, row=12, sticky=(W, E))
         self.apo_threshold.set(0.2)
@@ -1097,7 +1119,8 @@ class DLTrack:
         # Fasc threshold
         self.fasc_threshold = StringVar()
         fthresh = [0.1, 0.3, 0.5]
-        fasc_entry = ttk.Combobox(window, width=10, textvariable=self.fasc_threshold)
+        fasc_entry = ttk.Combobox(window, width=10,
+                                  textvariable=self.fasc_threshold)
         fasc_entry["values"] = fthresh
         fasc_entry.grid(column=2, row=13, sticky=(W, E))
         self.fasc_threshold.set(0.05)
@@ -1115,7 +1138,8 @@ class DLTrack:
         # Minimal width
         self.min_width = StringVar()
         mwidth = (20, 30, 40, 50, 60, 70, 80, 90, 100)
-        width_entry = ttk.Combobox(window, width=10, textvariable=self.min_width)
+        width_entry = ttk.Combobox(window, width=10,
+                                   textvariable=self.min_width)
         width_entry["values"] = mwidth
         width_entry.grid(column=2, row=15, sticky=(W, E))
         self.min_width.set(60)
@@ -1137,7 +1161,8 @@ class DLTrack:
         self.max_pennation.set(40)
 
         # Set Params button
-        set_params = ttk.Button(window, text="Set parameters", command=window.destroy)
+        set_params = ttk.Button(window, text="Set parameters",
+                                command=window.destroy)
         set_params.grid(column=1, row=19, sticky=(W, E))
 
         # Add padding
@@ -1148,8 +1173,7 @@ class DLTrack:
     # Open new toplevel instance for model training
 
     def train_model_window(self):
-        """
-        Instance method to open new window for model training.
+        """Instance method to open new window for model training.
         The window is opened upon pressing of the "analysis parameters"
         button.
 
@@ -1180,19 +1204,21 @@ class DLTrack:
         - Epochs:
         The user must enter the number of Epochs used during model training by
         selecting from the dropdown list or entering a value.
-        The total amount of epochs will only be used if early stopping does not happen.
+        The total amount of epochs will only be used if early stopping
+        does not happen.
         Integer, must be non-negative and non-zero.
         - Loss Function:
         The user must enter the loss function used for model training by
         selecting from the dropdown list. These can be "BCE" (binary
         cross-entropy), "Dice" (Dice coefficient) or "FL"(Focal loss).
 
-        Model training is started by pressing the "start training" button. Although
-        all parameters relevant for model training can be adapted, we advise users with
-        limited experience to keep the pre-defined settings. These settings are best
-        practice and devised from the original papers that proposed the models used
-        here. Singularly the batch size should be adapted to 1 if comupte power is limited
-        (no GPU or GPU with RAM lower than 8 gigabyte).
+        Model training is started by pressing the "start training" button.
+        Although all parameters relevant for model training can be adapted,
+        we advise users with limited experience to keep the pre-defined
+        settings. These settings are best practice and devised from the
+        original papers that proposed the models used here.
+        Singularly the batch size should be adapted to 1 if comupte power is
+        limited (no GPU or GPU with RAM lower than 8 gigabyte).
         """
         # Open Window
         window = tk.Toplevel(bg="DarkSeaGreen3")
@@ -1201,7 +1227,8 @@ class DLTrack:
         window.grab_set()
 
         # Labels
-        ttk.Label(window, text="Training Parameters", font=("Verdana", 14)).grid(
+        ttk.Label(window, text="Training Parameters",
+                  font=("Verdana", 14)).grid(
             column=1, row=0, padx=10
         )
         ttk.Label(window, text="Image Directory").grid(column=1, row=2)
@@ -1239,15 +1266,18 @@ class DLTrack:
 
         # Buttons
         # Train image button
-        train_img_button = ttk.Button(window, text="Images", command=self.get_train_dir)
+        train_img_button = ttk.Button(window, text="Images",
+                                      command=self.get_train_dir)
         train_img_button.grid(column=5, row=2, sticky=E)
 
         # Mask button
-        mask_button = ttk.Button(window, text="Masks", command=self.get_mask_dir)
+        mask_button = ttk.Button(window, text="Masks",
+                                 command=self.get_mask_dir)
         mask_button.grid(column=5, row=3, sticky=E)
 
         # Input directory
-        out_button = ttk.Button(window, text="Output", command=self.get_output_dir)
+        out_button = ttk.Button(window, text="Output",
+                                command=self.get_output_dir)
         out_button.grid(column=5, row=4, sticky=E)
 
         # Model train button
@@ -1260,7 +1290,8 @@ class DLTrack:
         # Batch size
         self.batch_size = StringVar()
         size = ("1", "2", "3", "4", "5", "6")
-        size_entry = ttk.Combobox(window, width=10, textvariable=self.batch_size)
+        size_entry = ttk.Combobox(window, width=10,
+                                  textvariable=self.batch_size)
         size_entry["values"] = size
         size_entry.grid(column=2, row=5, sticky=(W, E))
         self.batch_size.set("1")
@@ -1268,7 +1299,8 @@ class DLTrack:
         # Learning rate
         self.learn_rate = StringVar()
         learn = ("0.005", "0.001", "0.0005", "0.0001", "0.00005", "0.00001")
-        learn_entry = ttk.Combobox(window, width=10, textvariable=self.learn_rate)
+        learn_entry = ttk.Combobox(window, width=10,
+                                   textvariable=self.learn_rate)
         learn_entry["values"] = learn
         learn_entry.grid(column=2, row=6, sticky=(W, E))
         self.learn_rate.set("0.00001")
@@ -1284,7 +1316,8 @@ class DLTrack:
         # Loss function
         self.loss_function = StringVar()
         loss = ("BCE", "Dice", "FL")
-        loss_entry = ttk.Combobox(window, width=10, textvariable=self.loss_function)
+        loss_entry = ttk.Combobox(window, width=10,
+                                  textvariable=self.loss_function)
         loss_entry["values"] = loss
         loss_entry["state"] = "readonly"
         loss_entry.grid(column=2, row=8, sticky=(W, E))
@@ -1294,11 +1327,10 @@ class DLTrack:
         for child in window.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
-    ## Methods used for model training
+    # Methods used for model training
 
     def get_train_dir(self):
-        """
-        Instance method to ask the user to select the training image
+        """Instance method to ask the user to select the training image
         directory path. All image files (of the same specified filetype) in
         the directory are analysed. This must be an absolute path.
         """
@@ -1306,8 +1338,7 @@ class DLTrack:
         self.train_image_dir.set(train_image_dir)
 
     def get_mask_dir(self):
-        """
-        Instance method to ask the user to select the training mask
+        """Instance method to ask the user to select the training mask
         directory path. All mask files (of the same specified filetype) in
         the directory are analysed.The mask files and the corresponding
         image must have the exact same name. This must be an absolute path.
@@ -1316,8 +1347,7 @@ class DLTrack:
         self.mask_dir.set(mask_dir)
 
     def get_output_dir(self):
-        """
-        Instance method to ask the user to select the output
+        """Instance method to ask the user to select the output
         directory path. Here, all file created during model
         training (model file, weight file, graphs) are saved.
         This must be an absolute path.
@@ -1326,16 +1356,15 @@ class DLTrack:
         self.out_dir.set(out_dir)
 
     def train_model(self):
-        """
-        Instance method to execute the model training when the
+        """Instance method to execute the model training when the
         "start training" button is pressed.
 
         By pressing the button, a seperate thread is started
         in which the model training is run. This allows the user to break any
         training process at certain stages. When the analysis can be
         interrupted, a tk.messagebox opens asking the user to either
-        continue or terminate the analysis. Moreover, the threading allows interaction
-        with the GUI during ongoing analysis process.
+        continue or terminate the analysis. Moreover, the threading allows
+        interaction with the GUI during ongoing analysis process.
         """
         try:
             # See if GUI is already running
@@ -1355,7 +1384,8 @@ class DLTrack:
                 or len(selected_masks) < 3
                 or len(selected_outpath) < 3
             ):
-                tk.messagebox.showerror("Information", "Specified directories invalid.")
+                tk.messagebox.showerror("Information",
+                                        "Specified directories invalid.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
@@ -1386,7 +1416,8 @@ class DLTrack:
         # Error handling
         except ValueError:
             tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
+                "Information", "Analysis parameter entry fields" +
+                " must not be empty."
             )
             self.do_break()
             self.should_stop = False
@@ -1397,8 +1428,7 @@ class DLTrack:
 
     @property
     def should_stop(self) -> bool:
-        """
-        Instance method to define the should_stop
+        """Instance method to define the should_stop
         property getter method. By defining this as a property,
         should_stop is treated like a public attribute even
         though it is private.
@@ -1421,8 +1451,7 @@ class DLTrack:
 
     @property
     def is_running(self) -> bool:
-        """
-        Instance method to define the is_running
+        """Instance method to define the is_running
         property getter method. By defining this as a property,
         is_running is treated like a public attribute even
         though it is private.
@@ -1444,8 +1473,7 @@ class DLTrack:
 
     @should_stop.setter
     def should_stop(self, flag: bool):
-        """
-        Instance method to define the should_stop
+        """Instance method to define the should_stop
         property setter method. The setter method is used
         to set the self._should_stop attribute as if it was
         a public attribute. The argument "flag" is thereby
@@ -1457,8 +1485,7 @@ class DLTrack:
 
     @is_running.setter
     def is_running(self, flag: bool):
-        """
-        Instance method to define the is_running
+        """Instance method to define the is_running
         property setter method. The setter method is used
         to set the self._is_running attribute as if it was
         a public attribute. The argument "flag" is thereby
@@ -1474,14 +1501,13 @@ class DLTrack:
 
 
 def runMain() -> None:
-    """
-    Function that enables usage of the gui from command promt
+    """Function that enables usage of the gui from command promt
     as pip package.
 
     Notes
     -----
     The GUI can be executed by typin 'python -m DLTrack_GUI.py' in the command
-    subsequtently to installing the pip package´and activating the
+    subsequtently to installing the pip package and activating the
     respective library.
 
     It is not necessary to download any files from the repository when the pip
@@ -1494,7 +1520,8 @@ def runMain() -> None:
     root.mainloop()
 
 
-# This statement is required to execute the GUI by typing 'python DLTrack_GUI.py' in the prompt
+# This statement is required to execute the GUI by typing
+# 'python DLTrack_GUI.py' in the prompt
 # when navigated to the folder containing the file and all dependencies.
 if __name__ == "__main__":
     root = Tk()

@@ -2,7 +2,7 @@
 Description
 -----------
 This module contains functions to caculate muscle architectural
-parameters based on binary segmentations by convolutional neural networks (CNNs).
+parameters based on binary segmentations by convolutional neural networks.
 The parameters include muscle thickness, pennation angle and fascicle length.
 First, input images are segmented by the CNNs. Then the predicted aponeuroses
 and fascicle fragments are thresholded and filtered. Fascicle fragments
@@ -92,13 +92,16 @@ def doCalculationsVideo(
         This can be "no_flip" (video is not flipped) or "flipe"
         (video is flipped).
     apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis neural network.
+        String variable containing the absolute path to the aponeurosis
+        neural network.
     fasc_modelpath : str
-        String variable containing the absolute path to the fascicle neural network.
+        String variable containing the absolute path to the fascicle
+        neural network.
     calib_dist : int
         Integer variable containing the distance between the two
         specified point in pixel units. The points must be 10mm
-        apart. Must be non-negative. If "None", the values are outputted in pixel units.
+        apart. Must be non-negative. If "None", the values are outputted in
+        pixel units.
     dic : dict
         Dictionary variable containing analysis parameters.
         These include must include apo_threshold, fasc_threshold,
@@ -147,7 +150,9 @@ def doCalculationsVideo(
                         apo_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-VGG16-fasc-BCE-512.h5",
                         fasc_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-apo-VGG-BCE-512.h5",
                         calib_dist=98,
-                        dic={'apo_treshold': '0.2', 'fasc_threshold': '0.05', 'fasc_cont_thresh': '40', 'min_width': '60', 'min_pennation': '10', 'max_pennation': '40'},
+                        dic={'apo_treshold': '0.2', 'fasc_threshold': '0.05',
+                        'fasc_cont_thresh': '40', 'min_width': '60',
+                        'min_pennation': '10', 'max_pennation': '40'},
                         gui=<__main__.DLTrack object at 0x000002BFA7528190>)
     [array([60.5451731 , 58.86892027, 64.16011534, 55.46192704, 63.40711356]), ..., array([64.90849385, 60.31621836])]
     [[19.124207107383114, 19.409753216521565, 18.05706763600641, 20.54453899050867, 17.808652286488794], ..., [17.26241882195032, 16.284803480359543]]
@@ -162,7 +167,7 @@ def doCalculationsVideo(
             if float(value) <= 0:
                 tk.messagebox.showerror(
                     "Information",
-                    "Analysis paremters must be non-zero" + " and non-negative",
+                    "Analysis paremters must be non-zero" + " and non-negative"
                 )
                 gui.should_stop = False
                 gui.is_running = False
@@ -206,7 +211,8 @@ def doCalculationsVideo(
             h = img.shape[0]
             w = img.shape[1]
             img = np.reshape(img, [-1, h, w, 3])
-            img = resize(img, (1, 512, 512, 3), mode="constant", preserve_range=True)
+            img = resize(img, (1, 512, 512, 3), mode="constant",
+                         preserve_range=True)
             img = img / 255.0
 
             # Predict aponeurosis
@@ -231,7 +237,7 @@ def doCalculationsVideo(
             pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
             pred_fasc_t = np.reshape(pred_fasc_t, (h, w))
 
-            ## Aponuerosis calculation PArt
+            # Aponuerosis calculation PArt
 
             # Compute the contours to identify aponeuroses
             _, thresh = cv2.threshold(pred_apo_t, 0, 255, cv2.THRESH_BINARY)
@@ -282,7 +288,8 @@ def doCalculationsVideo(
                     y1 = ys2[countU]
                     y2 = ys1[countU + 1]
                     if y1 - 10 <= y2 <= y1 + 10:
-                        m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
+                        m = np.vstack((contours_re2[countU],
+                                       contours_re2[countU + 1]))
                         cv2.drawContours(maskT, [m], 0, 255, -1)
                 countU += 1
 
@@ -314,7 +321,8 @@ def doCalculationsVideo(
             # Continue only when 2 or more aponeuroses were detected
             if len(contoursE) >= 2:
 
-                # Get the x,y coordinates of the upper/lower edge of the 2 aponeuroses
+                # Get the x,y coordinates of the upper/lower edge of the 2
+                # aponeuroses
                 upp_x, upp_y = contourEdge("B", contoursE[0])
                 if contoursE[1][0, 0, 1] > (contoursE[0][0, 0, 1] + min_width):
                     low_x, low_y = contourEdge("T", contoursE[1])
@@ -322,7 +330,7 @@ def doCalculationsVideo(
                     low_x, low_y = contourEdge("T", contoursE[2])
 
                 # Filter data one-dimensionally to extend the data
-                upp_y_new = savgol_filter(upp_y, 81, 2)  # window size, polynomial order
+                upp_y_new = savgol_filter(upp_y, 81, 2)
                 low_y_new = savgol_filter(low_y, 81, 2)
 
                 # Make a binary mask
@@ -337,7 +345,8 @@ def doCalculationsVideo(
                     ex_mask[ymax:, ii] = 0
                     ex_mask[ymin:ymax, ii] = 255
 
-                # Calculate slope of central portion of each aponeurosis & use this to compute muscle thickness
+                # Calculate slope of central portion of each aponeurosis
+                # & use this to compute muscle thickness
                 Alist = list(set(upp_x).intersection(low_x))
                 Alist = sorted(Alist)
                 Alen = len(
@@ -377,7 +386,7 @@ def doCalculationsVideo(
                 ]  # Find middle of the aponeurosis
                 x1 = np.linspace(
                     low_x[0] - 700, low_x[-1] + 700, 10000
-                )  # Extrapolate polynomial fits to either side of the mid-point
+                )  # Extrapolate polynomial fits to either side
                 y_UA = g(x1)
                 y_LA = h(x1)
 
@@ -390,10 +399,11 @@ def doCalculationsVideo(
                 )  # Extrapolate x,y data using f function
                 new_Y_LA = h(new_X_LA)
 
-                ## Fascicle calculation part
+                # Fascicle calculation part
 
                 # Compute contours to identify fascicles / fascicle orientation
-                _, threshF = cv2.threshold(pred_fasc_t, 0, 255, cv2.THRESH_BINARY)
+                _, threshF = cv2.threshold(pred_fasc_t, 0, 255,
+                                           cv2.THRESH_BINARY)
                 threshF = threshF.astype("uint8")
                 contoursF, hierarchy = cv2.findContours(
                     threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -438,14 +448,15 @@ def doCalculationsVideo(
                     )  # Extrapolate x,y data using f function
                     newY = f(newX)
 
-                    # Find intersection between each fascicle and the aponeuroses.
+                    # Find intersection between each fascicle and the
+                    # aponeuroses.
                     diffU = newY - new_Y_UA  # Find intersections
                     locU = np.where(diffU == min(diffU, key=abs))[0]
                     diffL = newY - new_Y_LA
                     locL = np.where(diffL == min(diffL, key=abs))[0]
 
-                    coordsX = newX[int(locL) : int(locU)]
-                    coordsY = newY[int(locL) : int(locU)]
+                    coordsX = newX[int(locL): int(locU)]
+                    coordsY = newY[int(locL): int(locU)]
 
                     if locL >= 4950:
                         Apoangle = int(
@@ -467,8 +478,9 @@ def doCalculationsVideo(
                         )  # Angle relative to horizontal
                     Apoangle = 90 + abs(Apoangle)
 
-                    # Don't include fascicles that are completely outside of the field of view or
-                    # those that don't pass through central 1/3 of the image
+                    # Don't include fascicles that are completely outside of
+                    # the field of view or those that don't pass through
+                    # central 1/3 of the image
                     if (
                         np.sum(coordsX) > 0
                         and coordsX[-1] > 0
@@ -490,25 +502,28 @@ def doCalculationsVideo(
 
                         if (
                             ActualAng <= max_pennation and ActualAng >= min_pennation
-                        ):  # Don't include 'fascicles' beyond a range of pennation angles
+                        ):  # Don't include 'fascicles' beyond a range of PA
                             length1 = np.sqrt(
                                 (newX[locU] - newX[locL]) ** 2
                                 + (y_UA[locU] - y_LA[locL]) ** 2
                             )
-                            fasc_l.append(length1[0])  # Calculate fascicle length
+                            fasc_l.append(length1[0])  # Calculate FL
                             pennation.append(Apoangle - FascAng)
                             x_low1.append(coordsX[0].astype("int32"))
                             x_high1.append(coordsX[-1].astype("int32"))
                             coords = np.array(
                                 list(
                                     zip(
-                                        coordsX.astype("int32"), coordsY.astype("int32")
+                                        coordsX.astype("int32"),
+                                        coordsY.astype("int32")
                                     )
                                 )
                             )
-                            cv2.polylines(imgT, [coords], False, (20, 15, 200), 3)
+                            cv2.polylines(imgT, [coords], False, (20, 15, 200),
+                                          3)
 
-                # Store the results for each frame and normalise using scale factor (if calibration was done above)
+                # Store the results for each frame and normalise using scale
+                # factor (if calibration was done above)
                 try:
                     midthick = mindist[0]  # Muscle thickness
                 except:
@@ -576,7 +591,8 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) + " mm"),
+                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) +
+                     " mm"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
@@ -596,7 +612,8 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) + " px"),
+                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1])
+                     + " px"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
@@ -624,7 +641,8 @@ def doCalculationsVideo(
 
     # Check if model path is correct
     except OSError:
-        tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
+        tk.messagebox.showerror("Information",
+                                "Apo/Fasc model path is incorrect.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()

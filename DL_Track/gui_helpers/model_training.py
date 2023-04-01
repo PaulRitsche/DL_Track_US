@@ -12,17 +12,20 @@ in the Labelling directory.
 Functions scope
 ---------------
 conv_block
-    Function to build a convolutional block for the U-net decoder path of the network.
+    Function to build a convolutional block for the U-net decoder path of
+    the network.
     The block is built using several keras.layers functionalities.
 decoder_block
-    Function to build a decoder block for the U-net decoder path of the network.
+    Function to build a decoder block for the U-net decoder path of
+    the network.
     The block is built using several keras.layers functionalities.
 build_vgg16_model
-    Function that builds a convolutional network consisting of an VGG16 encoder path
-    and a U-net decoder path.
+    Function that builds a convolutional network consisting of an VGG16
+    encoder path and a U-net decoder path.
 IoU
     Function to compute the intersection over union score (IoU),
-    a measure of prediction accuracy. This is sometimes also called Jaccard score.
+    a measure of prediction accuracy. This is sometimes also called
+    Jaccard score.
 dice_score
     Function to compute the Dice score, a measure of prediction accuracy.
 focal_loss
@@ -41,7 +44,6 @@ Additional information and usage examples can be found at the respective
 functions documentations.
 """
 import os
-import random
 import tkinter as tk
 
 import matplotlib.pyplot as plt
@@ -55,53 +57,56 @@ from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.layers import (
-    Activation,
-    BatchNormalization,
     Concatenate,
     Conv2D,
     Conv2DTranspose,
-    Input,
 )
 from tensorflow.keras.utils import img_to_array, load_img
 from tqdm import tqdm
 
 
 def conv_block(inputs, num_filters: int):
-    """
-    Function to build a convolutional block for the U-net decoder path of the network to be build.
+    """Function to build a convolutional block for the U-net decoder path of
+    the network to be build.
     The block is built using several keras.layers functionalities.
 
-    Here, we decided to use 'padding = same' and and a convolutional kernel of 3.
+    Here, we decided to use 'padding = same' and and a convolutional
+    kernel of 3.
     This is adaptable in the code but will influence the model outcome.
-    The convolutional block consists of two convolutional layers. Each creates a convolution kernel
-    that is convolved with the layer input to produce a tensor of outputs.
+    The convolutional block consists of two convolutional layers. Each creates
+    a convolution kernel that is convolved with the layer input to produce a
+    tensor of outputs.
 
     Parameters
     ----------
     inputs : KerasTensor
-        Concattenated Tensorflow.Keras Tensor outputted from previous layer. The Tensor can be
-        altered by adapting, i.e. the filter numbers but this will change the model training output.
+        Concattenated Tensorflow.Keras Tensor outputted from previous layer.
+        The Tensor can be altered by adapting, i.e. the filter numbers but
+        this will change the model training output.
         The input is then convolved using the built kernel.
     num_filters : int
-        Integer variable determining the number of filters used during model training.
-        Here, we started with 'num_filers = 512'. The filter number is halfed each
-        layer. The number of filters can be adapted in the code.
+        Integer variable determining the number of filters used during model
+        training.
+        Here, we started with 'num_filers = 512'.
+        The filter number is halfed each layer.
+        The number of filters can be adapted in the code.
         Must be non-negative and non-zero.
 
     Returns
     -------
     x : KerasTensor
         Tensorflow.Keras Tensor used during model Training.
-        The Tensor can be altered by adapting the input paramenters to the function or
-        the upsampling but this will change the model training. The number of filters
-        is halfed.
+        The Tensor can be altered by adapting the input paramenters to the
+        function or the upsampling but this will change the model training.
+        The number of filters is halfed.
 
     Example
     -------
     >>> conv_block(inputs=KerasTensor(type_spec=TensorSpec(shape=(None, 256, 256, 128),
                    dtype=tf.float32, name=None),
                    num_filters=128)
-    KerasTensor(type_spec=TensorSpec(shape=(None, 256, 256, 64), dtype=tf.float32, name=None)
+    KerasTensor(type_spec=TensorSpec(shape=(None, 256, 256, 64),
+    dtype=tf.float32, name=None)
     """
     # Define Conv2D layer witch Batchnor and Activation relu
     x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)
@@ -116,35 +121,41 @@ def conv_block(inputs, num_filters: int):
 
 
 def decoder_block(inputs, skip_features, num_filters):
-    """
-    Function to build a decoder block for the U-net decoder path of the network to be build.
+    """Function to build a decoder block for the U-net decoder path
+    of the network to be build.
     The block is build using several keras.layers functionalities.
 
-    The block is built by applying a deconvolution (Keras.Conv2DTranspose) to upsample to input
-    by a factor of 2. A concatenation with the skipped features from the mirrored
-    vgg16 convolutional layer follows. Subsequently a convolutional block (see conv_block
+    The block is built by applying a deconvolution (Keras.Conv2DTranspose)
+    to upsample to input by a factor of 2. A concatenation with the skipped
+    features from the mirrored vgg16 convolutional layer follows.
+    Subsequently a convolutional block (see conv_block
     function) is applied to convolve the input with the built kernel.
 
     Parameters
     ----------
     inputs : KerasTensor
-        Concattenated Tensorflow.Keras Tensor outputted from previous layer. The Tensor can be
-        altered by adapting, i.e. the filter numbers but this will change the model training output.
+        Concattenated Tensorflow.Keras Tensor outputted from previous layer.
+        The Tensor can be altered by adapting, i.e. the filter numbers but
+        this will change the model training output.
     skip_features : Keras Tensor
         Skip connections to the encoder path of the vgg16 encoder.
     num_filters : int
-        Integer variable determining the number of filters used during model training.
-        Here, we started with 'num_filers = 512'. The filter number is halfed each
-        layer. The number of filters can be adapted in the code. Must be non-neagtive and non-zero.
+        Integer variable determining the number of filters used during
+        model training.
+        Here, we started with 'num_filers = 512'.
+        The filter number is halfed each layer. The number of filters can
+        be adapted in the code. Must be non-neagtive and non-zero.
 
     Returns
     -------
     x : KerasTensor
-        Tensorflow.Keras Tensor used during model Training. The tensor is upsampled using
-        Keras.Conv2DTranspose with a kernel of (2,2), 'stride=2' and 'padding=same'.
-        The upsampling increases image size by a factor of 2. The number of filters is halfed.
-        The Tensor can be altered by adapting the input paramenters to the function or
-        the upsampling but this will change the model training.
+        Tensorflow.Keras Tensor used during model Training. The tensor is
+        upsampled using Keras.Conv2DTranspose with a kernel of (2,2),
+        'stride=2' and 'padding=same'.
+        The upsampling increases image size by a factor of 2.
+        The number of filters is halfed.
+        The Tensor can be altered by adapting the input paramenters to the
+        function or the upsampling but this will change the model training.
 
     Example
     -------
@@ -152,7 +163,8 @@ def decoder_block(inputs, skip_features, num_filters):
                       skip_features=KerasTensor(type_spec=TensorSpec(shape=(None, 64, 64, 512),
                       dtype=tf.float32, name=None)),
                       num_filters=256)
-    KerasTensor(type_spec=TensorSpec(shape=(None, 128, 128, 256), dtype=tf.float32, name=None)
+    KerasTensor(type_spec=TensorSpec(shape=(None, 128, 128, 256),
+    dtype=tf.float32, name=None)
     """
     # Define a whole decoder block
     x = Conv2DTranspose(
@@ -166,16 +178,16 @@ def decoder_block(inputs, skip_features, num_filters):
 
 
 def build_vgg16_unet(input_shape: tuple):
-    """
-    Function that builds a convolutional network consisting of an VGG16 encoder path
-    and a U-net decoder path.
+    """Function that builds a convolutional network consisting of a VGG16
+    encoder path and a U-net decoder path.
 
-    The model is built using several Tensorflow.Keras functions. First, the whole VGG16
-    model is imported and built using pretrained imagenet weights and the input shape.
-    Then, the encoder layers are pulled from the model as well as the bridge part.
-    Subsequently the decoder path from the U-net is built based on the VGG16 inputs.
-    Lastly, a 1x1 convolution is applied with sigmoid activation to perform binary
-    segmentation on the input.
+    The model is built using several Tensorflow.Keras functions.
+    First, the whole VGG16 model is imported and built using pretrained
+    imagenet weights and the input shape.
+    Then, the encoder layers are pulled from the model incldung the bridge.
+    Subsequently the decoder path from the U-net is built.
+    Lastly, a 1x1 convolution is applied with sigmoid activation
+    to perform binary segmentation on the input.
 
     Parameters
     ----------
@@ -200,8 +212,8 @@ def build_vgg16_unet(input_shape: tuple):
 
     References
     ----------
-    VGG16: Simonyan, Karen, and Andrew Zisserman. “Very deep convolutional networks for large-scale image recognition.” arXiv preprint arXiv:1409.1556 (2014)
-    U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
+    [1] VGG16: Simonyan, Karen, and Andrew Zisserman. “Very deep convolutional networks for large-scale image recognition.” arXiv preprint arXiv:1409.1556 (2014)
+    [2] U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
     """
     # Get input shape
     _inputs = Input(input_shape)
@@ -235,13 +247,13 @@ def build_vgg16_unet(input_shape: tuple):
 
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
-    """
-    Function to compute the intersection over union score (IoU),
-    a measure of prediction accuracy. This is sometimes also called Jaccard score.
+    """Function to compute the intersection over union score (IoU),
+    a measure of prediction accuracy. This is sometimes also called
+    Jaccard score.
 
     The IoU can be used as a loss metric during binary segmentation when
-    convolutional neural networks are applied. The IoU is calculated for both the
-    training and validation set.
+    convolutional neural networks are applied. The IoU is calculated for
+    both the training and validation set.
 
     Parameters
     ----------
@@ -268,7 +280,8 @@ def IoU(y_true, y_pred, smooth: int = 1) -> float:
     Examples
     --------
     >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
-            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0", shape=(1, 512, 512, 1), dtype=float32),
+            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
+            shape=(1, 512, 512, 1), dtype=float32),
             smooth=1)
     Tensor("truediv:0", shape=(1, 512, 512), dtype=float32)
     """
@@ -283,12 +296,11 @@ def IoU(y_true, y_pred, smooth: int = 1) -> float:
 
 
 def dice_score(y_true, y_pred) -> float:
-    """
-    Function to compute the Dice score, a measure of prediction accuracy.
+    """Function to compute the Dice score, a measure of prediction accuracy.
 
     The Dice score can be used as a loss metric during binary segmentation when
-    convolutional neural networks are applied. The Dice score is calculated for both the
-    training and validation set.
+    convolutional neural networks are applied. The Dice score is calculated
+    for both the training and validation set.
 
     Parameters
     ----------
@@ -312,7 +324,8 @@ def dice_score(y_true, y_pred) -> float:
     Examples
     --------
     >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
-            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0", shape=(1, 512, 512, 1), dtype=float32),
+            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
+            shape=(1, 512, 512, 1), dtype=float32),
             smooth=1)
     Tensor("dice_score/truediv:0", shape=(1, 512, 512), dtype=float32)
     """
@@ -326,14 +339,13 @@ def dice_score(y_true, y_pred) -> float:
 
 
 def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
-    """
-    Function to compute the focal loss, a measure of prediction accuracy.
+    """Function to compute the focal loss, a measure of prediction accuracy.
 
     The focal loss can be used as a loss metric during binary segmentation when
-    convolutional neural networks are applied. The focal loss score is calculated for both,
-    the training and validation set. The focal loss is specifically applicable when
-    class imbalances, i.e. between foregroung (muscle aponeurosis) and background (not
-    muscle aponeurosis), are existent.
+    convolutional neural networks are applied. The focal loss score is
+    calculated for both, the training and validation set. The focal loss
+    is specifically applicable when class imbalances, i.e. between foregroung
+    (muscle aponeurosis) and background (not muscle aponeurosis), are existent.
 
     Parameters
     ----------
@@ -343,7 +355,8 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
     y_pred : tf.Tensor
         Predicted image segmentation by the network.
     alpha : float, default = 0.8
-        Coefficient used on positive exaples, must be non-negative and non-zero.
+        Coefficient used on positive exaples, must be non-negative and
+        non-zero.
     gamma : float, default = 2
         Focussing parameter, must be non-negative and non-zero.
 
@@ -354,8 +367,10 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
 
     Examples
     --------
-    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
-            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0", shape=(1, 512, 512, 1), dtype=float32),
+    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1),
+            dtype=float32),
+            y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
+            shape=(1, 512, 512, 1), dtype=float32),
             smooth=1)
     Tensor("focal_loss/Mean:0", shape=(), dtype=float32)
     """
@@ -370,8 +385,7 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
 
 
 def loadImages(img_path: str, mask_path: str):
-    """
-    Function to load images and manually labeled masks from a specified
+    """Function to load images and manually labeled masks from a specified
     directory.
 
     The images and masks are loaded, resized and normalized in order
@@ -419,7 +433,8 @@ def loadImages(img_path: str, mask_path: str):
 
     # Create empty numpy arrays
     train_imgs = np.zeros((len(ids), im_height, im_width, 3), dtype=np.float32)
-    train_masks = np.zeros((len(ids), im_height, im_width, 1), dtype=np.float32)
+    train_masks = np.zeros((len(ids), im_height, im_width, 1),
+                           dtype=np.float32)
 
     # ´Loop through list of ids found in img_path and mask_path
     for n, id_ in enumerate(tqdm(ids)):
@@ -433,7 +448,8 @@ def loadImages(img_path: str, mask_path: str):
         # Load and resize mask
         mask = img_to_array(load_img(mask_path + id_, color_mode="grayscale"))
         mask = resize(
-            mask, (im_width, im_height, 1), mode="constant", preserve_range=True
+            mask, (im_width, im_height, 1), mode="constant",
+            preserve_range=True
         )
 
         # Normalize image & mask and insert in array
@@ -453,8 +469,7 @@ def trainModel(
     loss: str,
     gui,
 ) -> None:
-    """
-    Function to train a convolutional neural network with VGG16 encoder and
+    """Function to train a convolutional neural network with VGG16 encoder and
     U-net decoder. All the steps necessary to properly train an neural
     network are included in this function.
 
@@ -472,7 +487,7 @@ def trainModel(
         Path that leads to the directory containing the mask images.
         Masks must be binary.
     out_path:
-        Path that leads to the directory where the trained model should be saved.
+        Path that leads to the directory where the trained model is saved.
     batch_size : int
         Integer value that determines the batch size per iteration through the
         network during model training. Although a larger batch size has
@@ -488,7 +503,7 @@ def trainModel(
         will only be used if early stopping does not happen.
         Must be non-negative and non-zero.
     loss : str
-        String variable that determines the loss function that is used during training.
+        String variable that determines the loss function used during training.
         Three different types are supported here:
         - Binary cross-entropy. loss == "BCE"
         - Dice score. loss == "Dice"
@@ -521,7 +536,8 @@ def trainModel(
     if batch_size <= 0 or learning_rate <= 0 or epochs <= 0:
         # Make sure some kind of filetype is specified.
         tk.messagebox.showerror(
-            "Information", "Training parameters must be non-zero" + " and non-negative."
+            "Information", "Training parameters must be non-zero" +
+            " and non-negative."
         )
         gui.should_stop = False
         gui.is_running = False
@@ -540,22 +556,24 @@ def trainModel(
 
     try:
         # Load images
-        train_imgs, train_masks = loadImages(img_path=img_path, mask_path=mask_path)
+        train_imgs, train_masks = loadImages(img_path=img_path,
+                                             mask_path=mask_path)
 
         # Inform user in GUI
         cont = tk.messagebox.askokcancel(
             "Information",
-            "Images & Masks were successfully loaded!" + "\nDou you wish to proceed?",
+            "Images & Masks were successfully loaded!" +
+            "\nDou you wish to proceed?",
         )
         if cont is True:
 
-            ## Prepare data for model training
+            # Prepare data for model training
             # Split data into training and validation
             img_train, img_valid, mask_train, mask_valid = train_test_split(
                 train_imgs, train_masks, test_size=0.1, random_state=42
             )
 
-            ## Compose the VGG16 Unet model for aponeurosis detection
+            # Compose the VGG16 Unet model for aponeurosis detection
             # Compile the aponeurosis model VGG16
             VGG16_UNet = build_vgg16_unet((im_width, im_height, 3))
             model_apo = VGG16_UNet
@@ -569,11 +587,13 @@ def trainModel(
                 )
             elif loss == "Dice":
                 model_apo.compile(
-                    optimizer=Adam(), loss=dice_score, metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=dice_score,
+                    metrics=["accuracy", IoU]
                 )
             elif loss == "FL":
                 model_apo.compile(
-                    optimizer=Adam(), loss=focal_loss, metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=focal_loss,
+                    metrics=["accuracy", IoU]
                 )
             else:
                 raise TypeError("Specify correct loss metric.")
@@ -594,13 +614,15 @@ def trainModel(
                     save_best_only=True,
                     save_weights_only=False,
                 ),  # Give the model a name (the .h5 part)
-                CSVLogger(out_path + "Test_apo.csv", separator=",", append=False),
+                CSVLogger(out_path + "Test_apo.csv", separator=",",
+                          append=False),
             ]
 
             # Inform user in GUI
             cont2 = tk.messagebox.askokcancel(
                 "Information",
-                "Model was successfully compiled!" + "\nDo you wish to proceed?",
+                "Model was successfully compiled!" +
+                "\nDo you wish to proceed?",
             )
             # User chose to continue
             if cont2 is True:
@@ -621,10 +643,13 @@ def trainModel(
                     + "\nResults are saved to specified output path.",
                 )
 
-                # Variables stored in results.history: val_loss, val_acc, val_IoU, loss, acc, IoU, lr
+                # Variables stored in results.history: val_loss, val_acc,
+                # val_IoU, loss, acc, IoU, lr
                 fig, ax = plt.subplots(1, 2, figsize=(7, 7))
-                ax[0].plot(results.history["loss"], label="Training loss")
-                ax[0].plot(results.history["val_loss"], label="Validation loss")
+                ax[0].plot(results.history["loss"],
+                           label="Training loss")
+                ax[0].plot(results.history["val_loss"],
+                           label="Validation loss")
                 ax[0].set_title("Learning curve")
                 ax[0].plot(
                     np.argmin(results.history["val_loss"]),

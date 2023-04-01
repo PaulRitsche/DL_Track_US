@@ -6,7 +6,8 @@ scale images.
 The scope of the automatic method is limited to scaling bars being
 present in the right side of the image. The scope of the manual method
 is not limited to specific scaling types in images. However, the distance
-between two selected points in the image required for the scaling must be known.
+between two selected points in the image required for the scaling must be
+known.
 
 Functions scope
 ---------------
@@ -184,11 +185,12 @@ def calibrateDistanceStatic(img: np.ndarray, spacing: str):
         height = img.shape[0]
         width = img.shape[1]
         imgscale = img[
-            int(height * 0.4) : (height), (width - int(width * 0.15)) : width
+            int(height * 0.4): (height), (width - int(width * 0.15)): width
         ]
 
         # search for rows with white pixels, calculate median of distance
-        calib_dist = np.max(np.diff(np.argwhere(imgscale.max(axis=1) > 150), axis=0))
+        calib_dist = np.max(np.diff(np.argwhere(imgscale.max(axis=1) > 150),
+                                    axis=0))
 
         # return none if distance too small
         if int(calib_dist) < 1:
@@ -199,7 +201,8 @@ def calibrateDistanceStatic(img: np.ndarray, spacing: str):
 
         return calib_dist, scale_statement
 
-    # Handle error occuring when no bright pixels detected on right side of image
+    # Handle error occuring when no bright pixels detected on right side
+    # of image
     except ValueError:
 
         return None, None

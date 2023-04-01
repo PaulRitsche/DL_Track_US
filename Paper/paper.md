@@ -46,7 +46,6 @@ All `DL_Track` functionalities are embedded in a graphical user interface (GUI) 
 
 ![Start window of the DL_Track graphical user interface. Here, the input and model directories can be specified, the analysis type (image, video, image manual, video manual) selected and the analysis parameters specified. Moreover, users can choose to train their own models based on their own input images using the "Train Model" button to open a seperate window.\label{fig:2}](figure2.png)
 
-
 Although we included images of the human gastrocnemius medialis, tibialis anterior, soleus and vastus lateralis from four different devices, it is likely the provided pre-trained CNNs fail when images from different muscles or devices are analyzed. However, an option to train CNNs bases on user data is also included in the GUI. Users are thereby enabled to train own CNNs based on own image or video data. The training ultrasonography image data, the pre-trained CNNs, example usage files as well as usage and testing instructions are provided.
 
 # References

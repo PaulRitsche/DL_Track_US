@@ -27,9 +27,9 @@ importFlipFlagsList
 compileSaveResults
     Function to save the analysis results to a .xlsx file.
 calculateBatch
-    Function to calculate muscle architecture in longitudinal ultrasonography images
-    of human lower limb muscles. The values computed are fascicle length (FL),
-    pennation angle (PA), and muscle thickness (MT).
+    Function to calculate muscle architecture in longitudinal ultrasonography
+    images of human lower limb muscles. The values computed are fascicle length
+    (FL), pennation angle (PA), and muscle thickness (MT).
 calculateBatchManual
     Function used for manual calculation of fascicle length, muscle thickness
     and pennation angles in longitudinal ultrasonography images of human lower
@@ -66,8 +66,7 @@ plt.switch_backend("agg")
 
 
 def importVideo(vpath: str):
-    """
-    Function to import a video. Video file types should be common
+    """Function to import a video. Video file types should be common
     ones like .avi or .mp4.
 
     Parameters
@@ -109,15 +108,15 @@ def importVideo(vpath: str):
     filename = os.path.splitext(os.path.basename(vpath))[0]
     outpath = str(vpath[0:-4] + "_proc" + ".avi")
     vid_out = cv2.VideoWriter(
-        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps, (vid_width, vid_height)
+        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps,
+        (vid_width, vid_height)
     )
 
     return cap, vid_len, filename, vid_out
 
 
 def importVideoManual(vpath: str):
-    """
-    Function to import a video. Video file types should be common
+    """Function to import a video. Video file types should be common
     ones like .avi or .mp4. This function is used for manual
     analysis of videos.
 
@@ -168,8 +167,7 @@ def exportToEcxel(
     x_highs_all: list,
     thickness_all: list,
 ):
-    """
-    Function to save the analysis results to a .xlsx file.
+    """Function to save the analysis results to a .xlsx file.
 
     A list of each variable to be saved must be inputted. The inputs are
     inculded in a dataframe and saved to an .xlsx file.
@@ -206,29 +204,36 @@ def exportToEcxel(
 
     Examples
     --------
-    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos", filename="video1.avi",
-                             fasc_l_all=[7.8,, 6.4, 9.1], pennation_all=[20, 21.1, 24],
-                             x_lows_all=[749, 51, 39], x_highs_all=[54, 739, 811],
+    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos",
+                             filename="video1.avi",
+                             fasc_l_all=[7.8,, 6.4, 9.1],
+                             pennation_all=[20, 21.1, 24],
+                             x_lows_all=[749, 51, 39],
+                             x_highs_all=[54, 739, 811],
                              thickness_all=[1.85])
     """
     # Create empty arrays
-    fl = np.zeros([len(fasc_l_all), len(max(fasc_l_all, key=lambda x: len(x)))])
-    pe = np.zeros([len(pennation_all), len(max(pennation_all, key=lambda x: len(x)))])
-    xl = np.zeros([len(x_lows_all), len(max(x_lows_all, key=lambda x: len(x)))])
-    xh = np.zeros([len(x_highs_all), len(max(x_highs_all, key=lambda x: len(x)))])
+    fl = np.zeros([len(fasc_l_all),
+                   len(max(fasc_l_all, key=lambda x: len(x)))])
+    pe = np.zeros([len(pennation_all),
+                   len(max(pennation_all, key=lambda x: len(x)))])
+    xl = np.zeros([len(x_lows_all),
+                   len(max(x_lows_all, key=lambda x: len(x)))])
+    xh = np.zeros([len(x_highs_all),
+                   len(max(x_highs_all, key=lambda x: len(x)))])
 
     # Add respective values to the respecive array
     for i, j in enumerate(fasc_l_all):
-        fl[i][0 : len(j)] = j  # fascicle length
+        fl[i][0: len(j)] = j  # fascicle length
     fl[fl == 0] = np.nan
     for i, j in enumerate(pennation_all):
-        pe[i][0 : len(j)] = j  # pennation angle
+        pe[i][0: len(j)] = j  # pennation angle
     pe[pe == 0] = np.nan
     for i, j in enumerate(x_lows_all):
-        xl[i][0 : len(j)] = j  # lower intersection
+        xl[i][0: len(j)] = j  # lower intersection
     xl[xl == 0] = np.nan
     for i, j in enumerate(x_highs_all):
-        xh[i][0 : len(j)] = j  # upper intersection
+        xh[i][0: len(j)] = j  # upper intersection
     xh[xh == 0] = np.nan
 
     # Create dataframes with values
@@ -269,14 +274,15 @@ def calculateArchitectureVideo(
     max_pennation: int,
     gui,
 ):
-    """
-    Function to calculate muscle architecture in longitudinal ultrasonography videos
-    of human lower limb muscles. The values computed are fascicle length (FL),
-    pennation angle (PA), and muscle thickness (MT).
+    """Function to calculate muscle architecture in longitudinal
+    ultrasonography videos of human lower limb muscles. The values
+    computed are fascicle length (FL), pennation angle (PA),
+    and muscle thickness (MT).
 
-    The scope of this function is limited. videos of the vastus lateralis, tibialis anterior
-    soleus and gastrocnemius  muscles can be analyzed. This is due to the limited amount of
-    training data for our convolutional neural networks. This functions makes extensive use
+    The scope of this function is limited. videos of the vastus lateralis,
+    tibialis anterior soleus and gastrocnemius  muscles can be analyzed.
+    This is due to the limited amount of training data for our convolutional
+    neural networks. This functions makes extensive use
     of several other functions and was designed to be executed from a GUI.
 
     Parameters
@@ -285,13 +291,16 @@ def calculateArchitectureVideo(
         String variable containing the path to the folder where all videos
         to be analyzed are saved.
     apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis neural network.
+        String variable containing the absolute path to the aponeurosis
+        neural network.
     fasc_modelpath : str
-        String variable containing the absolute path to the fascicle neural network.
+        String variable containing the absolute path to the fascicle
+        neural network.
     flip : str
-        String variable determining wheter all frames of a video are flipped vetically.
-        Flipping is necessary as the models were trained in images of with specific
-        fascicle orientation.
+        String variable determining wheter all frames of a video are
+        flipped vetically.
+        Flipping is necessary as the models were trained in images of
+        with specific fascicle orientation.
     filetype : str
         String variable containg the respective type of the videos.
         This is needed to select only the relevant video files
@@ -299,14 +308,15 @@ def calculateArchitectureVideo(
     scaling : str
         String variable determining the image scaling method.
         There are three types of scaling available:
-        - scaling = "manual" (user must scale the video manually. This only needs to be
-                    done in the first frame.)
+        - scaling = "manual" (user must scale the video manually.
+          This only needs to be done in the first frame.)
           detecting scaling bars on the right side of the image.)
         - scaling = "No scaling" (video frames are not scaled.)
         Scaling is necessary to compute measurements in centimeter,
         if "no scaling" is chosen, the results are in pixel units.
     spacing : int
-        Integer variable containing the distance (in milimeter) between two scaling bars in the image.
+        Integer variable containing the distance (in milimeter) between
+        two scaling bars in the image.
         This is needed to compute the pixel/cm ratio and therefore report
         the results in centimeter rather than pixel units.
     step : int
@@ -314,38 +324,41 @@ def calculateArchitectureVideo(
         If step != 1, frames are skipped according to the size of step.
         This might decrease processing time but also accuracy.
     apo_threshold : float
-        Float variable containing the threshold applied to predicted aponeurosis
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as aponeurosis as the threshold for classifying
-        a pixel as aponeurosis is changed. Must be non-zero and
-        non-negative.
+        Float variable containing the threshold applied to predicted
+        aponeurosis pixels by our neural networks. By varying this
+        threshold, different structures will be classified as aponeurosis
+        as the threshold for classifying a pixel as aponeurosis is changed.
+        Must be non-zero and non-negative.
     fasc_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for classifying
-        a pixel as fascicle is changed. Must be non-zero and non-negative.
+        structures will be classified as fascicle as the threshold for
+        classifying a pixel as fascicle is changed. Must be non-zero and
+        non-negative.
     fasc_cont_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer fascicle segments
-        will be considered, by lowering shorter segments. Must be non-zero and
-        non-negative.
+        structures will be classified as fascicle. By increasing, longer
+        fascicle segments will be considered, by lowering shorter segments.
+        Must be non-zero and non-negative.
     min_width : int
-        Integer variable containing the minimal distance between aponeuroses to be
-        detected. The aponeuroses must be at least this distance apart to be
-        detected. The distance is specified in pixels. Must be non-zero and non-negative.
+        Integer variable containing the minimal distance between aponeuroses
+        to be detected. The aponeuroses must be at least this distance apart
+        to be detected. The distance is specified in pixels. Must be non-zero
+        and non-negative.
     min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Fascicles with lower pennation
-        angles will be excluded. The pennation angle is calculated as the angle
-        of insertion between extrapolated fascicle and detected aponeurosis. Must
-        be non-negative.
+        Integer variable containing the mininmal (physiological) acceptable
+        pennation angle occuring in the analyzed image/muscle. Fascicles with
+        lower pennation angles will be excluded. The pennation angle is
+        calculated as the angle of insertion between extrapolated fascicle
+        and detected aponeurosis. Must be non-negative.
     max_pennation : int
-        Integer variable containing the maximal (physiological) acceptable pennation
-        angle occuring in the analyzed image/muscle. Fascicles with higher pennation
-        angles will be excluded. The pennation angle is calculated as the angle
-        of insertion between extrapolated fascicle and detected aponeurosis. Must
-        be non-negative and larger than min_pennation.
+        Integer variable containing the maximal (physiological) acceptable
+        pennation angle occuring in the analyzed image/muscle. Fascicles with
+        higher pennation angles will be excluded. The pennation angle is
+        calculated as the angle of insertion between extrapolated fascicle and
+        detected aponeurosis. Must be non-negative and larger than
+        min_pennation.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -353,8 +366,8 @@ def calculateArchitectureVideo(
 
     See Also
     --------
-    do_calculations_video.py for exact description of muscle architecture parameter
-    calculation.
+    do_calculations_video.py for exact description of muscle architecture
+    parameter calculation.
 
     Notes
     -----
@@ -362,17 +375,19 @@ def calculateArchitectureVideo(
     function docstrings in this module. To see an examplenary video output
     and .xlsx file take at look at the examples provided in the "examples"
     directory.
-    This function is called by the GUI. Note that the functioned was specifically
-    designed to be called from the GUI. Thus, tk.messagebox will pop up when errors are
-    raised even if the GUI is not started.
+    This function is called by the GUI. Note that the functioned was
+    specifically designed to be called from the GUI. Thus, tk.messagebox
+    will pop up when errors are raised even if the GUI is not started.
 
     Examples
     --------
     >>> calculateBatch(rootpath="C:/Users/admin/Dokuments/images",
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
-                       flip="Flip", filetype="/**/*.avi, scaline="manual", spacing=10,
-                       apo_threshold=0.1, fasc_threshold=0.05, fasc_cont_thres=40,
+                       flip="Flip", filetype="/**/*.avi, scaline="manual",
+                       spacing=10,
+                       apo_threshold=0.1, fasc_threshold=0.05,
+                       fasc_cont_thres=40,
                        curvature=3, min_pennation=10, max_pennation=35,
                        gui=<__main__.DLTrack object at 0x000002BFA7528190>)
     """
@@ -381,7 +396,8 @@ def calculateArchitectureVideo(
     if len(list_of_files) == 0:
         tk.messagebox.showerror(
             "Information",
-            "No video files found." + "\nCheck specified video type or input directory",
+            "No video files found." +
+            "\nCheck specified video type or input directory",
         )
         gui.do_break()
         gui.should_stop = False
@@ -457,7 +473,8 @@ def calculateArchitectureVideo(
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information", "No Aponeurosis detected. Change aponeurosis threshold."
+            "Information",
+            "No Aponeurosis detected. Change aponeurosis threshold."
         )
         gui.should_stop = False
         gui.is_running = False
@@ -476,49 +493,55 @@ def calculateArchitectureVideo(
 
 
 def calculateArchitectureVideoManual(videopath: str, gui):
-    """
-    Function used for manual calculation of fascicle length, muscle thickness
-    and pennation angles in longitudinal ultrasonography videos of human lower
-    limb muscles.
+    """Function used for manual calculation of fascicle length, muscle
+    thickness and pennation angles in longitudinal ultrasonography videos
+    of human lower limb muscles.
 
-    This function is not restricted to any specific muscles. However, its use is
-    restricted to a specific method for assessing muscle thickness fascicle
-    length and pennation angles. Moreover, each video frame is analyzed seperately.
+    This function is not restricted to any specific muscles. However, its use
+    is restricted to a specific method for assessing muscle thickness fascicle
+    length and pennation angles. Moreover, each video frame is analyzed
+    seperately.
 
     - Muscle thickness:
                        Exactly one segment reaching from the superficial to the
-                       deep aponeuroses of the muscle must be drawn. If multiple
-                       measurement are drawn, these are averaged. Drawing can
-                       be started by clickling the left mouse button and keeping
-                       it pressed until it is not further required to draw the line
-                       (i.e., the other aponeurosis border is reached). Only the
-                       respective y-coordinates of the points where the cursor
-                       was clicked and released are considered for calculation of
-                       muscle thickness.
+                       deep aponeuroses of the muscle must be drawn.
+                       If multiple measurement are drawn, these are averaged.
+                       Drawing can be started by clickling the left mouse
+                       button and keeping it pressed until it is not further
+                       required to draw the line (i.e., the other aponeurosis
+                       border is reached). Only the respective y-coordinates
+                       of the points where the cursor was clicked and released
+                       are considered for calculation of muscle thickness.
     - Fascicle length:
-                      Exactly three segments along the fascicleof the muscle must
-                      be drawn. If multiple fascicle are drawn, their lengths are
-                      averaged. Drawing can be started by clickling the left mouse
-                      button and keeping it pressed until one segment is finished
-                      (mostly where fascicle curvature occurs the other aponeurosis
-                      border is reached). Using the euclidean distance, the total
-                      fascicle length is computed as a sum of the segments.
+                      Exactly three segments along the fascicleof the muscle
+                      must be drawn. If multiple fascicle are drawn, their
+                      lengths are averaged. Drawing can be started by clickling
+                      the left mouse button and keeping it pressed until one
+                      segment is finished (mostly where fascicle curvature
+                      occurs the other aponeurosis border is reached). Using
+                      the euclidean distance, the total fascicle length is
+                      computed as a sum of the segments.
     - Pennation angle:
-                      Exactly two segments, one along the fascicle orientation, the
-                      other along the aponeurosis orientation must be drawn. The line
-                      along the aponeurosis must be started where the line along the
-                      fascicle ends. If multiple angle are drawn, they are averaged.
-                      Drawing can be started by clickling the left mouse button and keeping
-                      it pressed until it is not further required to draw the line
-                      (i.e., the aponeurosis border is reached by the fascicle). The
-                      angle is calculated using the arc-tan function.
-    In order to scale the frame, it is required to draw a line of length 10 milimeter
-    somewhere in the image. The line can be drawn in the same fashion as for example
-    the muscle thickness. Here however, the euclidean distance is used to calculate
-    the pixel / centimeter ratio. This has to be done for every frame.
-    We also provide the functionality to extent the muscle aponeuroses to more easily
-    extrapolate fascicles. The lines can be drawn in the same fashion as for example
-    the muscle thickness.
+                      Exactly two segments, one along the fascicle
+                      orientation, the other along the aponeurosis orientation
+                      must be drawn. The line along the aponeurosis must be
+                      started where the line along the fascicle ends. If
+                      multiple angle are drawn, they are averaged. Drawing can
+                      be started by clickling the left mouse button and keeping
+                      it pressed until it is not further required to draw the
+                      line (i.e., the aponeurosis border is reached by the
+                      fascicle). The angle is calculated using the arc-tan
+                      function.
+    In order to scale the frame, it is required to draw a line of length 10
+    milimeter somewhere in the image. The line can be drawn in the same
+    fashion as for example the muscle thickness. Here however, the euclidean
+    distance is used to calculate the pixel / centimeter ratio. This has to
+    be done for every frame.
+
+    We also provide the functionality to extent the muscle aponeuroses to more
+    easily extrapolate fascicles. The lines can be drawn in the same fashion as
+    for example the muscle thickness.
+
 
     Parameters
     ----------
@@ -576,7 +599,8 @@ def calculateArchitectureVideoManual(videopath: str, gui):
         man_analysis.calculateBatchManual()
 
     except IndexError:
-        tk.messagebox.showerror("Information", "Make sure to select a video file.")
+        tk.messagebox.showerror("Information",
+                                "Make sure to select a video file.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
