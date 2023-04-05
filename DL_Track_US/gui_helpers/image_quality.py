@@ -204,7 +204,7 @@ class ImageQuali:
 
         return crop_img
 
-    def saveResults(self, path: str, dataframe: pd.DataFrame):
+    def saveResults(self, path: str, dataframe: pd.DataFrame) -> None:
         """
         Instance method to save the quality assessment results.
 
@@ -246,7 +246,7 @@ class ImageQuali:
                 data = dataframe
                 data.to_excel(writer, sheet_name="Results")
 
-    def getSignalToNoise(self, img: np.ndarray, axis: int = None, ddof: int = 0):
+    def getSignalToNoise(self, img: np.ndarray, axis: int = None, ddof: int = 0) -> float:
         """
         Instance method to calculate the signal to noise ratio (SNR) of a given image.
 

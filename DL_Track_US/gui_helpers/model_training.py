@@ -323,7 +323,8 @@ def dice_score(y_true, y_pred) -> float:
 
     Examples
     --------
-    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
+    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1),
+            dtype=float32),
             y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
             shape=(1, 512, 512, 1), dtype=float32),
             smooth=1)
@@ -384,7 +385,7 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
     return f_loss
 
 
-def loadImages(img_path: str, mask_path: str):
+def loadImages(img_path: str, mask_path: str) -> list:
     """Function to load images and manually labeled masks from a specified
     directory.
 
@@ -502,13 +503,10 @@ def trainModel(
         is trained befor training is aborted. The total amount of epochs
         will only be used if early stopping does not happen.
         Must be non-negative and non-zero.
-    loss : str
+    loss : {"BCE"}
         String variable that determines the loss function used during training.
-        Three different types are supported here:
+        So far, only one type is supported here:
         - Binary cross-entropy. loss == "BCE"
-        - Dice score. loss == "Dice"
-        - Focal loss. loss == "FL"
-        Each loss will yield a different result during model training.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping

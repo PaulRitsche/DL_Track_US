@@ -42,7 +42,7 @@ def mclick(event, x_val, y_val, flags, param):
     ----------
     event
         Event flag specified as Cv2 mouse event left mouse button down.
-    x_val
+    x_val 
         Value of x-coordinate of mouse event to be recorded.
     y_val
         Value of y-coordinate of mouse event to be recorded.
@@ -77,7 +77,7 @@ def calibrateDistanceManually(cap, spacing: int):
     cap : cv2.VideoCapture
         Object that contains the video in a np.ndarrray format.
         In this way, seperate frames can be accessed.
-    spacing : int
+    spacing : {10, 5, 15, 20}
         Integer variable containing the known distance in milimeter
         between the two placed points by the user. This can be 5, 10,
         15 or 20 milimeter.

@@ -32,7 +32,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
@@ -94,7 +93,7 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
 
     Parameters
     ----------
-    edge : str
+    edge : {"T", "B"}
         String variable defining the type of edge that is
         searched. The variable can be either "T" (top) or
         "B" (bottom).
@@ -134,7 +133,7 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
     leng = len(un) - 1
     x = []
     y = []
-    for each in range(5, leng - 5):  # Ignore 1st and last 5 points 
+    for each in range(5, leng - 5):  # Ignore 1st and last 5 points
         indices = [i for i, x in enumerate(allx) if x == un[each]]
         if edge == "T":
             loc = indices[0]
@@ -189,7 +188,7 @@ def doCalculations(
         specified point in pixel units. This value was either computed
         automatically or manually. Must be non-negative. If "None", the
         values are outputted in pixel units.
-    spacing : int
+    spacing : {10, 5, 15, 20}
         Integer variable containing the known distance in milimeter
         between the two placed points by the user or the scaling bars
         present in the image. This can be 5, 10, 15 or 20 milimeter.
@@ -450,7 +449,7 @@ def doCalculations(
         zLA = np.polyfit(low_x, low_y_new, 2)
         h = np.poly1d(zLA)
 
-        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle 
+        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
         x1 = np.linspace(
             low_x[0] - 700, low_x[-1] + 700, 10000
         )  # Extrapolate polynomial fits to either side of the mid-point
@@ -514,9 +513,9 @@ def doCalculations(
             locL = np.where(diffL == min(diffL, key=abs))[0]
 
             coordsX = newX[
-                int(locL) : int(locU)
+                int(locL): int(locU)
             ]  # Get coordinates of fascicle between the two aponeuroses
-            coordsY = newY[int(locL) : int(locU)]
+            coordsY = newY[int(locL): int(locU)]
 
             # Get angle of aponeurosis in region close to fascicle intersection
             if locL >= 4950:
@@ -611,7 +610,8 @@ def doCalculations(
         plt.text(
             xplot,
             yplot + 50,
-            ("Pennation angle: " + str("%.1f" % np.median(pennation)) + " deg"),
+            ("Pennation angle: " +
+             str("%.1f" % np.median(pennation)) + " deg"),
             fontsize=15,
             color="white",
         )

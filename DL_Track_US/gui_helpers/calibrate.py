@@ -32,8 +32,7 @@ mlocs = []
 
 
 def mclick(event, x_val, y_val, flags, param):
-    """
-    Instance method to detect mouse click coordinates in image.
+    """Instance method to detect mouse click coordinates in image.
 
     This instance is used when the image to be analyzed should be
     cropped. Upon clicking the mouse button, the coordinates
@@ -66,8 +65,7 @@ def mclick(event, x_val, y_val, flags, param):
 
 
 def calibrateDistanceManually(img: np.ndarray, spacing: int):
-    """
-    Function to manually calibrate an image to convert measurements
+    """Function to manually calibrate an image to convert measurements
     in pixel units to centimeters.
 
     The function calculates the distance in pixel units between two
@@ -83,7 +81,7 @@ def calibrateDistanceManually(img: np.ndarray, spacing: int):
         Input image to be analysed as a numpy array. The image must
         be loaded prior to calibration, specifying a path
         is not valid.
-    spacing : int
+    spacing : {10, 5, 15, 20}
         Integer variable containing the known distance in milimeter
         between the two placed points by the user. This can be 5, 10,
         15 or 20 milimeter.
@@ -143,8 +141,7 @@ def calibrateDistanceManually(img: np.ndarray, spacing: int):
 
 
 def calibrateDistanceStatic(img: np.ndarray, spacing: str):
-    """
-    Function to calibrate an image to convert measurements
+    """Function to calibrate an image to convert measurements
     in pixel units to centimeter.
 
     The function calculates the distance in pixel units between two
@@ -161,7 +158,7 @@ def calibrateDistanceStatic(img: np.ndarray, spacing: str):
         Input image to be analysed as a numpy array. The image must
         be loaded prior to calibration, specifying a path
         is not valid.
-    spacing : int
+    spacing : {10, 5, 15, 20}
         Integer variable containing the known distance in milimeter
         between the two scaling bars. This can be 5, 10,
         15 or 20 milimeter.

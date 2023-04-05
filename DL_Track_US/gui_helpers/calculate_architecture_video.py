@@ -57,9 +57,9 @@ import numpy as np
 import pandas as pd
 from pandas import ExcelWriter
 
-from DL_Track.gui_helpers.calibrate_video import calibrateDistanceManually
-from DL_Track.gui_helpers.do_calculations_video import doCalculationsVideo
-from DL_Track.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
+from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
+from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")

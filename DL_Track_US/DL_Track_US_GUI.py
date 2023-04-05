@@ -35,12 +35,13 @@ References
 [2] U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
 [3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
+import os
 
 import tkinter as tk
 from threading import Lock, Thread
 from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk
 
-from DL_Track import gui_helpers
+from DL_Track_US import gui_helpers
 
 
 class DLTrack:
@@ -102,10 +103,10 @@ class DLTrack:
     self.fasc_model : tk.Stringvar
         tk.Stringvariable containing the path to the fascicle
         model.
-    self.analysis_type : tk.Stringvar
+    self.analysis_type : {"image", "video", "image_manual", "video_manual"}
         tk.Stringvariable containing the selected analysis type.
         This can be "image", "video", "image_manual", "video_manual".
-    self.scaling : tk.Stringvar
+    self.scaling : {"bar", "manual","no scaling"}
         tk.Stringvariable containing the selected scaling type.
         This can be "bar", "manual" or "no scaling".
     self.filetype : tk.Stringvar
@@ -113,14 +114,14 @@ class DLTrack:
         the images to be analyzed. The user can select from the
         dopdown list or enter an own filetype. The formatting
         should be kept constant.
-    self.spacing : tk.Stringvar
+    self.spacing : {10, 5, 15, 20}
         tk.Stringvariable containing the selected spacing distance
         used for computation of pixel / cm ratio. This must only be
         specified when the analysis type "bar" or "manual" is selected.
     self.flipflag : tk.Stringvar
         tk.Stringvariable containing the path to the file with the flip
         flags for each image in the input directory.
-    self.flip : tk.Stringvar
+    self.flip : {"no_flip", "flip"}
         tk.Stringvariable determining wheter all frames in the video
         file will be flipped during automated analysis of videos. This
         can be "no_flip" or "flip".
@@ -250,8 +251,10 @@ class DLTrack:
         self._should_stop = False
 
         # set up gui
-        root.title("DLTrack")
-        # root.iconbitmap("home_im.ico")
+        root.title("DL_Track_US")
+        master_path = os.path.dirname(os.path.abspath(__file__))
+        iconpath = master_path + "/home_im.ico"
+        root.iconbitmap(iconpath)
 
         self.main = ttk.Frame(root, padding="10 10 12 12")
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
@@ -1092,7 +1095,10 @@ class DLTrack:
         # Create window
         window = tk.Toplevel(bg="DarkSeaGreen3")
         window.title("Analysis Parameter Window")
-        # window.iconbitmap("home_im.ico")
+        # Add icon to window
+        window_path = os.path.dirname(os.path.abspath(__file__))
+        iconpath = window_path + "/home_im.ico"
+        window.iconbitmap(iconpath)
         window.grab_set()
 
         # Labels
@@ -1209,8 +1215,8 @@ class DLTrack:
         Integer, must be non-negative and non-zero.
         - Loss Function:
         The user must enter the loss function used for model training by
-        selecting from the dropdown list. These can be "BCE" (binary
-        cross-entropy), "Dice" (Dice coefficient) or "FL"(Focal loss).
+        selecting from the dropdown list. So far, this can be "BCE" only
+        (binary cross-entropy).
 
         Model training is started by pressing the "start training" button.
         Although all parameters relevant for model training can be adapted,
@@ -1222,8 +1228,11 @@ class DLTrack:
         """
         # Open Window
         window = tk.Toplevel(bg="DarkSeaGreen3")
-        window.title("Model Training Window")
-        # window.iconbitmap("home_im.ico")
+        window.title("DL_Track_US - Model Training")
+        # Add icon to window
+        window_path = os.path.dirname(os.path.abspath(__file__))
+        iconpath = window_path + "/home_im.ico"
+        window.iconbitmap(iconpath)
         window.grab_set()
 
         # Labels
@@ -1247,7 +1256,7 @@ class DLTrack:
         )
         train_image_entry.grid(column=2, row=2, columnspan=3, sticky=(W, E))
         self.train_image_dir.set(
-            "C:/Users/admin/Documents/DL_Track/Train_Data_DL_Track/apo_test"
+            "C:/Users/"
         )
 
         # Mask directory
@@ -1255,14 +1264,14 @@ class DLTrack:
         mask_entry = ttk.Entry(window, width=30, textvariable=self.mask_dir)
         mask_entry.grid(column=2, row=3, columnspan=3, sticky=(W, E))
         self.mask_dir.set(
-            "C:/Users/admin/Documents/DL_Track/Train_Data_DL_Track/apo_mask_test"
+            "C:/Users/"
         )
 
         # Output path
         self.out_dir = StringVar()
         out_entry = ttk.Entry(window, width=30, textvariable=self.out_dir)
         out_entry.grid(column=2, row=4, columnspan=3, sticky=(W, E))
-        self.out_dir.set("C:/Users/admin/Documents")
+        self.out_dir.set("C:/Users/")
 
         # Buttons
         # Train image button
@@ -1315,7 +1324,7 @@ class DLTrack:
 
         # Loss function
         self.loss_function = StringVar()
-        loss = ("BCE", "Dice", "FL")
+        loss = ("BCE")
         loss_entry = ttk.Combobox(window, width=10,
                                   textvariable=self.loss_function)
         loss_entry["values"] = loss
@@ -1506,8 +1515,8 @@ def runMain() -> None:
 
     Notes
     -----
-    The GUI can be executed by typin 'python -m DLTrack_GUI.py' in the command
-    subsequtently to installing the pip package and activating the
+    The GUI can be executed by typing 'python -m DL_Track_US_GUI.py' in a
+    terminal subsequtently to installing the pip package and activating the
     respective library.
 
     It is not necessary to download any files from the repository when the pip
@@ -1521,7 +1530,7 @@ def runMain() -> None:
 
 
 # This statement is required to execute the GUI by typing
-# 'python DLTrack_GUI.py' in the prompt
+# 'python DL_Track_US_GUI.py' in the prompt
 # when navigated to the folder containing the file and all dependencies.
 if __name__ == "__main__":
     root = Tk()

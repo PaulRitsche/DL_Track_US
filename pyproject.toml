@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "DL_Track_US"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="Paul Ritsche", email="paul.ritsche@unibas.ch" },
   { name="Olivier Seynnes", email="oliviers@nih.no" },
@@ -36,5 +36,5 @@ classifiers = [
 #  ]
 
 [project.urls]
-"Homepage" = "https://github.com/PaulRitsche/DLTrack"
-"Bug Tracker" = "https://github.com/PaulRitsche/DLTrack/issues"
+"Homepage" = "https://github.com/PaulRitsche/DL_Track_US"
+"Bug Tracker" = "https://github.com/PaulRitsche/DL_Track_US/issues"

@@ -43,8 +43,8 @@ from skimage.morphology import skeletonize
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
-from DL_Track.gui_helpers.calculate_architecture import IoU
-from DL_Track.gui_helpers.do_calculations import contourEdge, sortContours
+from DL_Track_US.gui_helpers.calculate_architecture import IoU
+from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours
 
 plt.style.use("ggplot")
 
@@ -87,9 +87,9 @@ def doCalculationsVideo(
         Contains the analyzed video frames and is titled "..._proc.avi"
         The name can be changed but must be different than the input
         video.
-    flip : str
+    flip : {"no_flip", "flip"}
         String variable defining wheter an image should be flipped.
-        This can be "no_flip" (video is not flipped) or "flipe"
+        This can be "no_flip" (video is not flipped) or "flip"
         (video is flipped).
     apo_modelpath : str
         String variable containing the absolute path to the aponeurosis
@@ -153,7 +153,7 @@ def doCalculationsVideo(
                         dic={'apo_treshold': '0.2', 'fasc_threshold': '0.05',
                         'fasc_cont_thresh': '40', 'min_width': '60',
                         'min_pennation': '10', 'max_pennation': '40'},
-                        gui=<__main__.DLTrack object at 0x000002BFA7528190>)
+                        gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     [array([60.5451731 , 58.86892027, 64.16011534, 55.46192704, 63.40711356]), ..., array([64.90849385, 60.31621836])]
     [[19.124207107383114, 19.409753216521565, 18.05706763600641, 20.54453899050867, 17.808652286488794], ..., [17.26241882195032, 16.284803480359543]]
     [[148, 5, 111, 28, -164], [356, 15, 105, -296], [357, 44, -254], [182, 41, -233], [40, 167, 42, -170], [369, 145, 57, -139], [376, 431, 32], [350, 0]]

@@ -229,7 +229,7 @@ class ManualAnalysis:
         # self.head = tk.Tk()
 
         self.head = tk.Toplevel()
-        self.head.title("DLTrack - Manual Analysis")
+        self.head.title("DL_Track_US - Manual Analysis")
         # self.head.iconbitmap("home_im.ico")
 
         # Style
@@ -659,7 +659,7 @@ class ManualAnalysis:
     # --------------------------------------------------------------------------------------------------------------------
     # Utilities used by functionalities in head
 
-    def getAngle(self, a: list, b: list, c: list):
+    def getAngle(self, a: list, b: list, c: list) -> float:
         """Instance method to calculate angle between three points.
 
         The angle is calculated using the arc tangent. The arc tangent is used
@@ -704,7 +704,7 @@ class ManualAnalysis:
 
         return ang if ang < 180 else 360 - ang
 
-    def calculateThickness(self, thick_list: list):
+    def calculateThickness(self, thick_list: list) -> list:
         """Instance method to calculate distance between deep and superficial
         muscle aponeuroses, also known as muscle thickness.
 
@@ -752,7 +752,7 @@ class ManualAnalysis:
 
         return thickness
 
-    def calculateFascicles(self, fasc_list: list):
+    def calculateFascicles(self, fasc_list: list) -> list:
         """Instance method to calculate muscle fascicle legth as a sum of three
         annotated segments.
 
@@ -821,7 +821,7 @@ class ManualAnalysis:
 
         return fascicles
 
-    def calculatePennation(self, pen_list: list):
+    def calculatePennation(self, pen_list: list) -> list:
         """Instance method to calculate muscle pennation angle between three
         points.
 

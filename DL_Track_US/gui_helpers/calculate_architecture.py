@@ -60,12 +60,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
-from DL_Track.gui_helpers.calibrate import (
+from DL_Track_US.gui_helpers.calibrate import (
     calibrateDistanceManually,
     calibrateDistanceStatic,
 )
-from DL_Track.gui_helpers.do_calculations import doCalculations
-from DL_Track.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.do_calculations import doCalculations
+from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
@@ -84,7 +84,7 @@ def importAndReshapeImage(path_to_image: str, flip: int):
     path_to_image : str
          String variable containing the imagepath. This should be an
          absolute path.
-    flip : int
+    flip : {0, 1}
         Integer value defining wheter an image should be flipped.
         This can be 0 (image is not flipped) or 1 (image is flipped).
 
@@ -152,7 +152,7 @@ def importImageManual(path_to_image: str, flip: int):
     path_to_image : str
          String variable containing the imagepath. This should be an
          absolute path.
-    flip : int
+    flip : {0, 1}
         Integer value defining wheter an image should be flipped.
         This can be 0 (image is not flipped) or 1 (image is flipped).
 
@@ -352,7 +352,7 @@ def calculateBatch(
         String variable containg the respective type of the images.
         This is needed to select only the relevant image files
         in the root directory.
-    scaling : str
+    scaling : {"bar", "manual", "No scaling"}
         String variabel determining the image scaling method.
         There are three types of scaling available:
         - scaling = "manual" (user must scale images manually)
@@ -361,7 +361,7 @@ def calculateBatch(
         - scaling = "No scaling" (image is not scaled.)
         Scaling is necessary to compute measurements in centimeter,
         if "no scaling" is chosen, the results are in pixel units.
-    spacing : int
+    spacing : {10, 5, 15, 20}
         Distance (in milimeter) between two scaling bars in the image.
         This is needed to compute the pixel/cm ratio and therefore report
         the results in centimeter rather than pixel units.
@@ -430,7 +430,7 @@ def calculateBatch(
                        apo_threshold=0.1,
                        fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
                        min_pennation=10, max_pennation=35,
-                       gui=<__main__.DLTrack object at 0x000002BFA7528190>)
+                       gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     """
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)
