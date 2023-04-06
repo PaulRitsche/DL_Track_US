@@ -60,7 +60,7 @@ An active conda environment is visible in () brackets befor your current path in
 
 You can directly install the DL_Track_US package from Pypi. To do so, type the following command in your bash terminal:
 
-``pip install DL-Track-US==0.1.2`` 
+``pip install DL-Track-US==0.1.2.1`` 
 
 All the package dependencies will be installed automatically. You can verify whether the environment was correctly created by typing the following command in your bash terminal:
 
