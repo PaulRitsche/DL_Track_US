@@ -11,10 +11,10 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'DLTrack'
+project = 'DL_Track_US'
 copyright = '2022, Paul Ritsche, Olivier Seynnes, Neil Cronin'
 author = 'Paul Ritsche, Olivier Seynnes, Neil Cronin'
-release = '0.1.1'
+release = '0.1.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
