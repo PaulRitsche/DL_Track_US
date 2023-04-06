@@ -253,7 +253,7 @@ class DLTrack:
         # set up gui
         root.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
-        iconpath = master_path + "/home_im.ico"
+        iconpath = master_path + "/gui_helpers/home_im.ico"
         root.iconbitmap(iconpath)
 
         self.main = ttk.Frame(root, padding="10 10 12 12")
@@ -1097,7 +1097,7 @@ class DLTrack:
         window.title("Analysis Parameter Window")
         # Add icon to window
         window_path = os.path.dirname(os.path.abspath(__file__))
-        iconpath = window_path + "/home_im.ico"
+        iconpath = window_path + "/gui_helpers/home_im.ico"
         window.iconbitmap(iconpath)
         window.grab_set()
 
@@ -1231,7 +1231,7 @@ class DLTrack:
         window.title("DL_Track_US - Model Training")
         # Add icon to window
         window_path = os.path.dirname(os.path.abspath(__file__))
-        iconpath = window_path + "/home_im.ico"
+        iconpath = window_path + "/gui_helpers/home_im.ico"
         window.iconbitmap(iconpath)
         window.grab_set()
 

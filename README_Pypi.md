@@ -1,6 +1,7 @@
 # DL_Track_US
 
 [![Documentation Status](https://readthedocs.org/projects/dltrack/badge/?version=latest)](https://dltrack.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7805896.svg)](https://doi.org/10.5281/zenodo.7805896)
 
 The DL_Track_US package provides an easy to use graphical user interface (GUI) for deep learning based analysis of muscle architectural parameters from longitudinal ultrasonography images of human lower limb muscles. Please take a look at our [documentation](https://dltrack.readthedocs.io/en/latest/index.html) for more information.
 This code is based on a previously published [algorithm](https://github.com/njcronin/DL_Track) and replaces it. We have extended the functionalities of the previously proposed code. The previous code will not be updated and future updates will be included in this repository.
@@ -13,7 +14,7 @@ For detailled information about installaion of the DL_Track_US python package we
 
 Once installed, DL_Track_US can be started from the command prompt with the respective environment activated:
 
-``(DL_Track_US) C:/User/Desktop/ python DL_Track_US`` 
+``(DL_Track_US) C:/User/Desktop/ python -m DL_Track_US`` 
 
 In case you have downloaded the executable, simply double-click the DL_Track_US icon.
 

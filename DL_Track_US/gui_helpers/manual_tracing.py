@@ -230,7 +230,9 @@ class ManualAnalysis:
 
         self.head = tk.Toplevel()
         self.head.title("DL_Track_US - Manual Analysis")
-        # self.head.iconbitmap("home_im.ico")
+        master_path = os.path.dirname(os.path.abspath(__file__))
+        iconpath = master_path + "/home_im.ico"
+        self.head.iconbitmap(iconpath)
 
         # Style
         style = ttk.Style()
@@ -596,7 +598,7 @@ class ManualAnalysis:
         y1 = y + 2 * self.head.winfo_height()  # include twice the height
         # Save the screenshot to root location
         ImageGrab.grab().crop((x, y, x1, y1)).save(
-            self.rootpath + f"/{self.image_list[self.count]}_analyzed.png"
+            f"{self.image_list[self.count]}_analyzed.png"
         )
 
     def updateImage(self):
