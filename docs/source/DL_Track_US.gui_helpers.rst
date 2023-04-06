@@ -52,14 +52,6 @@ DL\_Track\_US.gui\_helpers.do\_calculations\_video module
    :undoc-members:
    :show-inheritance:
 
-DL\_Track\_US.gui\_helpers.image\_quality module
-------------------------------------------------
-
-.. automodule:: DL_Track_US.gui_helpers.image_quality
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 DL\_Track\_US.gui\_helpers.manual\_tracing module
 -------------------------------------------------
 

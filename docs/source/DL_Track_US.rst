@@ -12,6 +12,9 @@ Subpackages
 Submodules
 ----------
 
+.. toctree::
+   :maxdepth: 2
+
 DL\_Track\_US.DL\_Track\_US\_GUI module
 """""""""""""""""""""""""""""""""""""""
 
