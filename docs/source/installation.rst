@@ -1,32 +1,32 @@
 Installation
 ============
 
-We offer two possible installation approaches for our DL_Track software. The first option is to download the DL_Track executable file. The second option we describe is DL_Track package installation via Github and pythons package manager pip. We want to inform you that there are more ways to install the package. However, we do not aim to be complete and rather demonstrate an (in our opinion) user friendly way for the installation of DL_Track. Moreover, we advise users with less programming experience to make use of the first option and download the executable file.
+We offer two possible installation approaches for our DL_Track_US software. The first option is to download the DL_Track_US executable file. The second option we describe is DL_Track package installation via Github and pythons package manager pip. We want to inform you that there are more ways to install the package. However, we do not aim to be complete and rather demonstrate an (in our opinion) user friendly way for the installation of DL_Track_US. Moreover, we advise users with less programming experience to make use of the first option and download the executable file.
 
 Download the DL\_Track\_US executable
 -------------------------------------
 
-1. Got to the Zenodo webpage containing the DL_Track executable, the pre-trained models and the example files using this `link <https://zenodo.org/record/7318089#.Y3S2qKSZOUk>`_.
+1. Got to the Zenodo webpage containing the DL_Track_US executable, the pre-trained models and the example files using this `link <https://zenodo.org/record/7805896#.ZC__0MrP2iM>`_.
 2. Download the DL_Track_US_example.zip folder and unpack the file.
-3. Find the DL_Track_US.exe executable located in the DLTrack_example/executable folder.
-4. Open the DL_Track_US_GUI by double clicking the DL_Track.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_). In case you get an anti-virus notification, trust us and click it away. We assure you the software is harmless. 
+3. Find the DL_Track_US.exe executable located in the DL_Track_US_example/executable folder.
+4. Open the DL_Track_US_GUI by double clicking the DL_Track_US.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_). In case you get an anti-virus notification, trust us and click it away. We assure you the software is harmless. 
 
 Install DL_Track_US via Github, pip and Pypi.org
 ------------------------------------------------
 
-In case you want to use this way to install and run DL_Track, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information see `Contributing Guidelines <https://dltrack.readthedocs.io/en/latest/contribute.html>`_).
+In case you want to use this way to install and run DL_Track_US, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information see `Contributing Guidelines <https://dltrack.readthedocs.io/en/latest/contribute.html>`_).
 
 *Step 1.* Anaconda setup (only before first usage and if Anaconda/minicoda is not already installed).
 
 Install `Anaconda <https://www.anaconda.com/distribution/>`_ (click ‘Download’ and be sure to choose ‘Python 3.X Version’ (where the X represents the latest version being offered. IMPORTANT: Make sure you tick the ‘Add Anaconda to my PATH environment variable’ box).
 
-*Step 2.* **(Only required for MacOS users, contributing or development)** Git setup (only before first usage and if Git is not already installed). This is optional and only required when you want to clone the whole DL_Track Github repository.
+*Step 2.* **(Only required for MacOS users, contributing or development)** Git setup (only before first usage and if Git is not already installed). This is optional and only required when you want to clone the whole DL_Track_US Github repository.
 
 In case you have never used Git before on you computer, please install it using the instructions provided `here <https://git-scm.com/download>`_.
 
 *Step 3.* **(Only required for MacOS users, contributing or development)** Create a directory for DL_Track.
 
-On your computer create a specific directory for DL_Track (for example "DL_Track_US") and navigate there. You can use Git as a version control system. Once there open a git bash with right click and then "Git Bash Here". In the bash terminal, type the following:
+On your computer create a specific directory for DL_Track_US (for example "DL_Track_US") and navigate there. You can use Git as a version control system. Once there open a git bash with right click and then "Git Bash Here". In the bash terminal, type the following:
 
 ``git init``
 
