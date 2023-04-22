@@ -574,17 +574,19 @@ def doCalculations(
                         list(zip(coordsX.astype("int32"),
                                  coordsY.astype("int32")))
                     )
-                    plt.plot(coordsX, coordsY, ":w", linewidth=6)
-        # cv2.polylines(imgT, [coords], False, (20, 15, 200), 3)
-
+                    plt.plot(coordsX, coordsY, color="red", alpha=0.3,
+                             linewidth=4)
+        
         # DISPLAY THE RESULTS
         plt.imshow(img_copy, cmap="gray")
         plt.title(f"Image ID: {filename}" + f"\n{scale_statement}",
                   fontsize=25)
         plt.plot(
-            low_x, low_y_new, marker="p", color="w", linewidth=10
+            low_x, low_y_new, marker="p", color="blue", linewidth=10,
+            alpha=0.1
         )  # Plot the aponeuroses
-        plt.plot(upp_x, upp_y_new, marker="p", color="w", linewidth=10)
+        plt.plot(upp_x, upp_y_new, marker="p", color="blue", linewidth=10,
+                 alpha=0.1)
 
         xplot = 125
         yplot = 700

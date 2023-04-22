@@ -503,19 +503,19 @@ class DLTrack:
         # Filetype
         self.filetype = StringVar()
         filetype = (
-            "/**/*.tif",
-            "/**/*.tiff",
-            "/**/*.png",
-            "/**/*.bmp",
-            "/**/*.jpeg",
-            "/**/*.jpg",
+            "/*.tif",
+            "/*.tiff",
+            "/*.png",
+            "/*.bmp",
+            "/*.jpeg",
+            "/*.jpg",
         )
         filetype_entry = ttk.Combobox(self.main, width=10,
                                       textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
-        self.filetype.set("/**/*.tiff")
+        self.filetype.set("/*.tiff")
 
         # Spacing
         self.spacing = StringVar()
@@ -643,13 +643,13 @@ class DLTrack:
         # Comboboxes
         # Filetype
         self.filetype = StringVar()
-        filetype = ("/**/*.avi", "/**/*.mp4")
+        filetype = ("/*.avi", "/*.mp4")
         filetype_entry = ttk.Combobox(self.main, width=10,
                                       textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
-        self.filetype.set("/**/*.avi")
+        self.filetype.set("/*.avi")
 
         # Spacing
         self.spacing = StringVar()
@@ -716,20 +716,20 @@ class DLTrack:
         # Filetype
         self.filetype = StringVar()
         filetype = (
-            "/**/*.tif",
-            "/**/*.tiff",
-            "/**/*.png",
-            "/**/*.bmp",
-            "/**/*.jpeg",
-            "/**/*.jpg",
-            "/**/*.avi",
+            "/*.tif",
+            "/*.tiff",
+            "/*.png",
+            "/*.bmp",
+            "/*.jpeg",
+            "/*.jpg",
+            "/*.avi",
         )
         filetype_entry = ttk.Combobox(self.main, width=10,
                                       textvariable=self.filetype)
         filetype_entry["values"] = filetype
         # filetype_entry["state"] = "readonly"
         filetype_entry.grid(column=2, row=13, sticky=(W, E))
-        self.filetype.set("/**/*.tif")
+        self.filetype.set("/*.tif")
 
     def video_manual(self):
         """Instance method to display the required parameters
