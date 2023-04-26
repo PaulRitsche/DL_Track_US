@@ -100,7 +100,6 @@ def importVideo(vpath: str):
     """
     # Video properties (do not edit)
     cap = cv2.VideoCapture(vpath)
-    print(type(cap))
     vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     vid_fps = int(cap.get(cv2.CAP_PROP_FPS))
     vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
