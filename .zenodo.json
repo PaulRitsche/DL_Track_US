@@ -1,32 +1,31 @@
 {
-  "description": "Python package for automatic analysis of human lower limb ultrasonography images and videos.",
-  "license": "Apache-2.0",
-  "title": "PaulRitsche/DL_Track_US: v0.1.2",
-  "version": "v0.1.2",
-  "upload_type": "software",
-  "publication_date": "2023-05-02",
-  "creators": [
-    {
-      "affiliation": {
-          "name": "Department of Sport, Exercise and Health, University of Basel, Switzerland"
-      },
-      "name": "Paul Ritsche",
-      "orcid": "0000-0001-9446-7872"
-    },
-    {
-      "affiliation": {
-          "name": "Department for Physical Performance, Norwegian School of Sport Sciences, Oslo, Norway"
-      },
-      "name": "Olivier Seynnes",
-      "orcid": "0000-0002-1289-246X"
-    },
-    {
-      "affiliation": {
-          "name": ["University of Jyvaskyla, Faculty of Sport and Health Sciences, Jyvaskyla, Finland", "School of Sport & Exercise, University of Gloucestershire, United Kingdom"]
-      },
-      "name": "Neil Cronin",
-      "orcid": "0000-0002-5332-1188"
-    }
-  ],
-  "access_right": "open"
+	"description": "Python package for automatic analysis of human lower limb ultrasonography images and videos.",
+	"license": "Apache-2.0",
+	"title": "PaulRitsche/DL_Track_US: v0.1.2",
+	"version": "v0.1.2",
+	"upload_type": "software",
+	"publication_date": "2023-05-02",
+	"creators": [{
+			"affiliation": {
+				"name": "Department of Sport, Exercise and Health, University of Basel, Switzerland"
+			},
+			"name": "Paul Ritsche",
+			"orcid": "0000-0001-9446-7872"
+		},
+		{
+			"affiliation": {
+				"name": "Department for Physical Performance, Norwegian School of Sport Sciences, Oslo, Norway"
+			},
+			"name": "Olivier Seynnes",
+			"orcid": "0000-0002-1289-246X"
+		},
+		{
+			"affiliation": {
+				"name": ["University of Jyvaskyla, Faculty of Sport and Health Sciences, Jyvaskyla, Finland", "School of Sport & Exercise, University of Gloucestershire, United Kingdom"]
+			},
+			"name": "Neil Cronin",
+			"orcid": "0000-0002-5332-1188"
+		}
+	],
+	"access_right": "open"
 }
