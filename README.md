@@ -2,6 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/dltrack/badge/?version=latest)](https://dltrack.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7866598.svg)](https://doi.org/10.5281/zenodo.7866598)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05206/status.svg)](https://doi.org/10.21105/joss.05206)
 ![DL_Track_US image](./Figures/home_im.png)
 
 The DL_Track_US package provides an easy to use graphical user interface (GUI) for deep learning based analysis of muscle architectural parameters from longitudinal ultrasonography images of human lower limb muscles. Please take a look at our [documentation](https://dltrack.readthedocs.io/en/latest/index.html) for more information (note that aggressive ad-blockers might break the visualization of the repository description as well as the online documentation).
