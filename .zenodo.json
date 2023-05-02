@@ -31,11 +31,6 @@
       "scheme": "url",
       "identifier": "https://github.com/PaulRitsche/DL_Track_US/tree/v0.1.2",
       "relation": "isSupplementTo"
-    },
-    {
-      "scheme": "doi", 
-      "identifier": "10.5281/zenodo.7885229", 
-      "relation": "isVersionOf"
     }
   ]
 }
