@@ -27,5 +27,17 @@
 			"orcid": "0000-0002-5332-1188"
 		}
 	],
-	"access_right": "open"
+	"access_right": "open",
+	"related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/PaulRitsche/DL_Track_US/tree/v0.1.2", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.7885229", 
+            "relation": "isVersionOf"
+        }
+    ]
 }
