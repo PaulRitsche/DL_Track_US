@@ -31,6 +31,7 @@ import math
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
@@ -143,6 +144,63 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
         y.append(ptsT[loc][0, 1])
 
     return np.array(x), np.array(y)
+
+
+def intersects(line1, line2):
+    x1, y1 = line1['start_x'], line1['start_y']
+    x2, y2 = line1['end_x'], line1['end_y']
+    x3, y3 = line2['start_x'], line2['start_y']
+    x4, y4 = line2['end_x'], line2['end_y']
+
+    det = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    if det == 0:
+        return False
+    
+    px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / det
+    py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / det
+
+    if (min(x1, x2) <= px <= max(x1, x2)) and (min(y1, y2) <= py <= max(y1, y2)) and (min(x3, x4) <= px <= max(x3, x4)) and (min(y3, y4) <= py <= max(y3, y4)):
+        return True
+    
+    return False
+
+
+def filter_fascicles(df):
+    # Sort fascicles by their x_low (previously start_x) for sequential processing
+    df = df.sort_values(by='x_low')
+    df = df.reset_index(drop=True)
+    
+    # Create a new column to indicate if the fascicle should be kept or not
+    df['keep'] = True
+
+    for i in range(len(df) - 1):
+        # For each fascicle, check if it intersects with the next fascicle to its right
+        fascicle1 = {
+            'start_x': df.iloc[i]['x_low'],
+            'start_y': df.iloc[i]['y_low'],
+            'end_x': df.iloc[i]['x_high'],  # Updated to x_high
+            'end_y': df.iloc[i]['y_high']   # Updated to y_high
+        }
+        fascicle2 = {
+            'start_x': df.iloc[i+1]['x_low'],
+            'start_y': df.iloc[i+1]['y_low'],
+            'end_x': df.iloc[i+1]['x_high'],  # Updated to x_high
+            'end_y': df.iloc[i+1]['y_high']   # Updated to y_high
+        }
+        print(fascicle1)
+        print(fascicle1['start_x'])
+        if fascicle1['start_x'] < fascicle2['start_x'] and fascicle1['end_x'] > fascicle2['end_x']:
+            print(i)
+            df.at[i, 'keep'] = False
+    
+    print(df)
+    # Filter out the fascicles which shouldn't be kept
+    df = df[df['keep']]
+    print(df)
+    # Remove the 'keep' column, as it's no longer needed
+    df = df.drop(columns=['keep'])
+
+    return df
 
 
 def doCalculations(
@@ -487,14 +545,13 @@ def doCalculations(
 
         fig = plt.figure(figsize=(25, 25))
 
-        xs = []
-        ys = []
-        fas_ext = []
         fasc_l = []
         pennation = []
         x_low1 = []
         x_high1 = []
-
+        
+        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY'])
+        index = 0
         for contour in contoursF2:
             x, y = contourEdge("B", contour)
             if len(x) == 0:
@@ -515,7 +572,7 @@ def doCalculations(
             coordsX = newX[
                 int(locL): int(locU)
             ]  # Get coordinates of fascicle between the two aponeuroses
-            coordsY = newY[int(locL): int(locU)]
+            coordsY = newY[int(locL): int(locU)]  # These are the coordinates of the fascicles between the two aponeuroses
 
             # Get angle of aponeurosis in region close to fascicle intersection
             if locL >= 4950:
@@ -568,15 +625,25 @@ def doCalculations(
                     )
                     fasc_l.append(length1[0])  # Calculate fascicle length
                     pennation.append(Apoangle - FascAng)
-                    x_low1.append(coordsX[0].astype("int32"))
-                    x_high1.append(coordsX[-1].astype("int32"))
-                    coords = np.array(
-                        list(zip(coordsX.astype("int32"),
-                                 coordsY.astype("int32")))
-                    )
-                    plt.plot(coordsX, coordsY, color="red", alpha=0.3,
-                             linewidth=4)
-        
+                    fascicle_data_temp = pd.DataFrame({
+                        'x_low': [coordsX[0].astype("int32")],
+                        'x_high': [coordsX[-1].astype("int32")],
+                        'y_low': [coordsY[0].astype("int32")],
+                        'y_high': [coordsY[-1].astype("int32")],
+                        'coordsX': [coordsX],
+                        'coordsY': [coordsY]
+                    })
+                    fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
+                index += 1
+        # Filter out fascicles that intersect with their right neighbors
+        filtered_data = filter_fascicles(fascicle_data)
+
+        print(filtered_data)
+
+        # Plot the remaining fascicles
+        for index, row in filtered_data.iterrows():
+            plt.plot(row['coordsX'], row['coordsY'], color="red", alpha=0.3, linewidth=4)
+
         # DISPLAY THE RESULTS
         plt.imshow(img_copy, cmap="gray")
         plt.title(f"Image ID: {filename}" + f"\n{scale_statement}",
