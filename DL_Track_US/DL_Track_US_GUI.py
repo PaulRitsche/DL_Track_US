@@ -465,20 +465,21 @@ class DLTrack:
         # Labels
         ttk.Label(self.main, text="Image Properties",
                   font=("Verdana", 14)).grid(
-            column=1, row=9, sticky=(W, E)
+            column=1, row=12, sticky=(W, E)
         )
         ttk.Label(self.main, text="Image Type").grid(column=1, row=13)
         ttk.Label(self.main, text="Scaling Type").grid(column=1, row=14)
         ttk.Label(self.main, text="Spacing (mm)").grid(column=1, row=15)
-        ttk.Label(self.main, text="Flip File Path").grid(column=1, row=16)
+        ttk.Label(self.main, text="Filter Fascicles").grid(column=1, row=16)
+        ttk.Label(self.main, text="Flip File Path").grid(column=1, row=17)
 
         # Hide unnecessary widgets
         ttk.Label(self.main, text="                       ").grid(
             column=3, row=13, columnspan=6, sticky=(W, E), ipady=7
         )
-        ttk.Label(self.main, text="                        ").grid(
-            column=1, row=17, columnspan=6, sticky=(W, E), ipady=7
-        )
+        # ttk.Label(self.main, text="                        ").grid(
+        #     column=1, row=17, columnspan=6, sticky=(W, E), ipady=7
+        # )
         ttk.Label(self.main, text="                        ").grid(
             column=1, row=18, columnspan=6, sticky=(W, E), ipady=7
         )
@@ -498,6 +499,18 @@ class DLTrack:
         )
         no_scaling.grid(column=4, row=14, sticky=(W, E))
         self.scaling.set("Bar")
+
+        # Fascicle filter
+        self.filter_fasc = StringVar()
+        filter_yes = ttk.Radiobutton(
+            self.main, text="Yes", variable=self.filter_fasc, value=True
+        )
+        filter_yes.grid(column=2, row=16, sticky=(W, E))
+        filter_no = ttk.Radiobutton(
+            self.main, text="No", variable=self.filter_fasc, value=False
+        )
+        filter_no.grid(column=3, row=16, sticky=(W, E))
+        self.filter_fasc.set(False)
 
         # Comboboxes
         # Filetype
@@ -532,20 +545,20 @@ class DLTrack:
         flipfile_button = ttk.Button(
             self.main, text="Flip Flags", command=self.get_flipfile_path
         )
-        flipfile_button.grid(column=5, row=16, sticky=E)
+        flipfile_button.grid(column=5, row=17, sticky=E)
 
         # Analysis parameter button
         analysis = ttk.Button(
             self.main, text="Analysis Parameters", command=self.open_window
         )
-        analysis.grid(column=5, row=17, sticky=E, pady=5)
+        analysis.grid(column=5, row=18, sticky=E, pady=5)
 
         # Entry
         # Flip File path
         self.flipflag = StringVar()
         flipflag_entry = ttk.Entry(self.main, width=30,
                                    textvariable=self.flipflag)
-        flipflag_entry.grid(column=2, row=16, columnspan=2, sticky=(W, E))
+        flipflag_entry.grid(column=2, row=17, columnspan=2, sticky=(W, E))
         self.flipflag.set("Desktop/DL_Track/FlipFlags.txt")
 
     def video_analysis(self):
@@ -585,19 +598,14 @@ class DLTrack:
         # Labels
         ttk.Label(self.main, text="Video Properties ",
                   font=("Verdana", 14)).grid(
-            column=1, row=9, sticky=(W, E)
+            column=1, row=12, sticky=(W, E)
         )
         ttk.Label(self.main, text="Video Type").grid(column=1, row=13)
-        tk.Label(
-            self.main,
-            text="Scaling Type",
-            font=("Lucida Sans", 13),
-            foreground="black",
-            background="DarkSeaGreen3",
-        ).grid(column=1, row=14)
+        ttk.Label(self.main, text="Scaling Type").grid(column=1, row=14)
         ttk.Label(self.main, text="Spacing (mm)").grid(column=1, row=15)
-        ttk.Label(self.main, text="Flip Options").grid(column=1, row=16)
-        ttk.Label(self.main, text="Frame Steps").grid(column=1, row=17)
+        ttk.Label(self.main, text="  Flip Options  ").grid(column=1, row=17)
+        ttk.Label(self.main, text="Filter Fascicles").grid(column=1, row=16)
+        ttk.Label(self.main, text="  Frame Steps  ").grid(column=1, row=18)
 
         # Remove unnecessary widgets
         ttk.Label(self.main, text="                        ").grid(
@@ -610,13 +618,16 @@ class DLTrack:
             column=2, row=15, columnspan=5, sticky=(W, E)
         )
         ttk.Label(self.main, text="                        ").grid(
-            column=5, row=16, columnspan=3, sticky=(W, E), ipady=7
-        )
-        ttk.Label(self.main, text="                        ").grid(
             column=5, row=17, columnspan=3, sticky=(W, E), ipady=7
         )
+        ttk.Label(self.main, text="                        ").grid(
+            column=3, row=17, columnspan=3, sticky=(W, E), ipady=7
+        )
+        ttk.Label(self.main, text="                        ").grid(
+            column=5, row=18, columnspan=3, sticky=(W, E), ipady=7
+        )
         # Radiobuttons
-        # Video Type
+        # Scaline
         self.scaling = StringVar()
         manual = ttk.Radiobutton(
             self.main, text="Manual", variable=self.scaling, value="Manual"
@@ -628,18 +639,30 @@ class DLTrack:
         no_scaling.grid(column=3, row=14, sticky=(W, E))
         self.scaling.set("Manual")
 
+        # Fascicle filter
+        self.filter_fasc = StringVar()
+        filter_yes = ttk.Radiobutton(
+            self.main, text="Yes", variable=self.filter_fasc, value=True
+        )
+        filter_yes.grid(column=2, row=16, sticky=(W, E))
+        filter_no = ttk.Radiobutton(
+            self.main, text="No", variable=self.filter_fasc, value=False
+        )
+        filter_no.grid(column=3, row=16, sticky=(W, E))
+        self.filter_fasc.set(False)
+
         # Flip
         self.flip = StringVar()
         flip_y = ttk.Radiobutton(
             self.main, text="Flip", variable=self.flip, value="flip"
         )
-        flip_y.grid(column=2, row=16, sticky=(W, E))
+        flip_y.grid(column=2, row=17, sticky=(W, E))
         flip_n = ttk.Radiobutton(
             self.main, text="Don't flip", variable=self.flip, value="no_flip"
         )
-        flip_n.grid(column=3, row=16, sticky=(W, E))
+        flip_n.grid(column=3, row=17, sticky=(W, E))
         self.flip.set("flip")
-
+        
         # Comboboxes
         # Filetype
         self.filetype = StringVar()
@@ -666,7 +689,7 @@ class DLTrack:
         step_entry = ttk.Combobox(self.main, width=10, textvariable=self.step)
         step = (1, 3, 5, 10)
         step_entry["values"] = step
-        step_entry.grid(column=2, row=17, sticky=(W, E))
+        step_entry.grid(column=2, row=18, sticky=(W, E))
         self.step.set(1)
 
         # Buttons
@@ -688,7 +711,7 @@ class DLTrack:
         # Labels
         ttk.Label(self.main, text="Image Properties",
                   font=("Verdana", 14)).grid(
-            column=1, row=9, sticky=(W, E)
+            column=1, row=12, sticky=(W, E)
         )
         ttk.Label(self.main, text="  Image Type  ").grid(column=1, row=13)
 
@@ -742,7 +765,7 @@ class DLTrack:
         # Labels
         ttk.Label(self.main, text="Video Properties ",
                   font=("Verdana", 14)).grid(
-            column=1, row=9, sticky=(W, E)
+            column=1, row=12, sticky=(W, E)
         )
         ttk.Label(self.main, text="  File Path  ").grid(column=1, row=13)
 
@@ -867,6 +890,7 @@ class DLTrack:
                 selected_min_width = self.min_width.get()
                 selected_min_pennation = self.min_pennation.get()
                 selected_max_pennation = self.max_pennation.get()
+                selected_filter_fasc = self.filter_fasc.get()
                 thread = Thread(
                     target=gui_helpers.calculateBatch,
                     args=(
@@ -877,6 +901,7 @@ class DLTrack:
                         selected_filetype,
                         selected_scaling,
                         int(selected_spacing),
+                        int(selected_filter_fasc),
                         float(selected_apo_threshold),
                         float(selected_fasc_threshold),
                         int(selected_fasc_cont_threshold),
@@ -915,6 +940,7 @@ class DLTrack:
                 selected_fasc_model_path = self.fasc_model.get()
                 selected_scaling = self.scaling.get()
                 selected_spacing = self.spacing.get()
+                selected_filter_fasc = self.filter_fasc.get()
                 selected_apo_threshold = self.apo_threshold.get()
                 selected_fasc_threshold = self.fasc_threshold.get()
                 selected_fasc_cont_threshold = self.fasc_cont_threshold.get()
@@ -932,6 +958,7 @@ class DLTrack:
                         selected_flip,
                         int(selected_spacing),
                         int(selected_step),
+                        int(selected_filter_fasc),
                         float(selected_apo_threshold),
                         float(selected_fasc_threshold),
                         int(selected_fasc_cont_threshold),

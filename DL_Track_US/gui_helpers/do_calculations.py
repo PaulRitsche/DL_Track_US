@@ -146,61 +146,48 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
     return np.array(x), np.array(y)
 
 
-def intersects(line1, line2):
-    x1, y1 = line1['start_x'], line1['start_y']
-    x2, y2 = line1['end_x'], line1['end_y']
-    x3, y3 = line2['start_x'], line2['start_y']
-    x4, y4 = line2['end_x'], line2['end_y']
+import pandas as pd
 
-    det = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-    if det == 0:
-        return False
+def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Filters out fascicles that intersect with their neighboring fascicles based on their x_low and x_high values.
     
-    px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / det
-    py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / det
-
-    if (min(x1, x2) <= px <= max(x1, x2)) and (min(y1, y2) <= py <= max(y1, y2)) and (min(x3, x4) <= px <= max(x3, x4)) and (min(y3, y4) <= py <= max(y3, y4)):
-        return True
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A DataFrame containing the fascicle data. Expected columns include 'x_low', 'y_low', 'x_high', and 'y_high'.
+        
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame with the fascicles that do not intersect with their neighbors.
+        
+    Example
+    -------
+    >>> data = {'x_low': [1, 3, 5], 'y_low': [1, 2, 3], 'x_high': [4, 6, 7], 'y_high': [4, 5, 6]}
+    >>> df = pd.DataFrame(data)
+    >>> print(filter_fascicles(df))
+       x_low  y_low  x_high  y_high
+    0      1      1       4       4
+    2      5      3       7       6
+    """
     
-    return False
-
-
-def filter_fascicles(df):
-    # Sort fascicles by their x_low (previously start_x) for sequential processing
-    df = df.sort_values(by='x_low')
-    df = df.reset_index(drop=True)
-    
-    # Create a new column to indicate if the fascicle should be kept or not
+    df = df.sort_values(by='x_low').reset_index(drop=True)
     df['keep'] = True
-
-    for i in range(len(df) - 1):
-        # For each fascicle, check if it intersects with the next fascicle to its right
-        fascicle1 = {
-            'start_x': df.iloc[i]['x_low'],
-            'start_y': df.iloc[i]['y_low'],
-            'end_x': df.iloc[i]['x_high'],  # Updated to x_high
-            'end_y': df.iloc[i]['y_high']   # Updated to y_high
-        }
-        fascicle2 = {
-            'start_x': df.iloc[i+1]['x_low'],
-            'start_y': df.iloc[i+1]['y_low'],
-            'end_x': df.iloc[i+1]['x_high'],  # Updated to x_high
-            'end_y': df.iloc[i+1]['y_high']   # Updated to y_high
-        }
-        print(fascicle1)
-        print(fascicle1['start_x'])
-        if fascicle1['start_x'] < fascicle2['start_x'] and fascicle1['end_x'] > fascicle2['end_x']:
-            print(i)
+    
+    x_lows = df['x_low'].values
+    x_highs = df['x_high'].values
+    
+    for i in range(1, len(df) - 1):
+        # Check if fascicle to the right is crossed
+        if x_lows[i] < x_lows[i+1] and x_highs[i] > x_highs[i+1]:
+            df.at[i, 'keep'] = False
+        
+        # Check if fascicle to the left is crossed
+        if x_lows[i] > x_lows[i-1] and x_highs[i] < x_highs[i-1]:
             df.at[i, 'keep'] = False
     
-    print(df)
-    # Filter out the fascicles which shouldn't be kept
-    df = df[df['keep']]
-    print(df)
-    # Remove the 'keep' column, as it's no longer needed
-    df = df.drop(columns=['keep'])
-
-    return df
+    return df[df['keep']].drop(columns=['keep'])
 
 
 def doCalculations(
@@ -215,6 +202,7 @@ def doCalculations(
     model_fasc,
     scale_statement: str,
     dictionary: dict,
+    filter_fasc: bool,
 ):
     """Function to compute muscle architectural parameters based on
     convolutional neural network segmentation in images.
@@ -269,6 +257,9 @@ def doCalculations(
         These include must include apo_threshold, fasc_threshold,
         fasc_cont_threshold, min_width, max_pennation,
         min_pennation.
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles. 
 
     Returns
     -------
@@ -322,7 +313,8 @@ def doCalculations(
                         apo_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-VGG16-fasc-BCE-512.h5",
                         fasc_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-apo-VGG-BCE-512.h5",
                         scale_statement=None,
-                        dictionary={'apo_treshold': '0.2', 'fasc_threshold': '0.05', 'fasc_cont_thresh': '40', 'min_width': '60', 'min_pennation': '10', 'max_pennation': '40'})
+                        dictionary={'apo_treshold': '0.2', 'fasc_threshold': '0.05', 'fasc_cont_thresh': '40', 'min_width': '60', 'min_pennation': '10', 'max_pennation': '40'},
+                        filter_fasc = False)
     [1030.1118966321328, 1091.096002143386, ..., 1163.07073327008, 1080.0001937069776, 976.6099281240987]
     [19.400700671533016, 18.30126098122986, ..., 18.505345607096586, 18.727693601171197, 22.03704574228162]
     [441, 287, 656, 378, 125, 15, ..., -392, -45, -400, -149, -400]
@@ -551,7 +543,7 @@ def doCalculations(
         x_high1 = []
         
         fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY'])
-        index = 0
+    
         for contour in contoursF2:
             x, y = contourEdge("B", contour)
             if len(x) == 0:
@@ -634,14 +626,15 @@ def doCalculations(
                         'coordsY': [coordsY]
                     })
                     fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
-                index += 1
+     
         # Filter out fascicles that intersect with their right neighbors
-        filtered_data = filter_fascicles(fascicle_data)
-
-        print(filtered_data)
+        if filter_fasc == 1:
+            filtered_data = filter_fascicles(fascicle_data)
+        else:
+            filtered_data = fascicle_data
 
         # Plot the remaining fascicles
-        for index, row in filtered_data.iterrows():
+        for _, row in filtered_data.iterrows():
             plt.plot(row['coordsX'], row['coordsY'], color="red", alpha=0.3, linewidth=4)
 
         # DISPLAY THE RESULTS
@@ -693,7 +686,7 @@ def doCalculations(
         )
         plt.grid(False)
 
-        return fasc_l, pennation, x_low1, x_high1, midthick, fig
+        return fasc_l, pennation, fascicle_data["x_low"], fascicle_data["x_high"], midthick, fig
 
     else:
 

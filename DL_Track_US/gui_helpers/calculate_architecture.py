@@ -314,6 +314,7 @@ def calculateBatch(
     file_type: str,
     scaling: str,
     spacing: int,
+    filter_fasc: bool,
     apo_treshold: float,
     fasc_threshold: float,
     fasc_cont_thresh: int,
@@ -365,6 +366,9 @@ def calculateBatch(
         Distance (in milimeter) between two scaling bars in the image.
         This is needed to compute the pixel/cm ratio and therefore report
         the results in centimeter rather than pixel units.
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles.
     apo_threshold : float
         Float variable containing the threshold applied to predicted
         aponeurosis pixels by our neural networks. By varying this
@@ -426,7 +430,7 @@ def calculateBatch(
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
-                       filetype="/**/*.tif, scaline="bar", spacing=10,
+                       filetype="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
                        apo_threshold=0.1,
                        fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
                        min_pennation=10, max_pennation=35,
@@ -564,6 +568,7 @@ def calculateBatch(
                         model_fasc,
                         scale_statement,
                         dic,
+                        filter_fasc
                     )
 
                     # Append warning to failes files when no aponeurosis was

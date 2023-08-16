@@ -37,14 +37,14 @@ from sys import platform
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from keras.models import load_model
+import pandas as pd
+
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
-from DL_Track_US.gui_helpers.calculate_architecture import IoU
-from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours
+from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours, filter_fascicles
 
 plt.style.use("ggplot")
 
@@ -54,11 +54,12 @@ def doCalculationsVideo(
     cap,
     vid_out,
     flip: str,
-    apo_modelpath: str,
-    fasc_modelpath: str,
+    apo_model,
+    fasc_model,
     calib_dist: int,
     dic: dict,
     step: int,
+    filter_fasc: bool,
     gui,
 ):
     """
@@ -91,12 +92,10 @@ def doCalculationsVideo(
         String variable defining wheter an image should be flipped.
         This can be "no_flip" (video is not flipped) or "flip"
         (video is flipped).
-    apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis
-        neural network.
-    fasc_modelpath : str
-        String variable containing the absolute path to the fascicle
-        neural network.
+    apo_model
+        Aponeurosis neural network.
+    fasc_model
+        Fascicle neural network.
     calib_dist : int
         Integer variable containing the distance between the two
         specified point in pixel units. The points must be 10mm
@@ -111,6 +110,9 @@ def doCalculationsVideo(
         Integer variable containing the step for the range of video frames.
         If step != 1, frames are skipped according to the size of step.
         This might decrease processing time but also accuracy.
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles. 
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -153,6 +155,7 @@ def doCalculationsVideo(
                         dic={'apo_treshold': '0.2', 'fasc_threshold': '0.05',
                         'fasc_cont_thresh': '40', 'min_width': '60',
                         'min_pennation': '10', 'max_pennation': '40'},
+                        filter_fasc = False,
                         gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     [array([60.5451731 , 58.86892027, 64.16011534, 55.46192704, 63.40711356]), ..., array([64.90849385, 60.31621836])]
     [[19.124207107383114, 19.409753216521565, 18.05706763600641, 20.54453899050867, 17.808652286488794], ..., [17.26241882195032, 16.284803480359543]]
@@ -162,80 +165,53 @@ def doCalculationsVideo(
     """
     try:
 
-        # Check if analysis parameters are postive
+        # Check analysis parameters for positive values
         for _, value in dic.items():
             if float(value) <= 0:
                 tk.messagebox.showerror(
-                    "Information",
-                    "Analysis paremters must be non-zero" + " and non-negative"
+                    "Information", "Analysis parameters must be non-zero and non-negative"
                 )
                 gui.should_stop = False
                 gui.is_running = False
                 gui.do_break()
                 return
 
-        # Get variables from dictionary
-        fasc_cont_thresh = int(dic["fasc_cont_thresh"])
-        min_width = int(dic["min_width"])
-        max_pennation = int(dic["max_pennation"])
-        min_pennation = int(dic["min_pennation"])
-        apo_threshold = float(dic["apo_treshold"])
-        fasc_threshold = float(dic["fasc_threshold"])
+        # Extract dictionary parameters
+        fasc_cont_thresh, min_width, max_pennation, min_pennation = [int(dic[key]) for key in ["fasc_cont_thresh", "min_width", "max_pennation", "min_pennation"]]
+        apo_threshold, fasc_threshold = [float(dic[key]) for key in ["apo_treshold", "fasc_threshold"]]
 
         # Define empty lists for parameter storing
-        fasc_l_all = []
-        pennation_all = []
-        x_lows_all = []
-        x_highs_all = []
-        thickness_all = []
-
-        # load the aponeurosis model
-        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-        # load the fascicle model
-        model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
+        fasc_l_all, pennation_all, x_lows_all, x_highs_all, thickness_all = ([] for _ in range(5))
 
         # Loop through each frame of the video
         for a in range(0, vid_len - 1, step):
-
             if gui.should_stop:
-                # there was an input to stop the calculations
-                break
+                break  # there was an input to stop the calculations
 
-            # Reshape, resize and normalize each frame.
+            # Reshape, resize, and normalize each frame
             _, frame = cap.read()
             img = img_to_array(frame)
             if flip == "flip":
                 img = np.fliplr(img)
-            img_orig = img  # Make a copy
-            # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            h = img.shape[0]
-            w = img.shape[1]
-            img = np.reshape(img, [-1, h, w, 3])
-            img = resize(img, (1, 512, 512, 3), mode="constant",
-                         preserve_range=True)
-            img = img / 255.0
+            img_orig = img.copy()
+            h, w, _ = img.shape
+            img = resize(img, (512, 512, 3))
+            img_normalized = img / 255.0
+            img_input = np.expand_dims(img_normalized, axis=0)  # Create a batch of size 1
 
-            # Predict aponeurosis
-            pred_apo = model_apo.predict(img)
-            # Employ threshold for segmentation
+            # Predict aponeurosis and fascicle segments
+            pred_apo = apo_model.predict(img_input)
+            pred_fasc = fasc_model.predict(img_input)
+
+            # Threshold predictions
             pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
-
-            # Predict fascicle segments
-            pred_fasc = model_fasc.predict(img)
-            # Employ threshold for segmentation
             pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)
 
             # Resize and reshape predictions for further usage
-            img = resize(img, (1, h, w, 1))
-            img = np.reshape(img, (h, w))
-            pred_apo = resize(pred_apo, (1, h, w, 1))
-            pred_apo = np.reshape(pred_apo, (h, w))
-            pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
-            pred_apo_t = np.reshape(pred_apo_t, (h, w))
-            pred_fasc = resize(pred_fasc, (1, h, w, 1))
-            pred_fasc = np.reshape(pred_fasc, (h, w))
-            pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
-            pred_fasc_t = np.reshape(pred_fasc_t, (h, w))
+            pred_apo = resize(pred_apo[0], (h, w))
+            pred_fasc = resize(pred_fasc[0], (h, w))
+            pred_apo_t = resize(pred_apo_t[0], (h, w))
+            pred_fasc_t = resize(pred_fasc_t[0], (h, w))
 
             # Aponuerosis calculation PArt
 
@@ -428,14 +404,13 @@ def doCalculationsVideo(
                         contoursF3.append(contour)
 
                 # Define lists to store analysis parameters
-                xs = []
-                ys = []
-                fas_ext = []
                 fasc_l = []
                 pennation = []
                 x_low1 = []
                 x_high1 = []
 
+                fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY'])
+    
                 # Loop through facicle contours to compute fascicle
                 for cnt in contoursF3:
                     x, y = contourEdge("B", cnt)
@@ -511,16 +486,34 @@ def doCalculationsVideo(
                             pennation.append(Apoangle - FascAng)
                             x_low1.append(coordsX[0].astype("int32"))
                             x_high1.append(coordsX[-1].astype("int32"))
-                            coords = np.array(
+                            fascicle_data_temp = pd.DataFrame({
+                                'x_low': [coordsX[0].astype("int32")],
+                                'x_high': [coordsX[-1].astype("int32")],
+                                'y_low': [coordsY[0].astype("int32")],
+                                'y_high': [coordsY[-1].astype("int32")],
+                                'coordsX': [coordsX],
+                                'coordsY': [coordsY]
+                            })
+                            fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
+                
+                # Remove fascicles that cross-paths
+                if filter_fasc == 1:            
+                    filtered_data = filter_fascicles(fascicle_data)
+                else:
+                    filtered_data = fascicle_data
+
+                # Plot the remaining fascicles
+                for _, row in filtered_data.iterrows():
+                    coords = np.array(
                                 list(
                                     zip(
-                                        coordsX.astype("int32"),
-                                        coordsY.astype("int32")
+                                        row['coordsX'].astype("int32"),
+                                        row['coordsY'].astype("int32")
                                     )
                                 )
                             )
-                            cv2.polylines(imgT, [coords], False, (20, 15, 200),
-                                          3)
+                    
+                    cv2.polylines(imgT, [coords], False, (20, 15, 200),3)
 
                 # Store the results for each frame and normalise using scale
                 # factor (if calibration was done above)
