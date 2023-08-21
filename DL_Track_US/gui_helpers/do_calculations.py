@@ -146,8 +146,6 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
     return np.array(x), np.array(y)
 
 
-import pandas as pd
-
 def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     """
     Filters out fascicles that intersect with their neighboring fascicles based on their x_low and x_high values.
@@ -179,12 +177,23 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     x_highs = df['x_high'].values
     
     for i in range(1, len(df) - 1):
+
+        # for first fascicle
+        if i == 1:
+            if (x_lows[0] < x_lows[1] and x_highs[0] > x_highs[1]):
+                df.at[0, 'keep'] = False
+
+        # for last fascicle 
+        if i == len(df) - 1:
+            if x_lows[i+1] > x_lows[i] and x_highs[i+1] < x_highs[1]:
+                df.at[i+1, 'keep'] = False
+
         # Check if fascicle to the right is crossed
-        if x_lows[i] < x_lows[i+1] and x_highs[i] > x_highs[i+1]:
+        if x_lows[i] <= x_lows[i+1] and x_highs[i] >= x_highs[i+1]:
             df.at[i, 'keep'] = False
         
         # Check if fascicle to the left is crossed
-        if x_lows[i] > x_lows[i-1] and x_highs[i] < x_highs[i-1]:
+        if x_lows[i] >= x_lows[i-1] and x_highs[i] <= x_highs[i-1]:
             df.at[i, 'keep'] = False
     
     return df[df['keep']].drop(columns=['keep'])
@@ -536,13 +545,8 @@ def doCalculations(
         contoursF3 = [i for i in contoursF2 if len(i) > fasc_cont_thresh]
 
         fig = plt.figure(figsize=(25, 25))
-
-        fasc_l = []
-        pennation = []
-        x_low1 = []
-        x_high1 = []
-        
-        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY'])
+       
+        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', "fasc_l", "penn_a"])
     
         for contour in contoursF2:
             x, y = contourEdge("B", contour)
@@ -615,26 +619,26 @@ def doCalculations(
                         (newX[locU] - newX[locL]) ** 2 +
                         (y_UA[locU] - y_LA[locL]) ** 2
                     )
-                    fasc_l.append(length1[0])  # Calculate fascicle length
-                    pennation.append(Apoangle - FascAng)
                     fascicle_data_temp = pd.DataFrame({
                         'x_low': [coordsX[0].astype("int32")],
                         'x_high': [coordsX[-1].astype("int32")],
                         'y_low': [coordsY[0].astype("int32")],
                         'y_high': [coordsY[-1].astype("int32")],
                         'coordsX': [coordsX],
-                        'coordsY': [coordsY]
+                        'coordsY': [coordsY],
+                        'fasc_l': [length1[0]],
+                        'penn_a': Apoangle - FascAng
                     })
                     fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
      
         # Filter out fascicles that intersect with their right neighbors
         if filter_fasc == 1:
-            filtered_data = filter_fascicles(fascicle_data)
+            data = filter_fascicles(fascicle_data)
         else:
-            filtered_data = fascicle_data
+            data = fascicle_data
 
         # Plot the remaining fascicles
-        for _, row in filtered_data.iterrows():
+        for _, row in data.iterrows():
             plt.plot(row['coordsX'], row['coordsY'], color="red", alpha=0.3, linewidth=4)
 
         # DISPLAY THE RESULTS
@@ -658,6 +662,11 @@ def doCalculations(
         except:
             midthick = mindist
 
+        # get fascicle length & pennation from dataframe
+        fasc_l = data['fasc_l']
+        pennation = data['penn_a']
+
+        # scale data
         if calib_dist:
             fasc_l = fasc_l / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))

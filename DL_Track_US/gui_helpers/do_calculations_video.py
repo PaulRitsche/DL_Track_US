@@ -409,7 +409,7 @@ def doCalculationsVideo(
                 x_low1 = []
                 x_high1 = []
 
-                fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY'])
+                fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', "fasc_l", "penn_a"])
     
                 # Loop through facicle contours to compute fascicle
                 for cnt in contoursF3:
@@ -482,28 +482,26 @@ def doCalculationsVideo(
                                 (newX[locU] - newX[locL]) ** 2
                                 + (y_UA[locU] - y_LA[locL]) ** 2
                             )
-                            fasc_l.append(length1[0])  # Calculate FL
-                            pennation.append(Apoangle - FascAng)
-                            x_low1.append(coordsX[0].astype("int32"))
-                            x_high1.append(coordsX[-1].astype("int32"))
                             fascicle_data_temp = pd.DataFrame({
                                 'x_low': [coordsX[0].astype("int32")],
                                 'x_high': [coordsX[-1].astype("int32")],
                                 'y_low': [coordsY[0].astype("int32")],
                                 'y_high': [coordsY[-1].astype("int32")],
                                 'coordsX': [coordsX],
-                                'coordsY': [coordsY]
+                                'coordsY': [coordsY],
+                                'fasc_l': [length1[0]],
+                                'penn_a': Apoangle - FascAng
                             })
                             fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
                 
                 # Remove fascicles that cross-paths
                 if filter_fasc == 1:            
-                    filtered_data = filter_fascicles(fascicle_data)
+                    data = filter_fascicles(fascicle_data)
                 else:
-                    filtered_data = fascicle_data
+                    data = fascicle_data
 
                 # Plot the remaining fascicles
-                for _, row in filtered_data.iterrows():
+                for _, row in data.iterrows():
                     coords = np.array(
                                 list(
                                     zip(
@@ -522,6 +520,10 @@ def doCalculationsVideo(
                 except:
                     midthick = mindist
 
+                # get fascicle length & pennation from dataframe
+                fasc_l = data['fasc_l']
+                pennation = data['penn_a']
+                        
                 if calib_dist:
                     fasc_l = fasc_l / (calib_dist / 10)
                     midthick = midthick / (calib_dist / 10)
