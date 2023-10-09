@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -31,7 +32,7 @@ def show_outliers_popup(df, dir1, dir2):
     popup = tk.Toplevel()
     popup.title("Outliers")
     master_path = os.path.dirname(os.path.abspath(__file__))
-    iconpath = master_path + "/icon.ico"
+    iconpath = master_path + "/home_im.ico"
     popup.iconbitmap(iconpath)
 
     label = tk.Label(popup, text=f"Comparing images in {dir1} \nand {dir2}")
@@ -256,10 +257,12 @@ def overlay_directory_images(image_dir, mask_dir, alpha=0.5, start_index=0):
 
         return overlaid_image
 
+    matplotlib.use("TkAgg")
+
     # Create an interactive plot
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(20 / 2.45, 15 / 2.54)
-    fig.set_facecolor("#7ABAA1")
+    fig.set_facecolor("#808080")
     current_idx = start_index
 
     # Function to handle delete button click

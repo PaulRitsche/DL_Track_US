@@ -35,7 +35,6 @@ import tkinter as tk
 from sys import platform
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -45,8 +44,6 @@ from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
 from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours, filter_fascicles
-
-plt.style.use("ggplot")
 
 
 def doCalculationsVideo(
@@ -163,6 +160,7 @@ def doCalculationsVideo(
     [[725, 568, 725, 556, 444], [926, 572, 516, 508], [971, 565, 502], [739, 578, 474], [554, 766, 603, 475], [1049, 755, 567, 430], [954, 934, 568], [968, 574]]
     [23.484416057267826, 22.465452189555794, 21.646971767045816, 21.602856412413924, 21.501286239714894, 21.331137350026623, 21.02446763240188, 21.250352548097883]
     """
+    
     try:
 
         # Check analysis parameters for positive values

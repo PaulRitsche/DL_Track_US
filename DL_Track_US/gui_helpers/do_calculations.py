@@ -29,6 +29,7 @@ functions documentations.
 import math
 
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -36,8 +37,6 @@ import tensorflow as tf
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
-
-plt.style.use("ggplot")
 
 
 def sortContours(cnts: list):
@@ -318,6 +317,8 @@ def doCalculations(
     [1410, 1320, 1551, 1351, 1149, ..., 885, 937, 705, 869, 507]
     348.1328577
     """
+    matplotlib.use("Agg")
+
     # Get settings
     dic = dictionary
 

@@ -7,6 +7,7 @@ __all__ = [
     "calculate_architecture_video",
     "manual_tracing",
     "model_training",
+    "file_analysis",
 ]
 
 __author__ = "Paul Ritsche, Olivier Seynnes, Neil Cronin"
@@ -19,3 +20,4 @@ from DL_Track_US.gui_helpers.do_calculations import *
 from DL_Track_US.gui_helpers.do_calculations_video import *
 from DL_Track_US.gui_helpers.manual_tracing import *
 from DL_Track_US.gui_helpers.model_training import *
+from DL_Track_US.gui_helpers.file_analysis import *
