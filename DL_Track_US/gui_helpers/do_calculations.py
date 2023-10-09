@@ -176,25 +176,13 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     x_lows = df['x_low'].values
     x_highs = df['x_high'].values
     
-    for i in range(1, len(df) - 1):
-
-        # for first fascicle
-        if i == 1:
-            if (x_lows[0] < x_lows[1] and x_highs[0] > x_highs[1]):
-                df.at[0, 'keep'] = False
-
-        # for last fascicle 
-        if i == len(df) - 1:
-            if x_lows[i+1] > x_lows[i] and x_highs[i+1] < x_highs[1]:
-                df.at[i+1, 'keep'] = False
-
-        # Check if fascicle to the right is crossed
-        if x_lows[i] <= x_lows[i+1] and x_highs[i] >= x_highs[i+1]:
-            df.at[i, 'keep'] = False
-        
-        # Check if fascicle to the left is crossed
-        if x_lows[i] >= x_lows[i-1] and x_highs[i] <= x_highs[i-1]:
-            df.at[i, 'keep'] = False
+    for i in range(len(df)):
+        for j in range(i+1, min(i+3, len(df))):  # Check the current fascicle and the two next ones
+            # Check if the next fascicle(s) intersect
+            if x_lows[i] <= x_lows[j] and x_highs[i] >= x_highs[j]:
+                df.at[i, 'keep'] = False
+            elif x_lows[j] <= x_lows[i] and x_highs[j] >= x_highs[i]:
+                df.at[j, 'keep'] = False
     
     return df[df['keep']].drop(columns=['keep'])
 

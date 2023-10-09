@@ -36,12 +36,15 @@ References
 [3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
 import os
+import matplotlib
 
 import tkinter as tk
 from threading import Lock, Thread
 from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk
 
 from DL_Track_US import gui_helpers
+
+matplotlib.use("TkAgg")
 
 
 class DLTrack:
