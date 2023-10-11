@@ -348,13 +348,10 @@ def doCalculations(
     pred_fasc_t = np.reshape(pred_fasc_t, (h, w))
     tf.keras.backend.clear_session()
 
-    xs = []
-    ys = []
-    fas_ext = []
     fasc_l = []
     pennation = []
-    x_low1 = []
-    x_high1 = []
+    x_low = []
+    x_high = []
 
     # Compute contours to identify the aponeuroses
     _, thresh = cv2.threshold(pred_apo_t, 0, 255, cv2.THRESH_BINARY)
@@ -535,7 +532,7 @@ def doCalculations(
 
         fig = plt.figure(figsize=(25, 25))
        
-        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', "fasc_l", "penn_a"])
+        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', 'fasc_l', 'penn_a'])
     
         for contour in contoursF2:
             x, y = contourEdge("B", contour)
@@ -553,10 +550,11 @@ def doCalculations(
             locU = np.where(diffU == min(diffU, key=abs))[0]
             diffL = newY - new_Y_LA
             locL = np.where(diffL == min(diffL, key=abs))[0]
-
+            # Get coordinates of fascicle between the two aponeuroses
             coordsX = newX[
                 int(locL): int(locU)
-            ]  # Get coordinates of fascicle between the two aponeuroses
+            ]  
+            
             coordsY = newY[int(locL): int(locU)]  # These are the coordinates of the fascicles between the two aponeuroses
 
             # Get angle of aponeurosis in region close to fascicle intersection
@@ -619,16 +617,20 @@ def doCalculations(
                         'penn_a': Apoangle - FascAng
                     })
                     fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
-     
+                         
         # Filter out fascicles that intersect with their right neighbors
         if filter_fasc == 1:
             data = filter_fascicles(fascicle_data)
         else:
             data = fascicle_data
 
-        # Plot the remaining fascicles
-        for _, row in data.iterrows():
-            plt.plot(row['coordsX'], row['coordsY'], color="red", alpha=0.3, linewidth=4)
+        # Get the rainbow colormap to make each fascicle visible
+        colormap = plt.cm.get_cmap('rainbow', len(data))
+
+        # Plot the remaining fascicles with unique colors
+        for index, row in enumerate(data.iterrows()):
+            color = colormap(index)
+            plt.plot(row[1]['coordsX'], row[1]['coordsY'], color=color, alpha=0.3, linewidth=4)
 
         # DISPLAY THE RESULTS
         plt.imshow(img_copy, cmap="gray")
@@ -684,7 +686,7 @@ def doCalculations(
         )
         plt.grid(False)
 
-        return fasc_l, pennation, fascicle_data["x_low"], fascicle_data["x_high"], midthick, fig
+        return fasc_l, pennation, fascicle_data['x_low'], fascicle_data['x_high'], midthick, fig
 
     else:
 

@@ -259,7 +259,7 @@ class DLTrack:
         root.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = master_path + "/gui_helpers/home_im.ico"
-        root.iconbitmap(iconpath)
+        #root.iconbitmap(iconpath)
 
         self.main = ttk.Frame(root, padding="10 10 12 12")
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
@@ -408,9 +408,17 @@ class DLTrack:
         ttk.Label(self.main, text="Apo Model Path").grid(column=1, row=7)
         ttk.Label(self.main, text="Fasc Model Path").grid(column=1, row=8)
         ttk.Label(self.main, text="Analysis Type", font=("Verdana", 14)).grid(
-            column=1, row=9, sticky=(W, E)
+            column=1, row=10, sticky=(W, E)
         )
 
+        # Separators
+        ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
+            column=0, row=9, columnspan=9, sticky=(W, E)
+        )
+        ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
+            column=0, row=19, columnspan=9, sticky=(W, E)
+        )
+        
         for child in self.main.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
@@ -491,11 +499,15 @@ class DLTrack:
             if hasattr(self, "flip_y"):
                 self.scaling_label.grid_remove()
                 self.spacing_label.grid_remove()
+                self.spacing_entry.grid_remove()
+                self.manual_radio.grid_remove()
+                self.no_scaling_radio.grid_remove()
                 self.flip_options_label.grid_remove()
                 self.step_entry.grid_remove()
                 self.steps_label.grid_remove()
                 self.filetype_video_entry.grid_remove()
                 self.flip_options_label.grid_remove()
+                self.filter_label.grid_remove()
                 self.filter_no.grid_remove()
                 self.filter_yes.grid_remove()
                 self.flip_y.grid_remove()
@@ -704,6 +716,11 @@ class DLTrack:
             self.flip_n.grid(column=3, row=17, sticky=(W, E))
             self.flip.set("flip")
 
+            # Analysis parameter button
+            self.analysis_button = ttk.Button(
+                self.main, text="Analysis Parameters", command=self.open_window
+            )
+            self.analysis_button.grid(column=5, row=18, sticky=(W,E), pady=5)
             
             # Comboboxes
             # Filetype
@@ -757,21 +774,24 @@ class DLTrack:
                 self.flipflag_entry.grid_remove()
                 self.flipfile_button.grid_remove()
 
-            if hasattr(self, "flip_y"):
+            if hasattr(self, "spacing_entry"):
                 self.scaling_label.grid_remove()
                 self.spacing_label.grid_remove()
+                self.spacing_entry.grid_remove()
+                self.manual_radio.grid_remove()
+                self.no_scaling_radio.grid_remove()
                 self.flip_options_label.grid_remove()
                 self.step_entry.grid_remove()
                 self.steps_label.grid_remove()
                 self.filetype_video_entry.grid_remove()
                 self.flip_options_label.grid_remove()
+                self.filter_label.grid_remove()
                 self.filter_no.grid_remove()
                 self.filter_yes.grid_remove()
                 self.flip_y.grid_remove()
                 self.flip_n.grid_remove()
                 self.filetype_video_entry.grid_remove()
                 
-
             if hasattr(self, "vpath_button"):
                 self.vpath_button.grid_remove()
                 self.video_type_label.grid_remove()
@@ -830,21 +850,23 @@ class DLTrack:
                 self.flipflag_entry.grid_remove()
                 self.flipfile_button.grid_remove()
 
-            if hasattr(self, "flip_y"):
+            if hasattr(self, "spacing_entry"):
                 self.scaling_label.grid_remove()
                 self.spacing_label.grid_remove()
+                self.spacing_entry.grid_remove()
+                self.manual_radio.grid_remove()
+                self.no_scaling_radio.grid_remove()
                 self.flip_options_label.grid_remove()
                 self.step_entry.grid_remove()
                 self.steps_label.grid_remove()
                 self.filetype_video_entry.grid_remove()
                 self.flip_options_label.grid_remove()
+                self.filter_label.grid_remove()
                 self.filter_no.grid_remove()
                 self.filter_yes.grid_remove()
                 self.flip_y.grid_remove()
                 self.flip_n.grid_remove()
                 self.filetype_video_entry.grid_remove()
-            
-
             
             # Labels
             ttk.Label(self.main, text="Video Properties",
@@ -937,7 +959,7 @@ class DLTrack:
         # Add icon to window
         window_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = window_path + "/gui_helpers/home_im.ico"
-        window.iconbitmap(iconpath)
+        #window.iconbitmap(iconpath)
         window.grab_set()
 
         # Labels
@@ -1029,7 +1051,7 @@ class DLTrack:
         self.advanced_window.title("Advanced Methods Window")
         master_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = master_path + "/gui_helpers/home_im.ico"
-        self.advanced_window.iconbitmap(iconpath)
+        # self.advanced_window.iconbitmap(iconpath)
         self.advanced_window.grab_set()
 
         ttk.Label(self.advanced_window, text="Select Method").grid(column=1, row=0)
@@ -1398,7 +1420,7 @@ class DLTrack:
             child.grid_configure(padx=5, pady=5)
 
     # ---------------------------------------------------------------------------------------------------
-    ## Methods used for model training
+    # Methods used for model training
 
     def get_train_dir(self):
         """
@@ -1867,6 +1889,7 @@ class DLTrack:
 
 # ---------------------------------------------------------------------------------------------------
 # Function required to run the GUI from the prompt
+
 
 def runMain() -> None:
     """Function that enables usage of the gui from command promt

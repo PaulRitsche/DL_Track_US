@@ -8,6 +8,7 @@ __all__ = [
     "manual_tracing",
     "model_training",
     "file_analysis",
+    "data_augmentation"
 ]
 
 __author__ = "Paul Ritsche, Olivier Seynnes, Neil Cronin"
@@ -21,3 +22,4 @@ from DL_Track_US.gui_helpers.do_calculations_video import *
 from DL_Track_US.gui_helpers.manual_tracing import *
 from DL_Track_US.gui_helpers.model_training import *
 from DL_Track_US.gui_helpers.file_analysis import *
+from DL_Track_US.gui_helpers.data_augmentation import *

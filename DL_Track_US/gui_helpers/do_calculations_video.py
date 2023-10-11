@@ -37,6 +37,7 @@ from sys import platform
 import cv2
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
@@ -498,18 +499,29 @@ def doCalculationsVideo(
                 else:
                     data = fascicle_data
 
-                # Plot the remaining fascicles
-                for _, row in data.iterrows():
-                    coords = np.array(
-                                list(
-                                    zip(
-                                        row['coordsX'].astype("int32"),
-                                        row['coordsY'].astype("int32")
-                                    )
-                                )
-                            )
+                # Determine the number of unique colors you need
+                num_colors = len(data)
+
+                # Generate a gradient image with as many rows as colors needed
+                gradient = np.linspace(0, 255, num_colors).reshape(num_colors, 1).astype(np.uint8)
+
+                # Apply the colormap to the gradient
+                colored_gradient = cv2.applyColorMap(gradient, cv2.COLORMAP_RAINBOW)
+
+                # Plot the remaining fascicles with unique colors from the OpenCV colormap
+                for index, row in enumerate(data.iterrows()):
+                    color = tuple(map(int, colored_gradient[index][0]))  # Extract BGR color
                     
-                    cv2.polylines(imgT, [coords], False, (20, 15, 200),3)
+                    coords = np.array(
+                        list(
+                            zip(
+                                row[1]['coordsX'].astype("int32"),
+                                row[1]['coordsY'].astype("int32")
+                            )
+                        )
+                    )
+    
+                    cv2.polylines(imgT, [coords], False, color, 3)
 
                 # Store the results for each frame and normalise using scale
                 # factor (if calibration was done above)
@@ -521,6 +533,8 @@ def doCalculationsVideo(
                 # get fascicle length & pennation from dataframe
                 fasc_l = data['fasc_l']
                 pennation = data['penn_a']
+                x_low1 = data['x_low']
+                x_high1 = data['x_high']
                         
                 if calib_dist:
                     fasc_l = fasc_l / (calib_dist / 10)

@@ -33,7 +33,7 @@ def show_outliers_popup(df, dir1, dir2):
     popup.title("Outliers")
     master_path = os.path.dirname(os.path.abspath(__file__))
     iconpath = master_path + "/home_im.ico"
-    popup.iconbitmap(iconpath)
+    # popup.iconbitmap(iconpath)
 
     label = tk.Label(popup, text=f"Comparing images in {dir1} \nand {dir2}")
     label.pack(pady=10)
@@ -245,9 +245,12 @@ def overlay_directory_images(image_dir, mask_dir, alpha=0.5, start_index=0):
         ultrasound = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
 
-        # Create a colored mask with green color
+        # Ensure both images have the same dimensions by resizing the mask
+        ultrasound = cv2.resize(ultrasound, (mask.shape[1], mask.shape[0]))
+
+        # Create a colored mask with green color for the white regions in the mask
         colored_mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-        colored_mask[mask == 255] = [0, 255, 0]  # Green color for mask
+        colored_mask[mask > 0] = [0, 255, 0]  # Green color for mask regions
 
         # Convert the ultrasound image to color
         ultrasound_colored = cv2.cvtColor(ultrasound, cv2.COLOR_GRAY2BGR)

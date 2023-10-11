@@ -256,7 +256,7 @@ def exportToEcxel(
     df5.to_excel(writer, sheet_name="Thickness")
 
     # Close the Pandas Excel writer and output the Excel file
-    writer.save()
+    writer.close()
 
 
 def calculateArchitectureVideo(
@@ -466,7 +466,6 @@ def calculateArchitectureVideo(
 
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
-
             # Save Results
             exportToEcxel(
                 rootpath,

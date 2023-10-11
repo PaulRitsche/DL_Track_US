@@ -254,6 +254,8 @@ def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
         with pd.ExcelWriter(excelpath, mode="w") as writer:
             data = dataframe
             data.to_excel(writer, sheet_name="Results")
+    
+    writer.close()
 
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
@@ -734,7 +736,7 @@ def calculateBatchManual(rootpath: str, filetype: str, gui):
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information", "No image files founds." +
+            "Information", "No image files founds" +
             "\nEnter correct file type"
         )
         gui.do_break()
