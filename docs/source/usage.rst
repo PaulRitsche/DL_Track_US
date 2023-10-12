@@ -1,5 +1,5 @@
-DL_Track_US Usage
-=================
+Usage
+=====
 
 We have provided detailed usage instructions and examples for DL_Track_US in the DL_Track_US_tutorial.pdf file. The file is located in the `docs <https://github.com/PaulRitsche/DL_Track_US/tree/main/docs/usage>`_ directory in our Github repository. In general, should the graphical user interface freeze and you can't interact with it, close it and restart. Pay attention that all parameters in the interface are specified correctly.
 

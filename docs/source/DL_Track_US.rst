@@ -1,6 +1,15 @@
 DL\_Track\_US package
 =====================
 
+DL\_Track\_US.DL\_Track\_US\_GUI module
+---------------------------------------
+
+.. automodule:: DL_Track_US.DL_Track_US_GUI
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Subpackages
 -----------
 
@@ -14,11 +23,3 @@ Submodules
 
 .. toctree::
    :maxdepth: 2
-
-DL\_Track\_US.DL\_Track\_US\_GUI module
-"""""""""""""""""""""""""""""""""""""""
-
-.. automodule:: DL_Track_US.DL_Track_US_GUI
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -254,9 +254,7 @@ def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
         with pd.ExcelWriter(excelpath, mode="w") as writer:
             data = dataframe
             data.to_excel(writer, sheet_name="Results")
-    
-    writer.close()
-
+ 
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
     """Function to compute the intersection of union score (IoU),
@@ -612,6 +610,15 @@ def calculateBatch(
             except FileNotFoundError:
                 tk.messagebox.showerror("Information",
                                         "Input directory is incorrect.")
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+            
+            except ValueError:
+                tk.messagebox.showerror("Information",
+                                        "Aponeurosis not detected during the analysis process." +
+                                        "\nChange aponeurosis threshold.")
                 gui.should_stop = False
                 gui.is_running = False
                 gui.do_break()

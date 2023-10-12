@@ -25,7 +25,12 @@ Currently, we have not provided unit testing for the functions and modules inclu
    :caption: Contents
    :hidden:
 
-   modules
+   whatsnew
+   installation
+   usage
+   tests
+   contribute
+   DL_Track_US
 
 
 Indices and tables

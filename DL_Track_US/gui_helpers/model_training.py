@@ -45,7 +45,7 @@ functions documentations.
 """
 import os
 import tkinter as tk
-
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from keras import backend as K
@@ -607,12 +607,12 @@ def trainModel(
                     factor=0.1, patience=10, min_lr=learning_rate, verbose=1
                 ),
                 ModelCheckpoint(
-                    out_path + "Test_Apo.h5",
+                    out_path + "Trained_model.h5",
                     verbose=1,
                     save_best_only=True,
                     save_weights_only=False,
                 ),  # Give the model a name (the .h5 part)
-                CSVLogger(out_path + "Test_apo.csv", separator=",",
+                CSVLogger(out_path + "Trained_model.csv", separator=",",
                           append=False),
             ]
 
@@ -643,6 +643,7 @@ def trainModel(
 
                 # Variables stored in results.history: val_loss, val_acc,
                 # val_IoU, loss, acc, IoU, lr
+                matplotlib.use("Agg")
                 fig, ax = plt.subplots(1, 2, figsize=(7, 7))
                 ax[0].plot(results.history["loss"],
                            label="Training loss")
