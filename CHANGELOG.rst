@@ -1,4 +1,22 @@
 
+2023-10-13
+==========
+
+Added
+-----
+
+- Apo length threshold for prediction
+
+Changed
+-------
+
+- GUI layout in Analysis window to add apo length threshold
+
+Fixed
+-----
+
+- Error Hhandling for apo prediction
+
 2023-10-09
 ==========
 

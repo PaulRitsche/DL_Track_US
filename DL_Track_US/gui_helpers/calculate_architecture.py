@@ -132,7 +132,7 @@ def importAndReshapeImage(path_to_image: str, flip: int):
     # Reshape, resize and normalize image
     height = img.shape[0]
     width = img.shape[1]
-    img = np.reshape(img, [-1, height, width, 3])
+    img = np.reshape(img, [-1, img.shape[0], img.shape[1], 3])
     img = resize(img, (1, 512, 512, 3), mode="constant", preserve_range=True)
     img = img / 255.0
 
@@ -316,6 +316,7 @@ def calculateBatch(
     spacing: int,
     filter_fasc: bool,
     apo_treshold: float,
+    apo_length_tresh: int,
     fasc_threshold: float,
     fasc_cont_thresh: int,
     min_width: int,
@@ -376,6 +377,12 @@ def calculateBatch(
         aponeurosis as the threshold for classifying
         a pixel as aponeurosis is changed. Must be non-zero and
         non-negative.
+    apo_length_tresh : int
+        Integer variable containing the threshold applied to predicted
+        aponeurosis length in pixels. By varying this
+        threshold, different structures will be classified as
+        aponeurosis depending on their length. Must be non-zero and
+        non-negative.
     fasc_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         pixels by our neural networks. By varying this threshold, different
@@ -431,7 +438,7 @@ def calculateBatch(
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
                        filetype="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
-                       apo_threshold=0.1,
+                       apo_threshold=0.1, apo_length_tresh=600,
                        fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
                        min_pennation=10, max_pennation=35,
                        gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
@@ -468,6 +475,7 @@ def calculateBatch(
     # Create dictionary with aponeurosis/fascicle analysis values
     dic = {
         "apo_treshold": apo_treshold,
+        "apo_length_tresh": apo_length_tresh,
         "fasc_threshold": fasc_threshold,
         "fasc_cont_thresh": fasc_cont_thresh,
         "min_width": min_width,
@@ -524,8 +532,7 @@ def calculateBatch(
                     flip = flip_flags.pop(0)
 
                     # Load image
-                    imported = importAndReshapeImage(imagepath, int(flip))
-                    img, img_copy, nonflipped_img, height, width, filename = imported
+                    img, img_copy, nonflipped_img, height, width, filename = importAndReshapeImage(imagepath, int(flip))
 
                     # Determine scaling type and continue analysis
                     if scaling == "Bar":
@@ -554,21 +561,21 @@ def calculateBatch(
                     else:
                         calib_dist = None
                         scale_statement = ""
-
+                
                     # Continue with analysis and predict apos and fasicles
                     fasc_l, pennation, _, _, midthick, fig = doCalculations(
-                        img,
-                        img_copy,
-                        height,
-                        width,
-                        calib_dist,
-                        spacing,
-                        filename,
-                        model_apo,
-                        model_fasc,
-                        scale_statement,
-                        dic,
-                        filter_fasc
+                        img=img,
+                        img_copy=img_copy,
+                        h=height,
+                        w=width,
+                        calib_dist=calib_dist,
+                        spacing=spacing,
+                        filename=filename,
+                        model_apo=model_apo,
+                        model_fasc=model_fasc,
+                        scale_statement=scale_statement,
+                        dictionary=dic,
+                        filter_fasc=filter_fasc
                     )
 
                     # Append warning to failes files when no aponeurosis was
@@ -615,14 +622,14 @@ def calculateBatch(
                 gui.do_break()
                 return
             
-            except ValueError:
-                tk.messagebox.showerror("Information",
-                                        "Aponeurosis not detected during the analysis process." +
-                                        "\nChange aponeurosis threshold.")
-                gui.should_stop = False
-                gui.is_running = False
-                gui.do_break()
-                return
+            # except ValueError:
+            #     tk.messagebox.showerror("Information",
+            #                             "Aponeurosis not detected during the analysis process." +
+            #                             "\nChange aponeurosis threshold.")
+            #     gui.should_stop = False
+            #     gui.is_running = False
+            #     gui.do_break()
+            #     return
 
             # Subsequent to analysis of all images, results are saved and
             # the GUI is stopped

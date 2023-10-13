@@ -27,6 +27,7 @@ Additional information and usage examples can be found at the respective
 functions documentations.
 """
 import math
+import tkinter as tk
 
 import cv2
 import matplotlib
@@ -70,14 +71,19 @@ def sortContours(cnts: list):
     (array([[[928, 247]], ... [[929, 247]]], dtype=int32)),
     ((201, 97, 747, 29), (201, 247, 750, 96))
     """
-    # initialize the reverse flag and sort index
-    i = 1
-    # construct the list of bounding boxes and sort them from top to bottom
-    bounding_boxes = [cv2.boundingRect(c) for c in cnts]
-    (cnts, bounding_boxes) = zip(
-        *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i],
-                reverse=False)
-    )
+    try:
+        # initialize the reverse flag and sort index
+        i = 1
+        # construct the list of bounding boxes and sort them from top to bottom
+        bounding_boxes = [cv2.boundingRect(c) for c in cnts]
+        (cnts, bounding_boxes) = zip(
+            *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i],
+                    reverse=False)
+        )
+    except ValueError:
+        tk.messagebox.showerror(
+            "Information", "Aponeurosis length threshold too big."
+        ) 
 
     return (cnts, bounding_boxes)
 
@@ -250,7 +256,7 @@ def doCalculations(
         will also be "None"
     dictionary : dict
         Dictionary variable containing analysis parameters.
-        These include must include apo_threshold, fasc_threshold,
+        These include must include apo_threshold, apo_length_tresh, fasc_threshold,
         fasc_cont_threshold, min_width, max_pennation,
         min_pennation.
     filter_fasc : bool
@@ -309,7 +315,7 @@ def doCalculations(
                         apo_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-VGG16-fasc-BCE-512.h5",
                         fasc_modelpath="C:/Users/admin/Documents/DL_Track/Models_DL_Track/Final_models/model-apo-VGG-BCE-512.h5",
                         scale_statement=None,
-                        dictionary={'apo_treshold': '0.2', 'fasc_threshold': '0.05', 'fasc_cont_thresh': '40', 'min_width': '60', 'min_pennation': '10', 'max_pennation': '40'},
+                        dictionary={'apo_treshold': '0.2', 'apo_length_tresh': '600', fasc_threshold': '0.05', 'fasc_cont_thresh': '40', 'min_width': '60', 'min_pennation': '10', 'max_pennation': '40'},
                         filter_fasc = False)
     [1030.1118966321328, 1091.096002143386, ..., 1163.07073327008, 1080.0001937069776, 976.6099281240987]
     [19.400700671533016, 18.30126098122986, ..., 18.505345607096586, 18.727693601171197, 22.03704574228162]
@@ -329,10 +335,11 @@ def doCalculations(
     min_pennation = int(dic["min_pennation"])
     apo_threshold = float(dic["apo_treshold"])
     fasc_threshold = float(dic["fasc_threshold"])
+    apo_length_tresh = int(dic["apo_length_tresh"])
 
-    # load the aponeurosis model
     pred_apo = model_apo.predict(img)
-    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)  # SET APO THS
+    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8) 
+    # SET APO THS
     pred_apo = resize(pred_apo, (1, h, w, 1))
     pred_apo = np.reshape(pred_apo, (h, w))
     pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
@@ -362,7 +369,7 @@ def doCalculations(
 
     contours_re = []
     for contour in contours:  # Remove any contours that are very small
-        if len(contour) > 600:
+        if len(contour) > apo_length_tresh:
             contours_re.append(contour)
     contours = contours_re
 
@@ -426,7 +433,7 @@ def doCalculations(
     mask_apoE = np.zeros(thresh.shape, np.uint8)
 
     contoursE = [
-        i for i in contoursE if len(i) > 600
+        i for i in contoursE if len(i) > apo_length_tresh
     ]  # Remove any contours that are very small
 
     for contour in contoursE:

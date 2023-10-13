@@ -270,6 +270,7 @@ def calculateArchitectureVideo(
     step: int,
     filter_fasc: bool,
     apo_treshold: float,
+    apo_length_thresh: int,
     fasc_threshold: float,
     fasc_cont_thresh: int,
     min_width: int,
@@ -335,6 +336,12 @@ def calculateArchitectureVideo(
         threshold, different structures will be classified as aponeurosis
         as the threshold for classifying a pixel as aponeurosis is changed.
         Must be non-zero and non-negative.
+    apo_length_tresh : int
+        Integer variable containing the threshold applied to predicted
+        aponeurosis length in pixels. By varying this
+        threshold, different structures will be classified as
+        aponeurosis depending on their length. Must be non-zero and
+        non-negative.
     fasc_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         pixels by our neural networks. By varying this threshold, different
@@ -416,7 +423,19 @@ def calculateArchitectureVideo(
         "min_width": min_width,
         "min_pennation": min_pennation,
         "max_pennation": max_pennation,
+        "apo_length_thresh": apo_length_thresh
     }
+
+    # Check analysis parameters for positive values
+    for _, value in dic.items():
+        if float(value) <= 0:
+            tk.messagebox.showerror(
+                "Information", "Analysis parameters must be non-zero and non-negative"
+            )
+            gui.should_stop = False
+            gui.is_running = False
+            gui.do_break()
+            return
 
     try:
 

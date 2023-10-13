@@ -164,20 +164,9 @@ def doCalculationsVideo(
     
     try:
 
-        # Check analysis parameters for positive values
-        for _, value in dic.items():
-            if float(value) <= 0:
-                tk.messagebox.showerror(
-                    "Information", "Analysis parameters must be non-zero and non-negative"
-                )
-                gui.should_stop = False
-                gui.is_running = False
-                gui.do_break()
-                return
-
         # Extract dictionary parameters
         fasc_cont_thresh, min_width, max_pennation, min_pennation = [int(dic[key]) for key in ["fasc_cont_thresh", "min_width", "max_pennation", "min_pennation"]]
-        apo_threshold, fasc_threshold = [float(dic[key]) for key in ["apo_treshold", "fasc_threshold"]]
+        apo_threshold, apo_length_thresh, fasc_threshold = [float(dic[key]) for key in ["apo_treshold", "apo_length_thresh", "fasc_threshold"]]
 
         # Define empty lists for parameter storing
         fasc_l_all, pennation_all, x_lows_all, x_highs_all, thickness_all = ([] for _ in range(5))
@@ -223,7 +212,7 @@ def doCalculationsVideo(
             )
 
             # include contours of long length
-            contours = [i for i in contours if len(i) > 600]
+            contours = [i for i in contours if len(i) > apo_length_thresh]
             # Sort contours from top to bottom
             contours, _ = sortContours(contours)
 
@@ -286,7 +275,7 @@ def doCalculationsVideo(
             mask_apoE = np.zeros(thresh.shape, np.uint8)
 
             # Select only long contours and draw to mask
-            contoursE = [i for i in contoursE if len(i) > 600]
+            contoursE = [i for i in contoursE if len(i) > apo_length_thresh]
             for contour in contoursE:
                 cv2.drawContours(mask_apoE, [contour], 0, 255, -1)
 

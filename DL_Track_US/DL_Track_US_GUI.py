@@ -919,6 +919,12 @@ class DLTrack:
         structures will be classified as aponeurosis as the threshold for
         classifying a pixel as aponeurosis is changed. Float, be non-zero and
         non-negative.
+        - Apo length threshold:
+        The user must input the threshold applied to predicted
+        aponeurosis length in pixels. By varying this
+        threshold, different structures will be classified as
+        aponeurosis depending on their length. Must be non-zero and
+        non-negative.
         - Fasc Threshold:
         The user must input the fascicle threshold
         either by selecting from the dropdown list or
@@ -968,9 +974,10 @@ class DLTrack:
             column=1, row=11, padx=10
         )
         ttk.Label(window, text="Apo Threshold").grid(column=1, row=12)
-        ttk.Label(window, text="Fasc Threshold").grid(column=1, row=13)
-        ttk.Label(window, text="Fasc Cont Threshold").grid(column=1, row=14)
-        ttk.Label(window, text="Minimal Width").grid(column=1, row=15)
+        ttk.Label(window, text="Apo Length Thresh").grid(column=1, row=13)
+        ttk.Label(window, text="Fasc Threshold").grid(column=1, row=14)
+        ttk.Label(window, text="Fasc Cont Threshold").grid(column=1, row=15)
+        ttk.Label(window, text="Minimal Width").grid(column=1, row=16)
         ttk.Label(window, text="Minimal Pennation").grid(column=1, row=17)
         ttk.Label(window, text="Maximal Pennation").grid(column=1, row=18)
 
@@ -983,13 +990,22 @@ class DLTrack:
         apo_entry.grid(column=2, row=12, sticky=(W, E))
         self.apo_threshold.set(0.2)
 
+        # Apo length threshold
+        self.apo_length_thresh = StringVar()
+        lthresh = (200, 300, 400, 500, 600)
+        apo_length_entry = ttk.Combobox(window, width=10,
+                                 textvariable=self.apo_length_thresh)
+        apo_length_entry["values"] = lthresh
+        apo_length_entry.grid(column=2, row=13, sticky=(W, E))
+        self.apo_length_thresh.set(600)
+
         # Fasc threshold
         self.fasc_threshold = StringVar()
         fthresh = [0.1, 0.3, 0.5]
         fasc_entry = ttk.Combobox(window, width=10,
                                   textvariable=self.fasc_threshold)
         fasc_entry["values"] = fthresh
-        fasc_entry.grid(column=2, row=13, sticky=(W, E))
+        fasc_entry.grid(column=2, row=14, sticky=(W, E))
         self.fasc_threshold.set(0.05)
 
         # Fasc cont threshold
@@ -999,7 +1015,7 @@ class DLTrack:
             window, width=10, textvariable=self.fasc_cont_threshold
         )
         fasc_cont_entry["values"] = fcthresh
-        fasc_cont_entry.grid(column=2, row=14, sticky=(W, E))
+        fasc_cont_entry.grid(column=2, row=15, sticky=(W, E))
         self.fasc_cont_threshold.set(40)
 
         # Minimal width
@@ -1008,7 +1024,7 @@ class DLTrack:
         width_entry = ttk.Combobox(window, width=10,
                                    textvariable=self.min_width)
         width_entry["values"] = mwidth
-        width_entry.grid(column=2, row=15, sticky=(W, E))
+        width_entry.grid(column=2, row=16, sticky=(W, E))
         self.min_width.set(60)
 
         # Minimal pennation
@@ -1703,6 +1719,7 @@ class DLTrack:
                 selected_scaling = self.scaling.get()
                 selected_spacing = self.spacing.get()
                 selected_apo_threshold = self.apo_threshold.get()
+                selected_apo_length_threshold = self.apo_length_thresh.get()
                 selected_fasc_threshold = self.fasc_threshold.get()
                 selected_fasc_cont_threshold = self.fasc_cont_threshold.get()
                 selected_min_width = self.min_width.get()
@@ -1721,6 +1738,7 @@ class DLTrack:
                         int(selected_spacing),
                         int(selected_filter_fasc),
                         float(selected_apo_threshold),
+                        int(selected_apo_length_threshold),
                         float(selected_fasc_threshold),
                         int(selected_fasc_cont_threshold),
                         int(selected_min_width),
@@ -1760,6 +1778,7 @@ class DLTrack:
                 selected_spacing = self.spacing.get()
                 selected_filter_fasc = self.filter_fasc.get()
                 selected_apo_threshold = self.apo_threshold.get()
+                selected_apo_length_threshold = self.apo_length_thresh.get()
                 selected_fasc_threshold = self.fasc_threshold.get()
                 selected_fasc_cont_threshold = self.fasc_cont_threshold.get()
                 selected_min_width = self.min_width.get()
@@ -1778,6 +1797,7 @@ class DLTrack:
                         int(selected_step),
                         int(selected_filter_fasc),
                         float(selected_apo_threshold),
+                        int(selected_apo_length_threshold),
                         float(selected_fasc_threshold),
                         int(selected_fasc_cont_threshold),
                         int(selected_min_width),
