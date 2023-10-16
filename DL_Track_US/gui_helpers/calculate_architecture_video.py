@@ -50,6 +50,8 @@ import glob
 import os
 import time
 import tkinter as tk
+from keras.models import load_model
+
 
 import cv2
 import matplotlib.pyplot as plt
@@ -59,6 +61,7 @@ from pandas import ExcelWriter
 
 from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
+from DL_Track_US.gui_helpers.calculate_architecture import IoU
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
 plt.style.use("ggplot")
@@ -253,7 +256,7 @@ def exportToEcxel(
     df5.to_excel(writer, sheet_name="Thickness")
 
     # Close the Pandas Excel writer and output the Excel file
-    writer.save()
+    writer.close()
 
 
 def calculateArchitectureVideo(
@@ -265,7 +268,9 @@ def calculateArchitectureVideo(
     flip: str,
     spacing: int,
     step: int,
+    filter_fasc: bool,
     apo_treshold: float,
+    apo_length_thresh: int,
     fasc_threshold: float,
     fasc_cont_thresh: int,
     min_width: int,
@@ -322,12 +327,21 @@ def calculateArchitectureVideo(
         Integer variable containing the step for the range of video frames.
         If step != 1, frames are skipped according to the size of step.
         This might decrease processing time but also accuracy.
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles. 
     apo_threshold : float
         Float variable containing the threshold applied to predicted
         aponeurosis pixels by our neural networks. By varying this
         threshold, different structures will be classified as aponeurosis
         as the threshold for classifying a pixel as aponeurosis is changed.
         Must be non-zero and non-negative.
+    apo_length_tresh : int
+        Integer variable containing the threshold applied to predicted
+        aponeurosis length in pixels. By varying this
+        threshold, different structures will be classified as
+        aponeurosis depending on their length. Must be non-zero and
+        non-negative.
     fasc_threshold : float
         Float variable containing the threshold applied to predicted fascicle
         pixels by our neural networks. By varying this threshold, different
@@ -384,7 +398,7 @@ def calculateArchitectureVideo(
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip="Flip", filetype="/**/*.avi, scaline="manual",
-                       spacing=10,
+                       spacing=10, filter_fasc=False
                        apo_threshold=0.1, fasc_threshold=0.05,
                        fasc_cont_thres=40,
                        curvature=3, min_pennation=10, max_pennation=35,
@@ -409,7 +423,19 @@ def calculateArchitectureVideo(
         "min_width": min_width,
         "min_pennation": min_pennation,
         "max_pennation": max_pennation,
+        "apo_length_thresh": apo_length_thresh
     }
+
+    # Check analysis parameters for positive values
+    for _, value in dic.items():
+        if float(value) <= 0:
+            tk.messagebox.showerror(
+                "Information", "Analysis parameters must be non-zero and non-negative"
+            )
+            gui.should_stop = False
+            gui.is_running = False
+            gui.do_break()
+            return
 
     try:
 
@@ -433,6 +459,9 @@ def calculateArchitectureVideo(
                 calib_dist = None
 
             # predict apos and fasicles
+            # Load models outside the loop
+            model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+            model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
             calculate = doCalculationsVideo
             (
                 fasc_l_all,
@@ -445,17 +474,17 @@ def calculateArchitectureVideo(
                 cap,
                 vid_out,
                 flip,
-                apo_modelpath,
-                fasc_modelpath,
+                model_apo,
+                model_fasc,
                 calib_dist,
                 dic,
                 step,
+                filter_fasc,
                 gui,
             )
 
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
-
             # Save Results
             exportToEcxel(
                 rootpath,

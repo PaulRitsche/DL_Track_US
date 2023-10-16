@@ -232,15 +232,15 @@ class ManualAnalysis:
         self.head.title("DL_Track_US - Manual Analysis")
         master_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = master_path + "/home_im.ico"
-        self.head.iconbitmap(iconpath)
+        #self.head.iconbitmap(iconpath)
 
         # Style
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("TFrame", background="DarkSeaGreen3")
+        style.configure("TFrame", background="#808080")
         style.configure(
             "TRadiobutton",
-            background="DarkSeaGreen3",
+            background="#808080",
             foreground="black",
             font=("Lucida Sans", 12),
         )

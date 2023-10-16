@@ -12,9 +12,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'DL_Track_US'
-copyright = '2022, Paul Ritsche, Olivier Seynnes, Neil Cronin'
+copyright = '2023, Paul Ritsche, Olivier Seynnes, Neil Cronin'
 author = 'Paul Ritsche, Olivier Seynnes, Neil Cronin'
-release = '0.1.2'
+release = '0.2.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -32,4 +32,5 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_logo = 'home_im.ico'
+html_favicon = 'home_im.ico'
