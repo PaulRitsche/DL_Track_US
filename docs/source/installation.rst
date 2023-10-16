@@ -6,7 +6,7 @@ We offer two possible installation approaches for our DL_Track_US software. The 
 Download the DL\_Track\_US executable
 -------------------------------------
 
-1. Got to the Zenodo webpage containing the DL_Track_US executable, the pre-trained models and the example files using this `link <https://zenodo.org/record/7866598#.ZEjuSMrP2Um>`_.
+1. Got to the OSF webpage containing the DL_Track_US executable, the pre-trained models and the example files using this `link <https://osf.io/7mjsc/?view_only=>`_.
 2. Download the DL_Track_US_example.zip folder and unpack the file.
 3. Find the DL_Track_US.exe executable located in the DL_Track_US_example/executable folder.
 4. Open the DL_Track_US_GUI by double clicking the DL_Track_US.exe file and start with the testing procedure to check that everything works properly (see `Examples <https://dltrack.readthedocs.io/en/latest/usage.html>`_ and `Testing <https://dltrack.readthedocs.io/en/latest/tests.html>`_). In case you get an anti-virus notification, trust us and click it away. We assure you the software is harmless. 

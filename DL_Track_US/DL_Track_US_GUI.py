@@ -1409,7 +1409,7 @@ class DLTrack:
 
                 # Loss function
                 self.loss_function = StringVar()
-                loss = ("BCE", "Dice", "FL")
+                loss = ("BCE")
                 loss_entry = ttk.Combobox(
                     self.advanced_window_frame,
                     width=10,
