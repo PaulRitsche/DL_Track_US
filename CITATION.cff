@@ -1,0 +1,44 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Ritsche
+  given-names: Paul
+  orcid: "https://orcid.org/0000-0001-9446-7872"
+- family-names: Seynnes
+  given-names: Olivier
+  orcid: "https://orcid.org/0000-0002-1289-246X"
+- family-names: Cronin
+  given-names: Neil
+  orcid: "https://orcid.org/0000-0002-5332-1188"
+contact:
+- family-names: Ritsche
+  given-names: Paul
+  orcid: "https://orcid.org/0000-0001-9446-7872"
+doi: 10.5281/zenodo.7885378
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Ritsche
+    given-names: Paul
+    orcid: "https://orcid.org/0000-0001-9446-7872"
+  - family-names: Seynnes
+    given-names: Olivier
+    orcid: "https://orcid.org/0000-0002-1289-246X"
+  - family-names: Cronin
+    given-names: Neil
+    orcid: "https://orcid.org/0000-0002-5332-1188"
+  date-published: 2023-05-02
+  doi: 10.21105/joss.05206
+  issn: 2475-9066
+  issue: 85
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5206
+  title: "DL_Track_US: a python package to analyse muscle
+    ultrasonography images"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05206"
+  volume: 8
+title: "DL_Track_US: a python package to analyse muscle ultrasonography
+  images"
