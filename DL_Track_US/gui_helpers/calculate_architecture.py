@@ -246,15 +246,14 @@ def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
 
     # Check if file already existing and write .xlsx
     if os.path.exists(excelpath):
-        with pd.ExcelWriter(excelpath,
-                            mode="a", if_sheet_exists="replace") as writer:
+        with pd.ExcelWriter(excelpath, mode="a", if_sheet_exists="replace") as writer:
             data = dataframe
             data.to_excel(writer, sheet_name="Results")
     else:
         with pd.ExcelWriter(excelpath, mode="w") as writer:
             data = dataframe
             data.to_excel(writer, sheet_name="Results")
- 
+
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
     """Function to compute the intersection of union score (IoU),
@@ -452,8 +451,7 @@ def calculateBatch(
         model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
 
     except OSError:
-        tk.messagebox.showerror("Information",
-                                "Apo/Fasc model path is incorrect.")
+        tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
@@ -532,7 +530,9 @@ def calculateBatch(
                     flip = flip_flags.pop(0)
 
                     # Load image
-                    img, img_copy, nonflipped_img, height, width, filename = importAndReshapeImage(imagepath, int(flip))
+                    img, img_copy, nonflipped_img, height, width, filename = (
+                        importAndReshapeImage(imagepath, int(flip))
+                    )
 
                     # Determine scaling type and continue analysis
                     if scaling == "Bar":
@@ -561,7 +561,7 @@ def calculateBatch(
                     else:
                         calib_dist = None
                         scale_statement = ""
-                
+
                     # Continue with analysis and predict apos and fasicles
                     fasc_l, pennation, _, _, midthick, fig = doCalculations(
                         img=img,
@@ -575,7 +575,7 @@ def calculateBatch(
                         model_fasc=model_fasc,
                         scale_statement=scale_statement,
                         dictionary=dic,
-                        filter_fasc=filter_fasc
+                        filter_fasc=filter_fasc,
                     )
 
                     # Append warning to failes files when no aponeurosis was
@@ -615,13 +615,12 @@ def calculateBatch(
                 print(f"duration total analysis: {duration}")
 
             except FileNotFoundError:
-                tk.messagebox.showerror("Information",
-                                        "Input directory is incorrect.")
+                tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 gui.should_stop = False
                 gui.is_running = False
                 gui.do_break()
                 return
-            
+
             # except ValueError:
             #     tk.messagebox.showerror("Information",
             #                             "Aponeurosis not detected during the analysis process." +
@@ -663,8 +662,7 @@ def calculateBatch(
         # Filpflage != number of images
         else:
             tk.messagebox.showerror(
-                "Information",
-                "Number of flipflags must match number of images."
+                "Information", "Number of flipflags must match number of images."
             )
             gui.should_stop = False
             gui.is_running = False
@@ -750,8 +748,7 @@ def calculateBatchManual(rootpath: str, filetype: str, gui):
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information", "No image files founds" +
-            "\nEnter correct file type"
+            "Information", "No image files founds" + "\nEnter correct file type"
         )
         gui.do_break()
         gui.should_stop = False

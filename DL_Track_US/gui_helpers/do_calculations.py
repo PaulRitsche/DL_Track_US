@@ -26,6 +26,7 @@ Notes
 Additional information and usage examples can be found at the respective
 functions documentations.
 """
+
 import math
 import tkinter as tk
 
@@ -77,13 +78,10 @@ def sortContours(cnts: list):
         # construct the list of bounding boxes and sort them from top to bottom
         bounding_boxes = [cv2.boundingRect(c) for c in cnts]
         (cnts, bounding_boxes) = zip(
-            *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i],
-                    reverse=False)
+            *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i], reverse=False)
         )
     except ValueError:
-        tk.messagebox.showerror(
-            "Information", "Aponeurosis length threshold too big."
-        ) 
+        tk.messagebox.showerror("Information", "Aponeurosis length threshold too big.")
 
     return (cnts, bounding_boxes)
 
@@ -154,17 +152,17 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
 def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     """
     Filters out fascicles that intersect with their neighboring fascicles based on their x_low and x_high values.
-    
+
     Parameters
     ----------
     df : pd.DataFrame
         A DataFrame containing the fascicle data. Expected columns include 'x_low', 'y_low', 'x_high', and 'y_high'.
-        
+
     Returns
     -------
     pd.DataFrame
         A DataFrame with the fascicles that do not intersect with their neighbors.
-        
+
     Example
     -------
     >>> data = {'x_low': [1, 3, 5], 'y_low': [1, 2, 3], 'x_high': [4, 6, 7], 'y_high': [4, 5, 6]}
@@ -174,22 +172,24 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     0      1      1       4       4
     2      5      3       7       6
     """
-    
-    df = df.sort_values(by='x_low').reset_index(drop=True)
-    df['keep'] = True
-    
-    x_lows = df['x_low'].values
-    x_highs = df['x_high'].values
-    
+
+    df = df.sort_values(by="x_low").reset_index(drop=True)
+    df["keep"] = True
+
+    x_lows = df["x_low"].values
+    x_highs = df["x_high"].values
+
     for i in range(len(df)):
-        for j in range(i+1, min(i+3, len(df))):  # Check the current fascicle and the two next ones
+        for j in range(
+            i + 1, min(i + 3, len(df))
+        ):  # Check the current fascicle and the two next ones
             # Check if the next fascicle(s) intersect
             if x_lows[i] <= x_lows[j] and x_highs[i] >= x_highs[j]:
-                df.at[i, 'keep'] = False
+                df.at[i, "keep"] = False
             elif x_lows[j] <= x_lows[i] and x_highs[j] >= x_highs[i]:
-                df.at[j, 'keep'] = False
-    
-    return df[df['keep']].drop(columns=['keep'])
+                df.at[j, "keep"] = False
+
+    return df[df["keep"]].drop(columns=["keep"])
 
 
 def doCalculations(
@@ -261,7 +261,7 @@ def doCalculations(
         min_pennation.
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
-        This may reduce number of totally detected fascicles. 
+        This may reduce number of totally detected fascicles.
 
     Returns
     -------
@@ -338,7 +338,7 @@ def doCalculations(
     apo_length_tresh = int(dic["apo_length_tresh"])
 
     pred_apo = model_apo.predict(img)
-    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8) 
+    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
     # SET APO THS
     pred_apo = resize(pred_apo, (1, h, w, 1))
     pred_apo = np.reshape(pred_apo, (h, w))
@@ -489,8 +489,7 @@ def doCalculations(
                 continue
             else:
                 dist = math.dist(
-                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val],
-                                                           low_y_new[val])
+                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val], low_y_new[val])
                 )
                 if dist < mindist:
                     mindist = dist
@@ -538,9 +537,20 @@ def doCalculations(
         contoursF3 = [i for i in contoursF2 if len(i) > fasc_cont_thresh]
 
         fig = plt.figure(figsize=(25, 25))
-       
-        fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', 'fasc_l', 'penn_a'])
-    
+
+        fascicle_data = pd.DataFrame(
+            columns=[
+                "x_low",
+                "x_high",
+                "y_low",
+                "y_high",
+                "coordsX",
+                "coordsY",
+                "fasc_l",
+                "penn_a",
+            ]
+        )
+
         for contour in contoursF2:
             x, y = contourEdge("B", contour)
             if len(x) == 0:
@@ -558,11 +568,11 @@ def doCalculations(
             diffL = newY - new_Y_LA
             locL = np.where(diffL == min(diffL, key=abs))[0]
             # Get coordinates of fascicle between the two aponeuroses
-            coordsX = newX[
-                int(locL): int(locU)
-            ]  
-            
-            coordsY = newY[int(locL): int(locU)]  # These are the coordinates of the fascicles between the two aponeuroses
+            coordsX = newX[int(locL) : int(locU)]
+
+            coordsY = newY[
+                int(locL) : int(locU)
+            ]  # These are the coordinates of the fascicles between the two aponeuroses
 
             # Get angle of aponeurosis in region close to fascicle intersection
             if locL >= 4950:
@@ -610,21 +620,24 @@ def doCalculations(
                     ActualAng <= max_pennation and ActualAng >= min_pennation
                 ):  # Don't include 'fascicles' beyond a range of PA
                     length1 = np.sqrt(
-                        (newX[locU] - newX[locL]) ** 2 +
-                        (y_UA[locU] - y_LA[locL]) ** 2
+                        (newX[locU] - newX[locL]) ** 2 + (y_UA[locU] - y_LA[locL]) ** 2
                     )
-                    fascicle_data_temp = pd.DataFrame({
-                        'x_low': [coordsX[0].astype("int32")],
-                        'x_high': [coordsX[-1].astype("int32")],
-                        'y_low': [coordsY[0].astype("int32")],
-                        'y_high': [coordsY[-1].astype("int32")],
-                        'coordsX': [coordsX],
-                        'coordsY': [coordsY],
-                        'fasc_l': [length1[0]],
-                        'penn_a': Apoangle - FascAng
-                    })
-                    fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
-                         
+                    fascicle_data_temp = pd.DataFrame(
+                        {
+                            "x_low": [coordsX[0].astype("int32")],
+                            "x_high": [coordsX[-1].astype("int32")],
+                            "y_low": [coordsY[0].astype("int32")],
+                            "y_high": [coordsY[-1].astype("int32")],
+                            "coordsX": [coordsX],
+                            "coordsY": [coordsY],
+                            "fasc_l": [length1[0]],
+                            "penn_a": Apoangle - FascAng,
+                        }
+                    )
+                    fascicle_data = pd.concat(
+                        [fascicle_data, fascicle_data_temp], ignore_index=True
+                    )
+
         # Filter out fascicles that intersect with their right neighbors
         if filter_fasc == 1:
             data = filter_fascicles(fascicle_data)
@@ -632,23 +645,26 @@ def doCalculations(
             data = fascicle_data
 
         # Get the rainbow colormap to make each fascicle visible
-        colormap = plt.cm.get_cmap('rainbow', len(data))
+        colormap = plt.cm.get_cmap("rainbow", len(data))
 
         # Plot the remaining fascicles with unique colors
         for index, row in enumerate(data.iterrows()):
             color = colormap(index)
-            plt.plot(row[1]['coordsX'], row[1]['coordsY'], color=color, alpha=0.3, linewidth=4)
+            plt.plot(
+                row[1]["coordsX"],
+                row[1]["coordsY"],
+                color=color,
+                alpha=0.3,
+                linewidth=4,
+            )
 
         # DISPLAY THE RESULTS
         plt.imshow(img_copy, cmap="gray")
-        plt.title(f"Image ID: {filename}" + f"\n{scale_statement}",
-                  fontsize=25)
+        plt.title(f"Image ID: {filename}" + f"\n{scale_statement}", fontsize=25)
         plt.plot(
-            low_x, low_y_new, marker="p", color="blue", linewidth=10,
-            alpha=0.1
+            low_x, low_y_new, marker="p", color="blue", linewidth=10, alpha=0.1
         )  # Plot the aponeuroses
-        plt.plot(upp_x, upp_y_new, marker="p", color="blue", linewidth=10,
-                 alpha=0.1)
+        plt.plot(upp_x, upp_y_new, marker="p", color="blue", linewidth=10, alpha=0.1)
 
         xplot = 125
         yplot = 700
@@ -661,8 +677,8 @@ def doCalculations(
             midthick = mindist
 
         # get fascicle length & pennation from dataframe
-        fasc_l = data['fasc_l']
-        pennation = data['penn_a']
+        fasc_l = data["fasc_l"]
+        pennation = data["penn_a"]
 
         # scale data
         if calib_dist:
@@ -679,8 +695,7 @@ def doCalculations(
         plt.text(
             xplot,
             yplot + 50,
-            ("Pennation angle: " +
-             str("%.1f" % np.median(pennation)) + " deg"),
+            ("Pennation angle: " + str("%.1f" % np.median(pennation)) + " deg"),
             fontsize=15,
             color="white",
         )
@@ -693,7 +708,14 @@ def doCalculations(
         )
         plt.grid(False)
 
-        return fasc_l, pennation, fascicle_data['x_low'], fascicle_data['x_high'], midthick, fig
+        return (
+            fasc_l,
+            pennation,
+            fascicle_data["x_low"],
+            fascicle_data["x_high"],
+            midthick,
+            fig,
+        )
 
     else:
 
