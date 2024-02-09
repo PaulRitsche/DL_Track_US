@@ -385,12 +385,12 @@ def calculateArchitectureVideo(
             # Save Results
             exportToEcxel(
                 rootpath,
-                filename,
                 fasc_l_all,
                 pennation_all,
                 x_lows_all,
                 x_highs_all,
                 thickness_all,
+                filename=filename,
             )
 
     except ValueError:

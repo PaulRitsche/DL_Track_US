@@ -221,12 +221,12 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
 
 def exportToEcxel(
     path: str,
-    filename: str,
     fasc_l_all: list,
     pennation_all: list,
     x_lows_all: list,
     x_highs_all: list,
     thickness_all: list,
+    filename: str = "Results",
 ):
     """Function to save the analysis results to a .xlsx file.
 
@@ -690,7 +690,6 @@ def calculateBatch(
                             "Pennation": pennation,
                             "X_low": x_low,
                             "X_high": x_high,
-                            "Thickness": midthick,
                         }
                     )
 
@@ -702,7 +701,7 @@ def calculateBatch(
                     pennation_all.append(df_sorted["Pennation"].tolist())
                     x_low_all.append(df_sorted["X_low"].tolist())
                     x_high_all.append(df_sorted["X_high"].tolist())
-                    thickness_all.append(df_sorted["Thickness"])
+                    thickness_all.append(midthick)
 
                     # Save figures of fascicles and apos to PDF
                     pdf.savefig(fig)
@@ -746,7 +745,6 @@ def calculateBatch(
                 # Save predicted area results
                 exportToEcxel(
                     rootpath,
-                    filename,
                     fascicles_all,
                     pennation_all,
                     x_low_all,

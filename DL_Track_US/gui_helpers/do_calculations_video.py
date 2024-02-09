@@ -587,7 +587,6 @@ def doCalculationsVideo(
                     "Pennation": pennation,
                     "X_low": x_low1,
                     "X_high": x_high1,
-                    "Thickness": midthick,
                 }
             )
 
@@ -599,7 +598,7 @@ def doCalculationsVideo(
             pennation_all.append(df_sorted["Pennation"].tolist())
             x_lows_all.append(df_sorted["X_low"].tolist())
             x_highs_all.append(df_sorted["X_high"].tolist())
-            thickness_all.append(df_sorted["Thickness"].tolist())
+            thickness_all.append(midthick)
 
             # fasc_l_all.append(fasc_l)
             # pennation_all.append(pennation)
@@ -646,7 +645,7 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
+                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) + " mm"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
@@ -666,7 +665,7 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % midthick) + " px"),
+                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) + " px"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
