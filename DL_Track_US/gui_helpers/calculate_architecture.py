@@ -718,6 +718,16 @@ def calculateBatch(
                 duration = time.time() - start_time
                 print(f"duration total analysis: {duration}")
 
+                # Save results as.xlsx file
+                exportToEcxel(
+                    rootpath,
+                    fascicles_all,
+                    pennation_all,
+                    x_low_all,
+                    x_high_all,
+                    thickness_all,
+                )
+
             except FileNotFoundError:
                 tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 gui.should_stop = False
@@ -741,17 +751,6 @@ def calculateBatch(
             # Subsequent to analysis of all images, results are saved and
             # the GUI is stopped
             finally:
-
-                # Save predicted area results
-                exportToEcxel(
-                    rootpath,
-                    fascicles_all,
-                    pennation_all,
-                    x_low_all,
-                    x_high_all,
-                    thickness_all,
-                )
-                # compileSaveResults(rootpath, dataframe)
 
                 # Write failed images in file
                 if len(failed_files) >= 1:

@@ -711,8 +711,8 @@ def doCalculations(
         return (
             fasc_l,
             pennation,
-            fascicle_data["x_low"],
-            fascicle_data["x_high"],
+            data["x_low"].tolist(),
+            data["x_high"].tolist(),
             midthick,
             fig,
         )

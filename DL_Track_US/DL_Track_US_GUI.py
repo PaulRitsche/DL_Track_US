@@ -35,6 +35,7 @@ References
 [2] U-net: Ronneberger, O., Fischer, P. and Brox, T. "U-Net: Convolutional Networks for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597 (2015)
 [3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
+
 import os
 import matplotlib
 
@@ -259,7 +260,7 @@ class DLTrack:
         root.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = master_path + "/gui_helpers/home_im.ico"
-        #root.iconbitmap(iconpath)
+        # root.iconbitmap(iconpath)
 
         self.main = ttk.Frame(root, padding="10 10 12 12")
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
@@ -301,8 +302,7 @@ class DLTrack:
             background="papaya whip",
             foregrund="black",
         )
-        style.configure("TCombobox", background="#808080",
-                        foreground="black")
+        style.configure("TCombobox", background="#808080", foreground="black")
 
         # Entryboxes
         # Input directory
@@ -313,15 +313,13 @@ class DLTrack:
 
         # Apo Model path
         self.apo_model = StringVar()
-        apo_model_entry = ttk.Entry(self.main, width=30,
-                                    textvariable=self.apo_model)
+        apo_model_entry = ttk.Entry(self.main, width=30, textvariable=self.apo_model)
         apo_model_entry.grid(column=2, row=7, columnspan=3, sticky=(W, E))
         self.apo_model.set("C:/Users/admin/Documents")
 
         # Fasc Model path
         self.fasc_model = StringVar()
-        fasc_model_entry = ttk.Entry(self.main, width=30,
-                                     textvariable=self.fasc_model)
+        fasc_model_entry = ttk.Entry(self.main, width=30, textvariable=self.fasc_model)
         fasc_model_entry.grid(column=2, row=8, columnspan=3, sticky=(W, E))
         self.fasc_model.set("C:/Users/admin/Documents")
 
@@ -329,24 +327,18 @@ class DLTrack:
         # Analysis Type
         self.analysis_type = StringVar()
         image = ttk.Radiobutton(
-            self.main,
-            text="Image",
-            variable=self.analysis_type,
-            value="image"
+            self.main, text="Image", variable=self.analysis_type, value="image"
         )
         image.grid(column=2, row=10, sticky=(W, E))
         video = ttk.Radiobutton(
-            self.main,
-            text="Video",
-            variable=self.analysis_type,
-            value="video"
+            self.main, text="Video", variable=self.analysis_type, value="video"
         )
         video.grid(column=3, row=10, sticky=(W, E))
         image_manual = ttk.Radiobutton(
             self.main,
             text="Image Manual",
             variable=self.analysis_type,
-            value="image_manual"
+            value="image_manual",
         )
         image_manual.grid(column=2, row=11, sticky=(W, E))
         video_manual = ttk.Radiobutton(
@@ -360,8 +352,7 @@ class DLTrack:
 
         # Buttons
         # Input directory
-        input_button = ttk.Button(self.main, text="Input",
-                                  command=self.get_input_dir)
+        input_button = ttk.Button(self.main, text="Input", command=self.get_input_dir)
         input_button.grid(column=5, row=6, sticky=E)
 
         # Apo model path
@@ -377,8 +368,7 @@ class DLTrack:
         fasc_model_button.grid(column=5, row=8, sticky=E)
 
         # Break button
-        break_button = ttk.Button(self.main, text="Break",
-                                  command=self.do_break)
+        break_button = ttk.Button(self.main, text="Break", command=self.do_break)
         break_button.grid(column=2, row=20, sticky=(W, E))
 
         # Run button
@@ -418,7 +408,7 @@ class DLTrack:
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
             column=0, row=19, columnspan=9, sticky=(W, E)
         )
-        
+
         for child in self.main.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
@@ -454,17 +444,20 @@ class DLTrack:
         Unified instance method to display the required parameters
         based on the selected analysis type.
         """
-        
+
         # First, clear any existing widgets
         # for widget in getattr(self, "_dynamic_widgets", []):
         #     widget.grid_remove()
         # self._dynamic_widgets = []
-        
+
         # Generic Labels
-        ttk.Label(self.main, text=f"{self.analysis_type.get()} Properties",
-                font=("Verdana", 14)).grid(column=1, row=12, sticky=(W, E))
-        #self._dynamic_widgets.append(ttk.Label(self.main, text=f"{self.analysis_type} Type"))
-        
+        ttk.Label(
+            self.main,
+            text=f"{self.analysis_type.get()} Properties",
+            font=("Verdana", 14),
+        ).grid(column=1, row=12, sticky=(W, E))
+        # self._dynamic_widgets.append(ttk.Label(self.main, text=f"{self.analysis_type} Type"))
+
         # Based on the analysis type, display the appropriate widgets
         if self.analysis_type.get() == "image":
             """Display the required parameters
@@ -513,14 +506,16 @@ class DLTrack:
                 self.flip_y.grid_remove()
                 self.flip_n.grid_remove()
                 self.filetype_video_entry.grid_remove()
-            
+
             if hasattr(self, "vpath_button"):
                 self.vpath_button.grid_remove()
                 self.video_type_label.grid_remove()
                 self.video_entry.grid_remove()
 
             # Labels
-            ttk.Label(self.main, text="Image Properties", font=("Verdana", 14)).grid(column=1, row=12, sticky=(W, E))
+            ttk.Label(self.main, text="Image Properties", font=("Verdana", 14)).grid(
+                column=1, row=12, sticky=(W, E)
+            )
             self.image_type_label = ttk.Label(self.main, text="Image Type")
             self.image_type_label.grid(column=1, row=13)
             self.scaling_label = ttk.Label(self.main, text="Scaling Type")
@@ -572,8 +567,9 @@ class DLTrack:
                 "/*.jpeg",
                 "/*.jpg",
             )
-            self.filetype_entry = ttk.Combobox(self.main, width=10,
-                                        textvariable=self.filetype)
+            self.filetype_entry = ttk.Combobox(
+                self.main, width=10, textvariable=self.filetype
+            )
             self.filetype_entry["values"] = filetype
             # filetype_entry["state"] = "readonly"
             self.filetype_entry.grid(column=2, row=13, sticky=(W, E))
@@ -582,8 +578,9 @@ class DLTrack:
             # Spacing
             self.spacing = StringVar()
             spacing = (5, 10, 15, 20)
-            self.spacing_entry = ttk.Combobox(self.main, width=10,
-                                        textvariable=self.spacing)
+            self.spacing_entry = ttk.Combobox(
+                self.main, width=10, textvariable=self.spacing
+            )
             self.spacing_entry["values"] = spacing
             self.spacing_entry["state"] = "readonly"
             self.spacing_entry.grid(column=2, row=15, sticky=(W, E))
@@ -600,16 +597,17 @@ class DLTrack:
             self.analysis_button = ttk.Button(
                 self.main, text="Analysis Parameters", command=self.open_window
             )
-            self.analysis_button.grid(column=5, row=18, sticky=(W,E), pady=5)
+            self.analysis_button.grid(column=5, row=18, sticky=(W, E), pady=5)
 
             # Entry
             # Flip File path
             self.flipflag = StringVar()
-            self.flipflag_entry = ttk.Entry(self.main, width=30,
-                                    textvariable=self.flipflag)
+            self.flipflag_entry = ttk.Entry(
+                self.main, width=30, textvariable=self.flipflag
+            )
             self.flipflag_entry.grid(column=2, row=17, columnspan=2, sticky=(W, E))
             self.flipflag.set("Desktop/DL_Track/FlipFlags.txt")
-        
+
         elif self.analysis_type.get() == "video":
             """Display the required parameters
             that need to be entered by the user when videos
@@ -655,17 +653,18 @@ class DLTrack:
                 self.filetype_entry.grid_remove()
                 self.flipflag_entry.grid_remove()
                 self.flipfile_button.grid_remove()
-            
+
             if hasattr(self, "vpath_button"):
                 self.vpath_button.grid_remove()
                 self.video_type_label.grid_remove()
                 self.video_entry.grid_remove()
-                
+
             # Reset flipping variable for Video
             self.flip = None
 
-            ttk.Label(self.main, text="Video Properties",
-                font=("Verdana", 14)).grid(column=1, row=12, sticky=(W, E))
+            ttk.Label(self.main, text="Video Properties", font=("Verdana", 14)).grid(
+                column=1, row=12, sticky=(W, E)
+            )
             self.video_type_label = ttk.Label(self.main, text="Video Type")
             self.video_type_label.grid(column=1, row=13)
             self.scaling_label = ttk.Label(self.main, text="Scaling Type")
@@ -720,14 +719,15 @@ class DLTrack:
             self.analysis_button = ttk.Button(
                 self.main, text="Analysis Parameters", command=self.open_window
             )
-            self.analysis_button.grid(column=5, row=18, sticky=(W,E), pady=5)
-            
+            self.analysis_button.grid(column=5, row=18, sticky=(W, E), pady=5)
+
             # Comboboxes
             # Filetype
             self.filetype = StringVar()
             filetype_video = ("/*.avi", "/*.mp4")
-            self.filetype_video_entry = ttk.Combobox(self.main, width=10,
-                                        textvariable=self.filetype)
+            self.filetype_video_entry = ttk.Combobox(
+                self.main, width=10, textvariable=self.filetype
+            )
             self.filetype_video_entry["values"] = filetype_video
             # filetype_entry["state"] = "readonly"
             self.filetype_video_entry.grid(column=2, row=13, sticky=(W, E))
@@ -735,8 +735,9 @@ class DLTrack:
             # Spacing
             self.spacing = StringVar()
             spacing = (5, 10, 15, 20)
-            self.spacing_entry = ttk.Combobox(self.main, width=10,
-                                        textvariable=self.spacing)
+            self.spacing_entry = ttk.Combobox(
+                self.main, width=10, textvariable=self.spacing
+            )
             self.spacing_entry["values"] = spacing
             self.spacing_entry["state"] = "readonly"
             self.spacing_entry.grid(column=2, row=15, sticky=(W, E))
@@ -791,7 +792,7 @@ class DLTrack:
                 self.flip_y.grid_remove()
                 self.flip_n.grid_remove()
                 self.filetype_video_entry.grid_remove()
-                
+
             if hasattr(self, "vpath_button"):
                 self.vpath_button.grid_remove()
                 self.video_type_label.grid_remove()
@@ -800,15 +801,16 @@ class DLTrack:
             # First, clear any existing widgets
             for widget in getattr(self, "_dynamic_widgets", []):
                 widget.grid_remove()
-            
+
             self._dynamic_widgets = []
 
             # Labels
-            ttk.Label(self.main, text="Image Properties",
-                font=("Verdana", 14)).grid(column=1, row=12, sticky=(W, E))
+            ttk.Label(self.main, text="Image Properties", font=("Verdana", 14)).grid(
+                column=1, row=12, sticky=(W, E)
+            )
             self.image_type_label = ttk.Label(self.main, text="Image Type")
             self.image_type_label.grid(column=1, row=13)
-            
+
             # Comboboxes
             # Filetype
             self.filetype = StringVar()
@@ -820,13 +822,14 @@ class DLTrack:
                 "/*.jpeg",
                 "/*.jpg",
             )
-            self.filetype_entry = ttk.Combobox(self.main, width=10,
-                                        textvariable=self.filetype)
+            self.filetype_entry = ttk.Combobox(
+                self.main, width=10, textvariable=self.filetype
+            )
             self.filetype_entry["values"] = filetype
             # filetype_entry["state"] = "readonly"
             self.filetype_entry.grid(column=2, row=13, sticky=(W, E))
             self.filetype.set("/*.tiff")
-        
+
         elif self.analysis_type.get() == "video_manual":
             """Instance method to display the required parameters
             that need to be entered by the user when videos are
@@ -867,10 +870,11 @@ class DLTrack:
                 self.flip_y.grid_remove()
                 self.flip_n.grid_remove()
                 self.filetype_video_entry.grid_remove()
-            
+
             # Labels
-            ttk.Label(self.main, text="Video Properties",
-                font=("Verdana", 14)).grid(column=1, row=12, sticky=(W, E))
+            ttk.Label(self.main, text="Video Properties", font=("Verdana", 14)).grid(
+                column=1, row=12, sticky=(W, E)
+            )
             self.video_type_label = ttk.Label(self.main, text="Video Type")
             self.video_type_label.grid(column=1, row=13)
 
@@ -882,7 +886,9 @@ class DLTrack:
 
             # Buttons
             # Get video path
-            self.vpath_button = ttk.Button(self.main, text="Video Path", command=self.get_video_path)
+            self.vpath_button = ttk.Button(
+                self.main, text="Video Path", command=self.get_video_path
+            )
             self.vpath_button.grid(column=5, row=13, sticky=E)
 
     def get_flipfile_path(self):
@@ -965,12 +971,11 @@ class DLTrack:
         # Add icon to window
         window_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = window_path + "/gui_helpers/home_im.ico"
-        #window.iconbitmap(iconpath)
+        # window.iconbitmap(iconpath)
         window.grab_set()
 
         # Labels
-        ttk.Label(window, text="Analysis Parameters",
-                  font=("Verdana", 14)).grid(
+        ttk.Label(window, text="Analysis Parameters", font=("Verdana", 14)).grid(
             column=1, row=11, padx=10
         )
         ttk.Label(window, text="Apo Threshold").grid(column=1, row=12)
@@ -984,8 +989,7 @@ class DLTrack:
         # Apo threshold
         self.apo_threshold = StringVar()
         athresh = (0.1, 0.3, 0.5, 0.7, 0.9)
-        apo_entry = ttk.Combobox(window, width=10,
-                                 textvariable=self.apo_threshold)
+        apo_entry = ttk.Combobox(window, width=10, textvariable=self.apo_threshold)
         apo_entry["values"] = athresh
         apo_entry.grid(column=2, row=12, sticky=(W, E))
         self.apo_threshold.set(0.2)
@@ -993,8 +997,9 @@ class DLTrack:
         # Apo length threshold
         self.apo_length_thresh = StringVar()
         lthresh = (200, 300, 400, 500, 600)
-        apo_length_entry = ttk.Combobox(window, width=10,
-                                 textvariable=self.apo_length_thresh)
+        apo_length_entry = ttk.Combobox(
+            window, width=10, textvariable=self.apo_length_thresh
+        )
         apo_length_entry["values"] = lthresh
         apo_length_entry.grid(column=2, row=13, sticky=(W, E))
         self.apo_length_thresh.set(600)
@@ -1002,8 +1007,7 @@ class DLTrack:
         # Fasc threshold
         self.fasc_threshold = StringVar()
         fthresh = [0.1, 0.3, 0.5]
-        fasc_entry = ttk.Combobox(window, width=10,
-                                  textvariable=self.fasc_threshold)
+        fasc_entry = ttk.Combobox(window, width=10, textvariable=self.fasc_threshold)
         fasc_entry["values"] = fthresh
         fasc_entry.grid(column=2, row=14, sticky=(W, E))
         self.fasc_threshold.set(0.05)
@@ -1021,8 +1025,7 @@ class DLTrack:
         # Minimal width
         self.min_width = StringVar()
         mwidth = (20, 30, 40, 50, 60, 70, 80, 90, 100)
-        width_entry = ttk.Combobox(window, width=10,
-                                   textvariable=self.min_width)
+        width_entry = ttk.Combobox(window, width=10, textvariable=self.min_width)
         width_entry["values"] = mwidth
         width_entry.grid(column=2, row=16, sticky=(W, E))
         self.min_width.set(60)
@@ -1044,8 +1047,7 @@ class DLTrack:
         self.max_pennation.set(40)
 
         # Set Params button
-        set_params = ttk.Button(window, text="Set parameters",
-                                command=window.destroy)
+        set_params = ttk.Button(window, text="Set parameters", command=window.destroy)
         set_params.grid(column=1, row=19, sticky=(W, E))
 
         # Add padding
@@ -1409,7 +1411,7 @@ class DLTrack:
 
                 # Loss function
                 self.loss_function = StringVar()
-                loss = ("BCE")
+                loss = "BCE"
                 loss_entry = ttk.Combobox(
                     self.advanced_window_frame,
                     width=10,
@@ -1429,7 +1431,7 @@ class DLTrack:
                 ).grid(column=0, row=11, columnspan=9, sticky=(W, E))
 
         except FileNotFoundError:
-            tk.messagebox.showerror("Information", "Enter the coorect folder path!")
+            tk.messagebox.showerror("Information", "Enter the correct folder path!")
 
         # Add padding
         for child in self.advanced_window_frame.winfo_children():
@@ -1574,7 +1576,6 @@ class DLTrack:
             self.should_stop = False
             self.is_running = False
 
-
     # ---------------------------------------------------------------------------------------------------
     # Methods and properties required for threading
 
@@ -1647,8 +1648,8 @@ class DLTrack:
         self._is_running = flag
         self._lock.release()
 
-# ---------------------------------------------------------------------------------------------------
-# Function required to run the code
+    # ---------------------------------------------------------------------------------------------------
+    # Function required to run the code
 
     def run_code(self):
         """Instance method to execute the analysis process when the
@@ -1689,8 +1690,7 @@ class DLTrack:
 
             # Make sure some kind of input directory is specified.
             if len(selected_input_dir) < 3:
-                tk.messagebox.showerror("Information",
-                                        "Input directory is incorrect.")
+                tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
@@ -1706,8 +1706,7 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information",
-                                            "Filetype is invalid.")
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -1753,8 +1752,7 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information",
-                                            "Filetype is invalid.")
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -1764,8 +1762,7 @@ class DLTrack:
 
                 # Make sure some kind of step is specified.
                 if len(selected_step) < 1 or int(selected_step) < 1:
-                    tk.messagebox.showerror("Information",
-                                            "Frame Steps is invalid.")
+                    tk.messagebox.showerror("Information", "Frame Steps is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -1812,8 +1809,7 @@ class DLTrack:
 
                 # Make sure some kind of filetype is specified.
                 if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information",
-                                            "Filetype is invalid.")
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
                     self.should_stop = False
                     self.is_running = False
                     self.do_break()
@@ -1857,8 +1853,7 @@ class DLTrack:
                 "Check input parameters."
                 + "\nPotential error sources:"
                 + "\n - Invalid specified directory."
-                "\n - Analysis Type not set" +
-                "\n - Analysis parameters not set.",
+                "\n - Analysis Type not set" + "\n - Analysis parameters not set.",
             )
             self.do_break()
             self.should_stop = False
@@ -1888,8 +1883,7 @@ class DLTrack:
 
         except ValueError:
             tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" +
-                " must not be empty."
+                "Information", "Analysis parameter entry fields" + " must not be empty."
             )
             self.do_break()
             self.should_stop = False
@@ -1906,6 +1900,7 @@ class DLTrack:
         """
         if self.is_running:
             self.should_stop = True
+
 
 # ---------------------------------------------------------------------------------------------------
 # Function required to run the GUI from the prompt
