@@ -49,7 +49,7 @@ import os
 import time
 import tkinter as tk
 import warnings
-
+from pandas import ExcelWriter
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -217,6 +217,101 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
                 flip_flags.append(digit)
 
     return flip_flags
+
+
+def exportToEcxel(
+    path: str,
+    filename: str,
+    fasc_l_all: list,
+    pennation_all: list,
+    x_lows_all: list,
+    x_highs_all: list,
+    thickness_all: list,
+):
+    """Function to save the analysis results to a .xlsx file.
+
+    A list of each variable to be saved must be inputted. The inputs are
+    inculded in a dataframe and saved to an .xlsx file.
+    The .xlsx file is saved to the specified rootpath containing
+    each analyzed frame. Estimates or fascicle length, pennation angle,
+    muscle thickness and intersections of fascicles with aponeuroses
+    are saved.
+
+    Parameters
+    ----------
+    path : str
+        String variable containing the path to where the .xlsx file
+        should be saved.
+     filename : str
+        String value containing the name of the input video, not the
+        entire path. The .xlsx file is named accordingly.
+    fasc_l_all : list
+        List variable containing all fascicle estimates from
+        a single frame that was analyzed.
+    pennation_all : list
+        List variable containing all pennation angle estimates from
+        a single frame that was analyzed.
+    x_lows_all : list
+        List variable containing all x-coordinate estimates from
+        intersection of the fascicle with the the lower aponeurosiis
+        of a single frame that was analyzed.
+    x_highs_all : list
+        List variable containing all x-coordinate estimates from
+        the intersection of the fascicle with the upper aponeurosiis
+        of a single frame that was analyzed.
+    thickness_all : list
+        List variable containing all muscle thickness estimates from
+        a single frame that was analyzed.
+
+    Examples
+    --------
+    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos",
+                             filename="video1.avi",
+                             fasc_l_all=[7.8,, 6.4, 9.1],
+                             pennation_all=[20, 21.1, 24],
+                             x_lows_all=[749, 51, 39],
+                             x_highs_all=[54, 739, 811],
+                             thickness_all=[1.85])
+    """
+    # Create empty arrays
+    fl = np.zeros([len(fasc_l_all), len(max(fasc_l_all, key=lambda x: len(x)))])
+    pe = np.zeros([len(pennation_all), len(max(pennation_all, key=lambda x: len(x)))])
+    xl = np.zeros([len(x_lows_all), len(max(x_lows_all, key=lambda x: len(x)))])
+    xh = np.zeros([len(x_highs_all), len(max(x_highs_all, key=lambda x: len(x)))])
+
+    # Add respective values to the respecive array
+    for i, j in enumerate(fasc_l_all):
+        fl[i][0 : len(j)] = j  # fascicle length
+    fl[fl == 0] = np.nan
+    for i, j in enumerate(pennation_all):
+        pe[i][0 : len(j)] = j  # pennation angle
+    pe[pe == 0] = np.nan
+    for i, j in enumerate(x_lows_all):
+        xl[i][0 : len(j)] = j  # lower intersection
+    xl[xl == 0] = np.nan
+    for i, j in enumerate(x_highs_all):
+        xh[i][0 : len(j)] = j  # upper intersection
+    xh[xh == 0] = np.nan
+
+    # Create dataframes with values
+    df1 = pd.DataFrame(data=fl)
+    df2 = pd.DataFrame(data=pe)
+    df3 = pd.DataFrame(data=xl)
+    df4 = pd.DataFrame(data=xh)
+    df5 = pd.DataFrame(data=thickness_all)
+
+    # Create a pandas Excel
+    writer = ExcelWriter(path + "/" + filename + ".xlsx")
+
+    # Write each dataframe to a different worksheet.
+    df1.to_excel(writer, sheet_name="Fasc_length")
+    df2.to_excel(writer, sheet_name="Pennation")
+    df3.to_excel(writer, sheet_name="X_low")
+    df4.to_excel(writer, sheet_name="X_high")
+    df5.to_excel(writer, sheet_name="Thickness")
+
+    # Close the Pandas Excel writer and output the Excel file
+    writer.close()
 
 
 def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
@@ -494,13 +589,15 @@ def calculateBatch(
             gui.do_break()
             return
 
-    # Create Dataframe for result saving
-    dataframe = pd.DataFrame(
-        columns=["File", "Fasicle Length", "Pennation Angle", "Midthick"]
-    )
-
     # Define list for failed files
     failed_files = []
+
+    # Define lists for paramters of all images
+    fascicles_all = []
+    pennation_all = []
+    x_low_all = []
+    x_high_all = []
+    thickness_all = []
 
     # Define count for index in .xlsx file
     count = 0
@@ -563,7 +660,7 @@ def calculateBatch(
                         scale_statement = ""
 
                     # Continue with analysis and predict apos and fasicles
-                    fasc_l, pennation, _, _, midthick, fig = doCalculations(
+                    fasc_l, pennation, x_low, x_high, midthick, fig = doCalculations(
                         img=img,
                         img_copy=img_copy,
                         h=height,
@@ -585,19 +682,27 @@ def calculateBatch(
                         failed_files.append(fail)
                         continue
 
-                    # Define output dataframe
-                    dataframe2 = pd.DataFrame(
+                    # Sort parameters
+                    # Creating a DataFrame from the lists
+                    df = pd.DataFrame(
                         {
-                            "File": filename,
-                            "Fasicle Length": np.median(fasc_l),
-                            "Pennation Angle": np.median(pennation),
-                            "Midthick": midthick,
-                        },
-                        index=[count],
+                            "Fascicles": fasc_l,
+                            "Pennation": pennation,
+                            "X_low": x_low,
+                            "X_high": x_high,
+                            "Thickness": midthick,
+                        }
                     )
 
-                    # Append results to dataframe
-                    dataframe = pd.concat([dataframe, dataframe2], axis=0)
+                    # Sorting the DataFrame according to X_low
+                    df_sorted = df.sort_values(by="X_low")
+
+                    # Append parameters to overall list
+                    fascicles_all.append(df_sorted["Fascicles"].tolist())
+                    pennation_all.append(df_sorted["Pennation"].tolist())
+                    x_low_all.append(df_sorted["X_low"].tolist())
+                    x_high_all.append(df_sorted["X_high"].tolist())
+                    thickness_all.append(df_sorted["Thickness"])
 
                     # Save figures of fascicles and apos to PDF
                     pdf.savefig(fig)
@@ -621,21 +726,34 @@ def calculateBatch(
                 gui.do_break()
                 return
 
-            # except ValueError:
-            #     tk.messagebox.showerror("Information",
-            #                             "Aponeurosis not detected during the analysis process." +
-            #                             "\nChange aponeurosis threshold.")
-            #     gui.should_stop = False
-            #     gui.is_running = False
-            #     gui.do_break()
-            #     return
+            except ValueError:
+                failed_files.append(fail)
+                warnings.warn("No aponeuroses found in image.")
+
+            except PermissionError:
+                tk.messagebox.showerror(
+                    "Information", "Close results file berfore ongoing analysis."
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
             # Subsequent to analysis of all images, results are saved and
             # the GUI is stopped
             finally:
 
                 # Save predicted area results
-                compileSaveResults(rootpath, dataframe)
+                exportToEcxel(
+                    rootpath,
+                    filename,
+                    fascicles_all,
+                    pennation_all,
+                    x_low_all,
+                    x_high_all,
+                    thickness_all,
+                )
+                # compileSaveResults(rootpath, dataframe)
 
                 # Write failed images in file
                 if len(failed_files) >= 1:

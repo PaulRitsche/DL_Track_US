@@ -28,6 +28,7 @@ See Also
 --------
 do_calculations.py
 """
+
 from __future__ import division
 
 import math
@@ -44,7 +45,11 @@ from skimage.morphology import skeletonize
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
-from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours, filter_fascicles
+from DL_Track_US.gui_helpers.do_calculations import (
+    contourEdge,
+    sortContours,
+    filter_fascicles,
+)
 
 
 def doCalculationsVideo(
@@ -110,7 +115,7 @@ def doCalculationsVideo(
         This might decrease processing time but also accuracy.
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
-        This may reduce number of totally detected fascicles. 
+        This may reduce number of totally detected fascicles.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -161,15 +166,28 @@ def doCalculationsVideo(
     [[725, 568, 725, 556, 444], [926, 572, 516, 508], [971, 565, 502], [739, 578, 474], [554, 766, 603, 475], [1049, 755, 567, 430], [954, 934, 568], [968, 574]]
     [23.484416057267826, 22.465452189555794, 21.646971767045816, 21.602856412413924, 21.501286239714894, 21.331137350026623, 21.02446763240188, 21.250352548097883]
     """
-    
+
     try:
 
         # Extract dictionary parameters
-        fasc_cont_thresh, min_width, max_pennation, min_pennation = [int(dic[key]) for key in ["fasc_cont_thresh", "min_width", "max_pennation", "min_pennation"]]
-        apo_threshold, apo_length_thresh, fasc_threshold = [float(dic[key]) for key in ["apo_treshold", "apo_length_thresh", "fasc_threshold"]]
+        fasc_cont_thresh, min_width, max_pennation, min_pennation = [
+            int(dic[key])
+            for key in [
+                "fasc_cont_thresh",
+                "min_width",
+                "max_pennation",
+                "min_pennation",
+            ]
+        ]
+        apo_threshold, apo_length_thresh, fasc_threshold = [
+            float(dic[key])
+            for key in ["apo_treshold", "apo_length_thresh", "fasc_threshold"]
+        ]
 
         # Define empty lists for parameter storing
-        fasc_l_all, pennation_all, x_lows_all, x_highs_all, thickness_all = ([] for _ in range(5))
+        fasc_l_all, pennation_all, x_lows_all, x_highs_all, thickness_all = (
+            [] for _ in range(5)
+        )
 
         # Loop through each frame of the video
         for a in range(0, vid_len - 1, step):
@@ -185,7 +203,9 @@ def doCalculationsVideo(
             h, w, _ = img.shape
             img = resize(img, (512, 512, 3))
             img_normalized = img / 255.0
-            img_input = np.expand_dims(img_normalized, axis=0)  # Create a batch of size 1
+            img_input = np.expand_dims(
+                img_normalized, axis=0
+            )  # Create a batch of size 1
 
             # Predict aponeurosis and fascicle segments
             pred_apo = apo_model.predict(img_input)
@@ -252,8 +272,7 @@ def doCalculationsVideo(
                     y1 = ys2[countU]
                     y2 = ys1[countU + 1]
                     if y1 - 10 <= y2 <= y1 + 10:
-                        m = np.vstack((contours_re2[countU],
-                                       contours_re2[countU + 1]))
+                        m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
                         cv2.drawContours(maskT, [m], 0, 255, -1)
                 countU += 1
 
@@ -366,8 +385,7 @@ def doCalculationsVideo(
                 # Fascicle calculation part
 
                 # Compute contours to identify fascicles / fascicle orientation
-                _, threshF = cv2.threshold(pred_fasc_t, 0, 255,
-                                           cv2.THRESH_BINARY)
+                _, threshF = cv2.threshold(pred_fasc_t, 0, 255, cv2.THRESH_BINARY)
                 threshF = threshF.astype("uint8")
                 contoursF, hierarchy = cv2.findContours(
                     threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -397,8 +415,19 @@ def doCalculationsVideo(
                 x_low1 = []
                 x_high1 = []
 
-                fascicle_data = pd.DataFrame(columns=['x_low', 'x_high', 'y_low', 'y_high', 'coordsX', 'coordsY', "fasc_l", "penn_a"])
-    
+                fascicle_data = pd.DataFrame(
+                    columns=[
+                        "x_low",
+                        "x_high",
+                        "y_low",
+                        "y_high",
+                        "coordsX",
+                        "coordsY",
+                        "fasc_l",
+                        "penn_a",
+                    ]
+                )
+
                 # Loop through facicle contours to compute fascicle
                 for cnt in contoursF3:
                     x, y = contourEdge("B", cnt)
@@ -418,8 +447,8 @@ def doCalculationsVideo(
                     diffL = newY - new_Y_LA
                     locL = np.where(diffL == min(diffL, key=abs))[0]
 
-                    coordsX = newX[int(locL): int(locU)]
-                    coordsY = newY[int(locL): int(locU)]
+                    coordsX = newX[int(locL) : int(locU)]
+                    coordsY = newY[int(locL) : int(locU)]
 
                     if locL >= 4950:
                         Apoangle = int(
@@ -470,20 +499,24 @@ def doCalculationsVideo(
                                 (newX[locU] - newX[locL]) ** 2
                                 + (y_UA[locU] - y_LA[locL]) ** 2
                             )
-                            fascicle_data_temp = pd.DataFrame({
-                                'x_low': [coordsX[0].astype("int32")],
-                                'x_high': [coordsX[-1].astype("int32")],
-                                'y_low': [coordsY[0].astype("int32")],
-                                'y_high': [coordsY[-1].astype("int32")],
-                                'coordsX': [coordsX],
-                                'coordsY': [coordsY],
-                                'fasc_l': [length1[0]],
-                                'penn_a': Apoangle - FascAng
-                            })
-                            fascicle_data = pd.concat([fascicle_data, fascicle_data_temp], ignore_index=True)
-                
+                            fascicle_data_temp = pd.DataFrame(
+                                {
+                                    "x_low": [coordsX[0].astype("int32")],
+                                    "x_high": [coordsX[-1].astype("int32")],
+                                    "y_low": [coordsY[0].astype("int32")],
+                                    "y_high": [coordsY[-1].astype("int32")],
+                                    "coordsX": [coordsX],
+                                    "coordsY": [coordsY],
+                                    "fasc_l": [length1[0]],
+                                    "penn_a": Apoangle - FascAng,
+                                }
+                            )
+                            fascicle_data = pd.concat(
+                                [fascicle_data, fascicle_data_temp], ignore_index=True
+                            )
+
                 # Remove fascicles that cross-paths
-                if filter_fasc == 1:            
+                if filter_fasc == 1:
                     data = filter_fascicles(fascicle_data)
                 else:
                     data = fascicle_data
@@ -492,24 +525,30 @@ def doCalculationsVideo(
                 num_colors = len(data)
 
                 # Generate a gradient image with as many rows as colors needed
-                gradient = np.linspace(0, 255, num_colors).reshape(num_colors, 1).astype(np.uint8)
+                gradient = (
+                    np.linspace(0, 255, num_colors)
+                    .reshape(num_colors, 1)
+                    .astype(np.uint8)
+                )
 
                 # Apply the colormap to the gradient
                 colored_gradient = cv2.applyColorMap(gradient, cv2.COLORMAP_RAINBOW)
 
                 # Plot the remaining fascicles with unique colors from the OpenCV colormap
                 for index, row in enumerate(data.iterrows()):
-                    color = tuple(map(int, colored_gradient[index][0]))  # Extract BGR color
-                    
+                    color = tuple(
+                        map(int, colored_gradient[index][0])
+                    )  # Extract BGR color
+
                     coords = np.array(
                         list(
                             zip(
-                                row[1]['coordsX'].astype("int32"),
-                                row[1]['coordsY'].astype("int32")
+                                row[1]["coordsX"].astype("int32"),
+                                row[1]["coordsY"].astype("int32"),
                             )
                         )
                     )
-    
+
                     cv2.polylines(imgT, [coords], False, color, 3)
 
                 # Store the results for each frame and normalise using scale
@@ -520,11 +559,11 @@ def doCalculationsVideo(
                     midthick = mindist
 
                 # get fascicle length & pennation from dataframe
-                fasc_l = data['fasc_l']
-                pennation = data['penn_a']
-                x_low1 = data['x_low']
-                x_high1 = data['x_high']
-                        
+                fasc_l = data["fasc_l"]
+                pennation = data["penn_a"]
+                x_low1 = data["x_low"]
+                x_high1 = data["x_high"]
+
                 if calib_dist:
                     fasc_l = fasc_l / (calib_dist / 10)
                     midthick = midthick / (calib_dist / 10)
@@ -542,11 +581,31 @@ def doCalculationsVideo(
                 x_high1.append(float("nan"))
                 midthick = float("nan")
 
-            fasc_l_all.append(fasc_l)
-            pennation_all.append(pennation)
-            x_lows_all.append(x_low1)
-            x_highs_all.append(x_high1)
-            thickness_all.append(midthick)
+            df = pd.DataFrame(
+                {
+                    "Fascicles": fasc_l,
+                    "Pennation": pennation,
+                    "X_low": x_low1,
+                    "X_high": x_high1,
+                    "Thickness": midthick,
+                }
+            )
+
+            # Sorting the DataFrame according to X_low
+            df_sorted = df.sort_values(by="X_low")
+
+            # Append parameters to overall list
+            fasc_l_all.append(df_sorted["Fascicles"].tolist())
+            pennation_all.append(df_sorted["Pennation"].tolist())
+            x_lows_all.append(df_sorted["X_low"].tolist())
+            x_highs_all.append(df_sorted["X_high"].tolist())
+            thickness_all.append(df_sorted["Thickness"].tolist())
+
+            # fasc_l_all.append(fasc_l)
+            # pennation_all.append(pennation)
+            # x_lows_all.append(x_low1)
+            # x_highs_all.append(x_high1)
+            # thickness_all.append(midthick)
 
             # Display each processed frame
             img_orig[mask_apoE > 0] = (235, 25, 42)
@@ -587,8 +646,7 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) +
-                     " mm"),
+                    ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
@@ -608,8 +666,7 @@ def doCalculationsVideo(
                 )
                 cv2.putText(
                     comb,
-                    ("Thickness at centre: " + str("%.1f" % thickness_all[-1])
-                     + " px"),
+                    ("Thickness at centre: " + str("%.1f" % midthick) + " px"),
                     (125, 440),
                     cv2.FONT_HERSHEY_DUPLEX,
                     1,
@@ -637,8 +694,7 @@ def doCalculationsVideo(
 
     # Check if model path is correct
     except OSError:
-        tk.messagebox.showerror("Information",
-                                "Apo/Fasc model path is incorrect.")
+        tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()

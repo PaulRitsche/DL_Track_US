@@ -677,8 +677,8 @@ def doCalculations(
             midthick = mindist
 
         # get fascicle length & pennation from dataframe
-        fasc_l = data["fasc_l"]
-        pennation = data["penn_a"]
+        fasc_l = list(data["fasc_l"])
+        pennation = list(data["penn_a"])
 
         # scale data
         if calib_dist:

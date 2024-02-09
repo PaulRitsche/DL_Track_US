@@ -44,6 +44,7 @@ See Also
 --------
 calculate_architecture.py
 """
+
 from __future__ import division
 
 import glob
@@ -55,13 +56,10 @@ from keras.models import load_model
 
 import cv2
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from pandas import ExcelWriter
 
 from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
-from DL_Track_US.gui_helpers.calculate_architecture import IoU
+from DL_Track_US.gui_helpers.calculate_architecture import IoU, exportToEcxel
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
 plt.style.use("ggplot")
@@ -110,8 +108,7 @@ def importVideo(vpath: str):
     filename = os.path.splitext(os.path.basename(vpath))[0]
     outpath = str(vpath[0:-4] + "_proc" + ".avi")
     vid_out = cv2.VideoWriter(
-        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps,
-        (vid_width, vid_height)
+        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps, (vid_width, vid_height)
     )
 
     return cap, vid_len, filename, vid_out
@@ -158,105 +155,6 @@ def importVideoManual(vpath: str):
     filename = os.path.splitext(os.path.basename(vpath))[0]
 
     return cap, vid_len, filename
-
-
-def exportToEcxel(
-    path: str,
-    filename: str,
-    fasc_l_all: list,
-    pennation_all: list,
-    x_lows_all: list,
-    x_highs_all: list,
-    thickness_all: list,
-):
-    """Function to save the analysis results to a .xlsx file.
-
-    A list of each variable to be saved must be inputted. The inputs are
-    inculded in a dataframe and saved to an .xlsx file.
-    The .xlsx file is saved to the specified rootpath containing
-    each analyzed frame. Estimates or fascicle length, pennation angle,
-    muscle thickness and intersections of fascicles with aponeuroses
-    are saved.
-
-    Parameters
-    ----------
-    path : str
-        String variable containing the path to where the .xlsx file
-        should be saved.
-     filename : str
-        String value containing the name of the input video, not the
-        entire path. The .xlsx file is named accordingly.
-    fasc_l_all : list
-        List variable containing all fascicle estimates from
-        a single frame that was analyzed.
-    pennation_all : list
-        List variable containing all pennation angle estimates from
-        a single frame that was analyzed.
-    x_lows_all : list
-        List variable containing all x-coordinate estimates from
-        intersection of the fascicle with the the lower aponeurosiis
-        of a single frame that was analyzed.
-    x_highs_all : list
-        List variable containing all x-coordinate estimates from
-        the intersection of the fascicle with the upper aponeurosiis
-        of a single frame that was analyzed.
-    thickness_all : list
-        List variable containing all muscle thickness estimates from
-        a single frame that was analyzed.
-
-    Examples
-    --------
-    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos",
-                             filename="video1.avi",
-                             fasc_l_all=[7.8,, 6.4, 9.1],
-                             pennation_all=[20, 21.1, 24],
-                             x_lows_all=[749, 51, 39],
-                             x_highs_all=[54, 739, 811],
-                             thickness_all=[1.85])
-    """
-    # Create empty arrays
-    fl = np.zeros([len(fasc_l_all),
-                   len(max(fasc_l_all, key=lambda x: len(x)))])
-    pe = np.zeros([len(pennation_all),
-                   len(max(pennation_all, key=lambda x: len(x)))])
-    xl = np.zeros([len(x_lows_all),
-                   len(max(x_lows_all, key=lambda x: len(x)))])
-    xh = np.zeros([len(x_highs_all),
-                   len(max(x_highs_all, key=lambda x: len(x)))])
-
-    # Add respective values to the respecive array
-    for i, j in enumerate(fasc_l_all):
-        fl[i][0: len(j)] = j  # fascicle length
-    fl[fl == 0] = np.nan
-    for i, j in enumerate(pennation_all):
-        pe[i][0: len(j)] = j  # pennation angle
-    pe[pe == 0] = np.nan
-    for i, j in enumerate(x_lows_all):
-        xl[i][0: len(j)] = j  # lower intersection
-    xl[xl == 0] = np.nan
-    for i, j in enumerate(x_highs_all):
-        xh[i][0: len(j)] = j  # upper intersection
-    xh[xh == 0] = np.nan
-
-    # Create dataframes with values
-    df1 = pd.DataFrame(data=fl)
-    df2 = pd.DataFrame(data=pe)
-    df3 = pd.DataFrame(data=xl)
-    df4 = pd.DataFrame(data=xh)
-    df5 = pd.DataFrame(data=thickness_all)
-
-    # Create a pandas Excel
-    writer = ExcelWriter(path + "/" + filename + ".xlsx")
-
-    # Write each dataframe to a different worksheet.
-    df1.to_excel(writer, sheet_name="Fasc_length")
-    df2.to_excel(writer, sheet_name="Pennation")
-    df3.to_excel(writer, sheet_name="X_low")
-    df4.to_excel(writer, sheet_name="X_high")
-    df5.to_excel(writer, sheet_name="Thickness")
-
-    # Close the Pandas Excel writer and output the Excel file
-    writer.close()
 
 
 def calculateArchitectureVideo(
@@ -329,7 +227,7 @@ def calculateArchitectureVideo(
         This might decrease processing time but also accuracy.
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
-        This may reduce number of totally detected fascicles. 
+        This may reduce number of totally detected fascicles.
     apo_threshold : float
         Float variable containing the threshold applied to predicted
         aponeurosis pixels by our neural networks. By varying this
@@ -409,8 +307,7 @@ def calculateArchitectureVideo(
     if len(list_of_files) == 0:
         tk.messagebox.showerror(
             "Information",
-            "No video files found." +
-            "\nCheck specified video type or input directory",
+            "No video files found." + "\nCheck specified video type or input directory",
         )
         gui.do_break()
         gui.should_stop = False
@@ -423,7 +320,7 @@ def calculateArchitectureVideo(
         "min_width": min_width,
         "min_pennation": min_pennation,
         "max_pennation": max_pennation,
-        "apo_length_thresh": apo_length_thresh
+        "apo_length_thresh": apo_length_thresh,
     }
 
     # Check analysis parameters for positive values
@@ -501,8 +398,7 @@ def calculateArchitectureVideo(
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information",
-            "No Aponeurosis detected. Change aponeurosis threshold."
+            "Information", "No Aponeurosis detected. Change aponeurosis threshold."
         )
         gui.should_stop = False
         gui.is_running = False
@@ -627,8 +523,7 @@ def calculateArchitectureVideoManual(videopath: str, gui):
         man_analysis.calculateBatchManual()
 
     except IndexError:
-        tk.messagebox.showerror("Information",
-                                "Make sure to select a video file.")
+        tk.messagebox.showerror("Information", "Make sure to select a video file.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
