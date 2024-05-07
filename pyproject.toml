@@ -38,3 +38,11 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/PaulRitsche/DL_Track_US"
 "Bug Tracker" = "https://github.com/PaulRitsche/DL_Track_US/issues"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "pep621"
+update_changelog_on_bump = true
+major_version_zero = true
