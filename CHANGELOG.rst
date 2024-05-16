@@ -1,4 +1,12 @@
 
+2024-05-07
+==========
+
+Added
+-----
+
+- curved_fascicle.py file for curvature analysis.
+
 2023-10-13
 ==========
 
