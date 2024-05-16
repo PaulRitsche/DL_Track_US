@@ -31,5 +31,3 @@ list = [
     22,
 ]
 print(list)
-print("Hello World")
-print("Carla")
