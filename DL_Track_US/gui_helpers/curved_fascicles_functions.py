@@ -111,5 +111,6 @@ def find_next_fascicle(
     else:
         new_x = x_current_fascicle
         new_y = y_current_fascicle
+        found_fascicle = -1
 
-    return new_x, new_y
+    return new_x, new_y, found_fascicle

@@ -43,8 +43,10 @@ Notes
 Additional information and usage examples can be found at the respective
 functions documentations.
 """
+
 import os
 import tkinter as tk
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,11 +58,7 @@ from keras.optimizers import Adam
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.applications import VGG16
-from tensorflow.keras.layers import (
-    Concatenate,
-    Conv2D,
-    Conv2DTranspose,
-)
+from tensorflow.keras.layers import Concatenate, Conv2D, Conv2DTranspose
 from tensorflow.keras.utils import img_to_array, load_img
 from tqdm import tqdm
 
@@ -113,7 +111,7 @@ def conv_block(inputs, num_filters: int):
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
     # Define second Conv2D layer witch Batchnor and Activation relu
-    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)
+    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)  # TODO
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
 
@@ -434,8 +432,7 @@ def loadImages(img_path: str, mask_path: str) -> list:
 
     # Create empty numpy arrays
     train_imgs = np.zeros((len(ids), im_height, im_width, 3), dtype=np.float32)
-    train_masks = np.zeros((len(ids), im_height, im_width, 1),
-                           dtype=np.float32)
+    train_masks = np.zeros((len(ids), im_height, im_width, 1), dtype=np.float32)
 
     # ´Loop through list of ids found in img_path and mask_path
     for n, id_ in enumerate(tqdm(ids)):
@@ -449,8 +446,7 @@ def loadImages(img_path: str, mask_path: str) -> list:
         # Load and resize mask
         mask = img_to_array(load_img(mask_path + id_, color_mode="grayscale"))
         mask = resize(
-            mask, (im_width, im_height, 1), mode="constant",
-            preserve_range=True
+            mask, (im_width, im_height, 1), mode="constant", preserve_range=True
         )
 
         # Normalize image & mask and insert in array
@@ -534,8 +530,7 @@ def trainModel(
     if batch_size <= 0 or learning_rate <= 0 or epochs <= 0:
         # Make sure some kind of filetype is specified.
         tk.messagebox.showerror(
-            "Information", "Training parameters must be non-zero" +
-            " and non-negative."
+            "Information", "Training parameters must be non-zero" + " and non-negative."
         )
         gui.should_stop = False
         gui.is_running = False
@@ -554,14 +549,12 @@ def trainModel(
 
     try:
         # Load images
-        train_imgs, train_masks = loadImages(img_path=img_path,
-                                             mask_path=mask_path)
+        train_imgs, train_masks = loadImages(img_path=img_path, mask_path=mask_path)
 
         # Inform user in GUI
         cont = tk.messagebox.askokcancel(
             "Information",
-            "Images & Masks were successfully loaded!" +
-            "\nDou you wish to proceed?",
+            "Images & Masks were successfully loaded!" + "\nDou you wish to proceed?",
         )
         if cont is True:
 
@@ -585,13 +578,11 @@ def trainModel(
                 )
             elif loss == "Dice":
                 model_apo.compile(
-                    optimizer=Adam(), loss=dice_score,
-                    metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=dice_score, metrics=["accuracy", IoU]
                 )
             elif loss == "FL":
                 model_apo.compile(
-                    optimizer=Adam(), loss=focal_loss,
-                    metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=focal_loss, metrics=["accuracy", IoU]
                 )
             else:
                 raise TypeError("Specify correct loss metric.")
@@ -612,15 +603,13 @@ def trainModel(
                     save_best_only=True,
                     save_weights_only=False,
                 ),  # Give the model a name (the .h5 part)
-                CSVLogger(out_path + "Trained_model.csv", separator=",",
-                          append=False),
+                CSVLogger(out_path + "Trained_model.csv", separator=",", append=False),
             ]
 
             # Inform user in GUI
             cont2 = tk.messagebox.askokcancel(
                 "Information",
-                "Model was successfully compiled!" +
-                "\nDo you wish to proceed?",
+                "Model was successfully compiled!" + "\nDo you wish to proceed?",
             )
             # User chose to continue
             if cont2 is True:
@@ -645,10 +634,8 @@ def trainModel(
                 # val_IoU, loss, acc, IoU, lr
                 matplotlib.use("Agg")
                 fig, ax = plt.subplots(1, 2, figsize=(7, 7))
-                ax[0].plot(results.history["loss"],
-                           label="Training loss")
-                ax[0].plot(results.history["val_loss"],
-                           label="Validation loss")
+                ax[0].plot(results.history["loss"], label="Training loss")
+                ax[0].plot(results.history["val_loss"], label="Validation loss")
                 ax[0].set_title("Learning curve")
                 ax[0].plot(
                     np.argmin(results.history["val_loss"]),
