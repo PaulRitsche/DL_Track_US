@@ -10,7 +10,7 @@ from curved_fascicles_functions import contourEdge, find_next_fascicle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00026.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -65,8 +65,8 @@ for i in range(len(contours_sorted)):
     contours_sorted_y.append(contours_sorted[i][1])
 
 # get upper edge contour of the first fascicle (the most left and lowest fascicle contour)
-current_fascicle_x = contours_sorted_x[0]
-current_fascicle_y = contours_sorted_y[0]
+current_fascicle_x = contours_sorted_x[4]
+current_fascicle_y = contours_sorted_y[4]
 
 # initialize label as false for each fascicle within the contours and set label of first fascicle contour as true as this one is already in use
 label = {x: False for x in range(len(contours_sorted))}
@@ -74,12 +74,24 @@ label[0] = True
 
 # calculate second polynomial fit and extrapolate function for first fascicle
 coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-g = np.poly1d(coefficients)
-ex_current_fascicle_x = np.linspace(
-    0, 512, 5000
-)  # Extrapolate x,y data using f function
-ex_current_fascicle_y = g(ex_current_fascicle_x)
-print(coefficients)
+
+if -0.000327 < coefficients[0] < 0.000583:
+    g = np.poly1d(coefficients)
+    ex_current_fascicle_x = np.linspace(
+        0, 512, 5000
+    )  # Extrapolate x,y data using f function
+    ex_current_fascicle_y = g(ex_current_fascicle_x)
+    print(coefficients)
+    print(coefficients[0])
+else:
+    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+    g = np.poly1d(coefficients)
+    ex_current_fascicle_x = np.linspace(
+        0, 512, 5000
+    )  # Extrapolate x,y data using f function
+    ex_current_fascicle_y = g(ex_current_fascicle_x)
+    print(coefficients)
+    print(coefficients[0])
 
 # set tolerance and compute upper and lower boundary of extrapolation
 tolerance = 10
@@ -139,4 +151,6 @@ end_time = time.time()
 total_time = end_time - start_time
 
 print(total_time)
+print(coefficients)
+print(coefficients[0])
 plt.show()
