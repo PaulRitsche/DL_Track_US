@@ -11,11 +11,11 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00014.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00021.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00014.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00021.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -47,7 +47,7 @@ for i in range(len(contours_sorted)):
 
 # initialize some important variables
 label = {x: False for x in range(len(contours_sorted))}
-tolerance = 6
+tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
 
@@ -69,14 +69,14 @@ for i in range(len(contours_sorted)):
         if -0.000327 < coefficients[0] < 0.000583:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                0, 512, 5000
+                -200, 800, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
         else:
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                0, 512, 5000
+                -200, 800, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
 
@@ -108,11 +108,20 @@ for i in range(len(contours_sorted)):
                 break
 
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-            g = np.poly1d(coefficients)
-            ex_current_fascicle_x = np.linspace(
-                0, 512, 5000
-            )  # Extrapolate x,y data using f function
-            ex_current_fascicle_y = g(ex_current_fascicle_x)
+
+            if -0.000327 < coefficients[0] < 0.000583:
+                g = np.poly1d(coefficients)
+                ex_current_fascicle_x = np.linspace(
+                    -200, 800, 5000
+                )  # Extrapolate x,y data using f function
+                ex_current_fascicle_y = g(ex_current_fascicle_x)
+            else:
+                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+                g = np.poly1d(coefficients)
+                ex_current_fascicle_x = np.linspace(
+                    -200, 800, 5000
+                )  # Extrapolate x,y data using f function
+                ex_current_fascicle_y = g(ex_current_fascicle_x)
 
             upper_bound = ex_current_fascicle_y - tolerance
             lower_bound = ex_current_fascicle_y + tolerance
@@ -126,8 +135,8 @@ print(total_time)
 
 # plot extrapolated fascicles
 plt.figure(2)
-plt.imshow(contour_image)
-plt.imshow(apo_image_gray)
+plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
+plt.imshow(contour_image, alpha=0.5)
 for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.plot(ex_x_LA, ex_y_LA)

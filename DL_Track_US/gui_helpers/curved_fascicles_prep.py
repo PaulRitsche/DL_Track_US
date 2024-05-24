@@ -50,7 +50,9 @@ def apo_to_contour(image):
     apo_image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
 
-    _, thresh = cv2.threshold(apo_image_gray, 0, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(
+        apo_image_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+    )
     thresh = thresh.astype("uint8")
     contours, hierarchy = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
