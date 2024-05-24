@@ -30,8 +30,6 @@ contour_image = cv2.cvtColor(
 )  # Convert to BGR for visualization
 cv2.drawContours(contour_image, contoursF, -1, (0, 255, 0), 2)  # Draw contours in green
 plt.imshow(contour_image)
-plt.axis("off")  # Hide the axis
-# plt.show()
 
 start_time = time.time()
 
@@ -53,7 +51,7 @@ for i in range(len(contours)):
 # Now, contours are sorted, and we can sort the list of contours based on the first point
 contours_sorted = sorted(
     contours,
-    key=lambda k: (k[0][0], k[0][1]) if len(k) > 0 else (float("inf"), float("inf")),
+    key=lambda k: (k[0][0], -k[0][1]) if len(k) > 0 else (float("inf"), float("inf")),
 )
 
 # get upper edge of each contour
@@ -64,93 +62,92 @@ for i in range(len(contours_sorted)):
     contours_sorted_x.append(contours_sorted[i][0])
     contours_sorted_y.append(contours_sorted[i][1])
 
-# get upper edge contour of the first fascicle (the most left and lowest fascicle contour)
-current_fascicle_x = contours_sorted_x[4]
-current_fascicle_y = contours_sorted_y[4]
-
-# initialize label as false for each fascicle within the contours and set label of first fascicle contour as true as this one is already in use
+# initialize some important variables
 label = {x: False for x in range(len(contours_sorted))}
-label[0] = True
+tolerance = 6
+all_fascicles_x = []
+all_fascicles_y = []
 
-# calculate second polynomial fit and extrapolate function for first fascicle
-coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
+# calculate merged fascicle edges
+for i in range(len(contours_sorted)):
 
-if -0.000327 < coefficients[0] < 0.000583:
-    g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(
-        0, 512, 5000
-    )  # Extrapolate x,y data using f function
-    ex_current_fascicle_y = g(ex_current_fascicle_x)
-    print(coefficients)
-    print(coefficients[0])
-else:
-    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-    g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(
-        0, 512, 5000
-    )  # Extrapolate x,y data using f function
-    ex_current_fascicle_y = g(ex_current_fascicle_x)
-    print(coefficients)
-    print(coefficients[0])
+    if label[i] is False:
+        # get upper edge contour of starting fascicle
+        current_fascicle_x = contours_sorted_x[i]
+        current_fascicle_y = contours_sorted_y[i]
 
-# set tolerance and compute upper and lower boundary of extrapolation
-tolerance = 10
-upper_bound = ex_current_fascicle_y - tolerance
-lower_bound = ex_current_fascicle_y + tolerance
+        # set label to true as fascicle is used
+        label[i] = True
 
-# plot
-plt.figure(2)
-plt.imshow(image_rgb)
-plt.plot(ex_current_fascicle_x, ex_current_fascicle_y)
-plt.plot(ex_current_fascicle_x, upper_bound)
-plt.plot(ex_current_fascicle_x, lower_bound)
+        # calculate second polynomial coefficients
+        coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-# find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
-# if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
+        # depending on coefficients edge gets extrapolated as first or second order polynomial
+        if -0.000327 < coefficients[0] < 0.000583:
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                0, 512, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            print(coefficients)
+            print(coefficients[0])
+        else:
+            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                0, 512, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            print(coefficients)
+            print(coefficients[0])
 
-found_fascicle = 0
+        # compute upper and lower boundary of extrapolation
+        upper_bound = ex_current_fascicle_y - tolerance
+        lower_bound = ex_current_fascicle_y + tolerance
 
-while found_fascicle >= 0:
+        # find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
+        # if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
 
-    current_fascicle_x, current_fascicle_y, found_fascicle = find_next_fascicle(
-        contours_sorted,
-        contours_sorted_x,
-        contours_sorted_y,
-        current_fascicle_x,
-        current_fascicle_y,
-        ex_current_fascicle_x,
-        upper_bound,
-        lower_bound,
-    )
+        found_fascicle = 0
 
-    if found_fascicle > 0:
-        label[found_fascicle] = True
+        while found_fascicle >= 0:
 
-    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-    g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(
-        0, 512, 5000
-    )  # Extrapolate x,y data using f function
-    ex_current_fascicle_y = g(ex_current_fascicle_x)
+            current_fascicle_x, current_fascicle_y, found_fascicle = find_next_fascicle(
+                contours_sorted,
+                contours_sorted_x,
+                contours_sorted_y,
+                current_fascicle_x,
+                current_fascicle_y,
+                ex_current_fascicle_x,
+                upper_bound,
+                lower_bound,
+            )
 
-    # plot
-    # plt.figure()
-    # plt.imshow(image_rgb)
-    # plt.plot(ex_current_fascicle_x, ex_current_fascicle_y)
+            if found_fascicle > 0:
+                label[found_fascicle] = True
+            else:
+                break
 
-    upper_bound = ex_current_fascicle_y - tolerance
-    lower_bound = ex_current_fascicle_y + tolerance
+            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                0, 512, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
 
-# plot final extrapolated fascicle
-print(label)
-plt.figure(3)
-plt.imshow(image_rgb)
-plt.plot(ex_current_fascicle_x, ex_current_fascicle_y)
+            upper_bound = ex_current_fascicle_y - tolerance
+            lower_bound = ex_current_fascicle_y + tolerance
+
+        all_fascicles_x.append(ex_current_fascicle_x)
+        all_fascicles_y.append(ex_current_fascicle_y)
 
 end_time = time.time()
 total_time = end_time - start_time
-
 print(total_time)
-print(coefficients)
-print(coefficients[0])
+
+# plot extrapolated fascicles
+plt.figure(2)
+plt.imshow(image_rgb)
+for i in range(len(all_fascicles_x)):
+    plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.show()
