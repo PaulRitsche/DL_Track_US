@@ -6,20 +6,24 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from curved_fascicles_functions import (
-    contourEdge,
-    fascicle_to_contour,
-    find_next_fascicle,
-)
+from curved_fascicles_functions import adapted_contourEdge, find_next_fascicle
+from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00014.tif",
     cv2.IMREAD_UNCHANGED,
 )
+apo_image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00014.jpg",
+    cv2.IMREAD_UNCHANGED,
+)
 
 # get sorted fascicle contours
 image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
+
+# get extrapolation of aponeuroses
+apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
 
 # plot contours
 plt.figure(1)
@@ -35,7 +39,9 @@ start_time = time.time()
 contours_sorted_x = []
 contours_sorted_y = []
 for i in range(len(contours_sorted)):
-    contours_sorted[i][0], contours_sorted[i][1] = contourEdge("B", contours_sorted[i])
+    contours_sorted[i][0], contours_sorted[i][1] = adapted_contourEdge(
+        "B", contours_sorted[i]
+    )
     contours_sorted_x.append(contours_sorted[i][0])
     contours_sorted_y.append(contours_sorted[i][1])
 
@@ -66,8 +72,6 @@ for i in range(len(contours_sorted)):
                 0, 512, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
-            print(coefficients)
-            print(coefficients[0])
         else:
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
             g = np.poly1d(coefficients)
@@ -75,8 +79,6 @@ for i in range(len(contours_sorted)):
                 0, 512, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
-            print(coefficients)
-            print(coefficients[0])
 
         # compute upper and lower boundary of extrapolation
         upper_bound = ex_current_fascicle_y - tolerance
@@ -125,6 +127,9 @@ print(total_time)
 # plot extrapolated fascicles
 plt.figure(2)
 plt.imshow(contour_image)
+plt.imshow(apo_image_gray)
 for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
+plt.plot(ex_x_LA, ex_y_LA)
+plt.plot(ex_x_UA, ex_y_UA)
 plt.show()
