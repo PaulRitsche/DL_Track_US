@@ -6,22 +6,20 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from curved_fascicles_functions import contourEdge, find_next_fascicle
+from curved_fascicles_functions import (
+    contourEdge,
+    fascicle_to_contour,
+    find_next_fascicle,
+)
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00014.tif",
     cv2.IMREAD_UNCHANGED,
 )
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
 
-# define threshold and find contours around fascicles
-_, threshF = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY)
-threshF = threshF.astype("uint8")
-contoursF, hierarchy = cv2.findContours(
-    threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-)
+# get sorted fascicle contours
+image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
 
 # plot contours
 plt.figure(1)
@@ -32,27 +30,6 @@ cv2.drawContours(contour_image, contoursF, -1, (0, 255, 0), 2)  # Draw contours 
 plt.imshow(contour_image)
 
 start_time = time.time()
-
-# convert contours into a list
-contours = list(contoursF)
-
-# Convert each contour to a NumPy array, reshape, and sort
-for i in range(len(contours)):
-    contour_array = np.array(contours[i])  # Convert to NumPy array
-    if contour_array.shape[1] == 1 and contour_array.shape[2] == 2:
-        reshaped_contour = contour_array.reshape(-1, 2)  # Reshape to (58, 2)
-        sorted_contour = sorted(
-            reshaped_contour, key=lambda k: (k[0], k[1])
-        )  # Sort by x and y
-        contours[i] = sorted_contour  # Update the contour in the list
-    else:
-        print(f"Contour {i} does not have the expected shape: {contour_array.shape}")
-
-# Now, contours are sorted, and we can sort the list of contours based on the first point
-contours_sorted = sorted(
-    contours,
-    key=lambda k: (k[0][0], -k[0][1]) if len(k) > 0 else (float("inf"), float("inf")),
-)
 
 # get upper edge of each contour
 contours_sorted_x = []
@@ -147,7 +124,7 @@ print(total_time)
 
 # plot extrapolated fascicles
 plt.figure(2)
-plt.imshow(image_rgb)
+plt.imshow(contour_image)
 for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.show()
