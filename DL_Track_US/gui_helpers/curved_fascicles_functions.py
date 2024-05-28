@@ -1,3 +1,5 @@
+import bisect
+
 import cv2
 import numpy as np
 
@@ -74,6 +76,23 @@ def is_point_in_range(x_point, y_point, x_poly, lb, ub):  # x_point at first pla
     return False
 
 
+def is_point_in_range_2(x_point, y_point, x_poly, lb, ub):
+    # use binary search to find x-point
+    idx = bisect.bisect_left(x_poly, x_point)
+
+    # Adjust the index to ensure it's within the valid range
+    if idx == 0 or idx == len(x_poly):
+        return False
+
+    i = idx - 1
+
+    # Check if y_point is within the bounds for the found interval
+    if lb[i] <= y_point <= ub[i]:
+        return True
+
+    return False
+
+
 def find_next_fascicle(
     all_contours,
     contours_sorted_x,
@@ -83,6 +102,7 @@ def find_next_fascicle(
     x_range,
     upper_bound,
     lower_bound,
+    label,
 ):
 
     found_fascicle = 0
@@ -93,12 +113,15 @@ def find_next_fascicle(
                 contours_sorted_x[i][0] > x_current_fascicle[-1]
                 and contours_sorted_y[i][0] < y_current_fascicle[-1]
             ):
-                if is_point_in_range(
-                    contours_sorted_x[i][0],
-                    contours_sorted_y[i][0],
-                    x_range,
-                    upper_bound,
-                    lower_bound,
+                if (
+                    is_point_in_range_2(
+                        contours_sorted_x[i][0],
+                        contours_sorted_y[i][0],
+                        x_range,
+                        upper_bound,
+                        lower_bound,
+                    )
+                    and label[i] is False
                 ):
                     print(f"Contour found: {i}")
                     found_fascicle = i

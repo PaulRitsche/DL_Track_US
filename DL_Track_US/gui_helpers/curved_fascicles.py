@@ -11,11 +11,11 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00021.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00112.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00021.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00112.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -47,6 +47,7 @@ for i in range(len(contours_sorted)):
 
 # initialize some important variables
 label = {x: False for x in range(len(contours_sorted))}
+coefficient_label = []
 tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
@@ -54,13 +55,16 @@ all_fascicles_y = []
 # calculate merged fascicle edges
 for i in range(len(contours_sorted)):
 
-    if label[i] is False:
+    if label[i] is False and len(contours_sorted_x[i]) > 1:
         # get upper edge contour of starting fascicle
         current_fascicle_x = contours_sorted_x[i]
         current_fascicle_y = contours_sorted_y[i]
 
+        print("new loop")
+
         # set label to true as fascicle is used
         label[i] = True
+        linear_fit = False
 
         # calculate second polynomial coefficients
         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
@@ -72,6 +76,7 @@ for i in range(len(contours_sorted)):
                 -200, 800, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = False
         else:
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
             g = np.poly1d(coefficients)
@@ -79,6 +84,7 @@ for i in range(len(contours_sorted)):
                 -200, 800, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = True
 
         # compute upper and lower boundary of extrapolation
         upper_bound = ex_current_fascicle_y - tolerance
@@ -100,7 +106,11 @@ for i in range(len(contours_sorted)):
                 ex_current_fascicle_x,
                 upper_bound,
                 lower_bound,
+                label,
             )
+
+            print(current_fascicle_x)
+            print(len(current_fascicle_x))
 
             if found_fascicle > 0:
                 label[found_fascicle] = True
@@ -109,12 +119,15 @@ for i in range(len(contours_sorted)):
 
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-            if -0.000327 < coefficients[0] < 0.000583:
+            if (
+                -0.000327 < coefficients[0] < 0.000583
+            ):  # and len(current_fascicle_x)>40:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
                     -200, 800, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
+                linear_fit = False
             else:
                 coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
                 g = np.poly1d(coefficients)
@@ -122,23 +135,28 @@ for i in range(len(contours_sorted)):
                     -200, 800, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
+                linear_fit = True
 
             upper_bound = ex_current_fascicle_y - tolerance
             lower_bound = ex_current_fascicle_y + tolerance
 
         all_fascicles_x.append(ex_current_fascicle_x)
         all_fascicles_y.append(ex_current_fascicle_y)
+        coefficient_label.append(linear_fit)
 
 end_time = time.time()
 total_time = end_time - start_time
 print(total_time)
+
+print(coefficient_label)
 
 # plot extrapolated fascicles
 plt.figure(2)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
 plt.imshow(contour_image, alpha=0.5)
 for i in range(len(all_fascicles_x)):
-    plt.plot(all_fascicles_x[i], all_fascicles_y[i])
+    if coefficient_label[i] is False:
+        plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
 plt.show()
