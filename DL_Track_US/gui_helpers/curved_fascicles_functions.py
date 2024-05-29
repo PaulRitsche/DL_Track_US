@@ -123,11 +123,12 @@ def find_next_fascicle(
                     )
                     and label[i] is False
                 ):
-                    print(f"Contour found: {i}")
+                    # print(f"Contour found: {i}")
                     found_fascicle = i
                     break
                 else:
-                    print("No contour found")
+                    continue
+                    # print("No contour found")
 
     if found_fascicle > 0:
         new_x = np.append(x_current_fascicle, contours_sorted_x[found_fascicle])

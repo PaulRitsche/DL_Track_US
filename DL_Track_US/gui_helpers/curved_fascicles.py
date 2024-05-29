@@ -11,11 +11,11 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00012.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00012.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -48,6 +48,7 @@ for i in range(len(contours_sorted)):
 # initialize some important variables
 label = {x: False for x in range(len(contours_sorted))}
 coefficient_label = []
+number_contours = []
 tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
@@ -60,17 +61,17 @@ for i in range(len(contours_sorted)):
         current_fascicle_x = contours_sorted_x[i]
         current_fascicle_y = contours_sorted_y[i]
 
-        print("new loop")
-
         # set label to true as fascicle is used
         label[i] = True
         linear_fit = False
+        inner_number_contours = []
+        inner_number_contours.append(i)
 
         # calculate second polynomial coefficients
         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
         # depending on coefficients edge gets extrapolated as first or second order polynomial
-        if 0 < coefficients[0] < 0.000583:  # -0.000327 < coefficients[0] < 0.000583:
+        if 0 < coefficients[0] < 0.000583:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
                 -200, 800, 5000
@@ -109,19 +110,15 @@ for i in range(len(contours_sorted)):
                 label,
             )
 
-            print(current_fascicle_x)
-            print(len(current_fascicle_x))
-
             if found_fascicle > 0:
                 label[found_fascicle] = True
+                inner_number_contours.append(found_fascicle)
             else:
                 break
 
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-            if (
-                0 < coefficients[0] < 0.000583
-            ):  # -0.000327 < coefficients[0] < 0.000583: #and len(current_fascicle_x)>40:
+            if 0 < coefficients[0] < 0.000583:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
                     -200, 800, 5000
@@ -143,12 +140,11 @@ for i in range(len(contours_sorted)):
         all_fascicles_x.append(ex_current_fascicle_x)
         all_fascicles_y.append(ex_current_fascicle_y)
         coefficient_label.append(linear_fit)
+        number_contours.append(inner_number_contours)
 
 end_time = time.time()
 total_time = end_time - start_time
 print(total_time)
-
-print(coefficient_label)
 
 # plot extrapolated fascicles
 plt.figure(2)
@@ -159,4 +155,77 @@ for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
+# plt.show()
+
+for i in range(len(all_fascicles_x)):
+
+    x = all_fascicles_x[i]
+    y = all_fascicles_y[i]
+
+    if len(number_contours[i]) == 1:
+        a = contours_sorted_x[number_contours[i][0]][0]
+        b = contours_sorted_x[number_contours[i][0]][-1]
+        x_before_a = x[x <= a]
+        y_before_a = y[x <= a]
+        x_after_b = x[x >= b]
+        y_after_b = y[x >= b]
+
+        plt.figure(3)
+        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
+        plt.imshow(contour_image, alpha=0.5)
+        plt.plot(x_before_a, y_before_a, color="white")
+        plt.plot(x_after_b, y_after_b, color="white")
+        plt.plot(ex_x_LA, ex_y_LA)
+        plt.plot(ex_x_UA, ex_y_UA)
+
+    if len(number_contours[i]) == 2:
+        a = contours_sorted_x[number_contours[i][0]][0]
+        b = contours_sorted_x[number_contours[i][0]][-1]
+        c = contours_sorted_x[number_contours[i][1]][0]
+        d = contours_sorted_x[number_contours[i][1]][-1]
+        x_before_a = x[x <= a]
+        y_before_a = y[x <= a]
+        x_b_to_c = x[(x >= b) & (x <= c)]
+        y_b_to_c = y[(x >= b) & (x <= c)]
+        x_after_d = x[x >= d]
+        y_after_d = y[x >= d]
+
+        plt.figure(3)
+        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
+        plt.imshow(contour_image, alpha=0.5)
+        plt.plot(x_before_a, y_before_a, color="white")
+        plt.plot(x_b_to_c, y_b_to_c, color="white")
+        plt.plot(x_after_d, y_after_d, color="white")
+        plt.plot(ex_x_LA, ex_y_LA)
+        plt.plot(ex_x_UA, ex_y_UA)
+
+    if len(number_contours[i]) == 3:
+        a = contours_sorted_x[number_contours[i][0]][0]
+        b = contours_sorted_x[number_contours[i][0]][-1]
+        c = contours_sorted_x[number_contours[i][1]][0]
+        d = contours_sorted_x[number_contours[i][1]][-1]
+        e = contours_sorted_x[number_contours[i][2]][0]
+        f = contours_sorted_x[number_contours[i][2]][-1]
+        x_before_a = x[x <= a]
+        y_before_a = y[x <= a]
+        x_b_to_c = x[(x >= b) & (x <= c)]
+        y_b_to_c = y[(x >= b) & (x <= c)]
+        x_d_to_e = x[(x >= d) & (x <= e)]
+        y_d_to_e = y[(x >= d) & (x <= e)]
+        x_after_f = x[x >= f]
+        y_after_f = y[x >= f]
+
+        plt.figure(3)
+        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
+        plt.imshow(contour_image, alpha=0.5)
+        plt.plot(x_before_a, y_before_a, color="white")
+        plt.plot(x_b_to_c, y_b_to_c, color="white")
+        plt.plot(x_d_to_e, y_d_to_e, color="white")
+        plt.plot(x_after_f, y_after_f, color="white")
+        plt.plot(ex_x_LA, ex_y_LA)
+        plt.plot(ex_x_UA, ex_y_UA)
+
+    if len(number_contours[i]) > 3:
+        print(">=4 contour detected")
+
 plt.show()
