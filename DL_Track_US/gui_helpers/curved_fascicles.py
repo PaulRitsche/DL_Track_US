@@ -11,11 +11,11 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00112.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00012.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00112.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00012.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -70,7 +70,7 @@ for i in range(len(contours_sorted)):
         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
         # depending on coefficients edge gets extrapolated as first or second order polynomial
-        if -0.000327 < coefficients[0] < 0.000583:
+        if 0 < coefficients[0] < 0.000583:  # -0.000327 < coefficients[0] < 0.000583:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
                 -200, 800, 5000
@@ -120,8 +120,8 @@ for i in range(len(contours_sorted)):
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
             if (
-                -0.000327 < coefficients[0] < 0.000583
-            ):  # and len(current_fascicle_x)>40:
+                0 < coefficients[0] < 0.000583
+            ):  # -0.000327 < coefficients[0] < 0.000583: #and len(current_fascicle_x)>40:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
                     -200, 800, 5000
@@ -155,8 +155,8 @@ plt.figure(2)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
 plt.imshow(contour_image, alpha=0.5)
 for i in range(len(all_fascicles_x)):
-    if coefficient_label[i] is False:
-        plt.plot(all_fascicles_x[i], all_fascicles_y[i])
+    # if coefficient_label[i] is False:
+    plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
 plt.show()
