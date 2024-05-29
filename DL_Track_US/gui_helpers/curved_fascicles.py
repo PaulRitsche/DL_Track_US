@@ -11,13 +11,18 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00012.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00012.jpg",
     cv2.IMREAD_UNCHANGED,
 )
+original_image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00012.tif",
+    cv2.IMREAD_UNCHANGED,
+)
+
 
 # get sorted fascicle contours
 image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
@@ -49,7 +54,7 @@ for i in range(len(contours_sorted)):
 label = {x: False for x in range(len(contours_sorted))}
 coefficient_label = []
 number_contours = []
-tolerance = 10
+tolerance = 5
 all_fascicles_x = []
 all_fascicles_y = []
 
@@ -171,12 +176,8 @@ for i in range(len(all_fascicles_x)):
         y_after_b = y[x >= b]
 
         plt.figure(3)
-        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-        plt.imshow(contour_image, alpha=0.5)
-        plt.plot(x_before_a, y_before_a, color="white")
-        plt.plot(x_after_b, y_after_b, color="white")
-        plt.plot(ex_x_LA, ex_y_LA)
-        plt.plot(ex_x_UA, ex_y_UA)
+        plt.plot(x_before_a, y_before_a, color="red", alpha=0.4)
+        plt.plot(x_after_b, y_after_b, color="red", alpha=0.4)
 
     if len(number_contours[i]) == 2:
         a = contours_sorted_x[number_contours[i][0]][0]
@@ -191,13 +192,9 @@ for i in range(len(all_fascicles_x)):
         y_after_d = y[x >= d]
 
         plt.figure(3)
-        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-        plt.imshow(contour_image, alpha=0.5)
-        plt.plot(x_before_a, y_before_a, color="white")
-        plt.plot(x_b_to_c, y_b_to_c, color="white")
-        plt.plot(x_after_d, y_after_d, color="white")
-        plt.plot(ex_x_LA, ex_y_LA)
-        plt.plot(ex_x_UA, ex_y_UA)
+        plt.plot(x_before_a, y_before_a, color="red", alpha=0.4)
+        plt.plot(x_b_to_c, y_b_to_c, color="red", alpha=0.4)
+        plt.plot(x_after_d, y_after_d, color="red", alpha=0.4)
 
     if len(number_contours[i]) == 3:
         a = contours_sorted_x[number_contours[i][0]][0]
@@ -216,16 +213,25 @@ for i in range(len(all_fascicles_x)):
         y_after_f = y[x >= f]
 
         plt.figure(3)
-        plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-        plt.imshow(contour_image, alpha=0.5)
-        plt.plot(x_before_a, y_before_a, color="white")
-        plt.plot(x_b_to_c, y_b_to_c, color="white")
-        plt.plot(x_d_to_e, y_d_to_e, color="white")
-        plt.plot(x_after_f, y_after_f, color="white")
-        plt.plot(ex_x_LA, ex_y_LA)
-        plt.plot(ex_x_UA, ex_y_UA)
+        plt.plot(x_before_a, y_before_a, color="red", alpha=0.4)
+        plt.plot(x_b_to_c, y_b_to_c, color="red", alpha=0.4)
+        plt.plot(x_d_to_e, y_d_to_e, color="red", alpha=0.4)
+        plt.plot(x_after_f, y_after_f, color="red", alpha=0.4)
 
     if len(number_contours[i]) > 3:
-        print(">=4 contour detected")
+        print(">=4 contours detected")
+
+plt.figure(3)
+plt.imshow(original_image)
+plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
+
+# plot extrapolated fascicles and aponeuroses together with original image
+plt.figure(4)
+plt.imshow(original_image)
+for i in range(len(all_fascicles_x)):
+    plt.plot(all_fascicles_x[i], all_fascicles_y[i], color="red", alpha=0.4)
+plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
 plt.show()
