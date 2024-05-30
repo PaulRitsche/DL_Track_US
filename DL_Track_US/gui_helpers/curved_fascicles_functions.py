@@ -2,6 +2,8 @@ import bisect
 
 import cv2
 import numpy as np
+import pandas as pd
+from shapely.geometry import LineString
 
 
 def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
@@ -74,6 +76,55 @@ def is_point_in_range(x_point, y_point, x_poly, lb, ub):  # x_point at first pla
             if lb[i] <= y_point <= ub[i]:
                 return True
     return False
+
+
+def do_curves_intersect(curve1, curve2):
+    line1 = LineString(curve1)
+    line2 = LineString(curve2)
+    return line1.intersects(line2)
+
+
+def adapted_filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Filters out fascicles that intersect with their neighboring fascicles based on their x_low and x_high values.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A DataFrame containing the fascicle data. Expected columns include 'x_low', 'y_low', 'x_high', and 'y_high'.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame with the fascicles that do not intersect with their neighbors.
+
+    Example
+    -------
+    >>> data = {'x_low': [1, 3, 5], 'y_low': [1, 2, 3], 'x_high': [4, 6, 7], 'y_high': [4, 5, 6]}
+    >>> df = pd.DataFrame(data)
+    >>> print(filter_fascicles(df))
+       x_low  y_low  x_high  y_high
+    0      1      1       4       4
+    2      5      3       7       6
+    """
+
+    df = df.sort_values(by="x_low").reset_index(drop=True)
+    df["keep"] = True
+
+    x_lows = df["x_low"].values
+    x_highs = df["x_high"].values
+
+    for i in range(len(df)):
+        for j in range(
+            i + 1, min(i + 3, len(df))
+        ):  # Check the current fascicle and the two next ones
+            # Check if the next fascicle(s) intersect
+            if x_lows[i] <= x_lows[j] and x_highs[i] >= x_highs[j]:
+                df.at[i, "keep"] = False
+            elif x_lows[j] <= x_lows[i] and x_highs[j] >= x_highs[i]:
+                df.at[j, "keep"] = False
+
+    return df[df["keep"]].drop(columns=["keep"])
 
 
 def is_point_in_range_2(x_point, y_point, x_poly, lb, ub):

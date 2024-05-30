@@ -6,20 +6,26 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from curved_fascicles_functions import adapted_contourEdge, find_next_fascicle
+import pandas as pd
+from curved_fascicles_functions import (
+    adapted_contourEdge,
+    adapted_filter_fascicles,
+    do_curves_intersect,
+    find_next_fascicle,
+)
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00012.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00012.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00012.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00004.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -54,9 +60,22 @@ for i in range(len(contours_sorted)):
 label = {x: False for x in range(len(contours_sorted))}
 coefficient_label = []
 number_contours = []
-tolerance = 5
+tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
+
+fascicle_data = pd.DataFrame(
+    columns=[
+        "number_contours",
+        "linear_fit",
+        "x_low",
+        "x_high",
+        "y_low",
+        "y_high",
+        "coordsX",
+        "coordsY",
+    ]
+)
 
 # calculate merged fascicle edges
 for i in range(len(contours_sorted)):
@@ -142,10 +161,43 @@ for i in range(len(contours_sorted)):
             upper_bound = ex_current_fascicle_y - tolerance
             lower_bound = ex_current_fascicle_y + tolerance
 
+        # Find intersection between fascicle and aponeuroses
+        diffU = ex_current_fascicle_y - ex_y_UA
+        locU = np.where(diffU == min(diffU, key=abs))[0]
+        diffL = ex_current_fascicle_y - ex_y_LA
+        locL = np.where(diffL == min(diffL, key=abs))[0]
+
+        # Get coordinates of fascicle between the two aponeuroses
+        coordsX = ex_current_fascicle_x[int(locL) : int(locU)]
+        coordsY = ex_current_fascicle_y[int(locL) : int(locU)]
+
         all_fascicles_x.append(ex_current_fascicle_x)
         all_fascicles_y.append(ex_current_fascicle_y)
         coefficient_label.append(linear_fit)
         number_contours.append(inner_number_contours)
+
+        fascicle_data_temp = pd.DataFrame(
+            {
+                "number_contours": [inner_number_contours],
+                "linear_fit": linear_fit,
+                "x_low": [coordsX[0].astype("int32")],
+                "x_high": [coordsX[-1].astype("int32")],
+                "y_low": [coordsY[0].astype("int32")],
+                "y_high": [coordsY[-1].astype("int32")],
+                "coordsX": [coordsX],
+                "coordsY": [coordsY],
+            }
+        )
+
+        fascicle_data = pd.concat(
+            [fascicle_data, fascicle_data_temp], ignore_index=True
+        )
+
+data = adapted_filter_fascicles(fascicle_data)
+
+print(fascicle_data)
+print(data)
+print(data["linear_fit"])
 
 end_time = time.time()
 total_time = end_time - start_time
@@ -231,6 +283,15 @@ plt.figure(4)
 plt.imshow(original_image)
 for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i], color="red", alpha=0.4)
+plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
+
+
+# plot filtered fascicles
+plt.figure(5)
+plt.imshow(original_image)
+for row in data.iterrows():
+    plt.plot(row[1]["coordsX"], row[1]["coordsY"], color="red", alpha=0.4)
 plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
 plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 

@@ -145,19 +145,22 @@ def apo_to_contour(image):
     h = np.poly1d(zLA)
 
     mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
-    x1 = np.linspace(
-        low_x[0] - 700, low_x[-1] + 700, 10000
-    )  # Extrapolate polynomial fits to either side of the mid-point
+    x1 = np.linspace(-200, 800, 5000)
+    # x1 = np.linspace(
+    # low_x[0] - 700, low_x[-1] + 700, 10000
+    # )  # Extrapolate polynomial fits to either side of the mid-point
     y_UA = g(x1)
     y_LA = h(x1)
 
-    new_X_UA = np.linspace(
-        mid - 700, mid + 700, 5000
-    )  # Extrapolate x,y data using f function
+    # new_X_UA = np.linspace(
+    # mid - 700, mid + 700, 5000
+    # )  # Extrapolate x,y data using f function
+    new_X_UA = np.linspace(-200, 800, 5000)
     new_Y_UA = g(new_X_UA)
-    new_X_LA = np.linspace(
-        mid - 700, mid + 700, 5000
-    )  # Extrapolate x,y data using f function
+    new_X_LA = np.linspace(-200, 800, 5000)
+    # new_X_LA = np.linspace(
+    # mid - 700, mid + 700, 5000
+    # )  # Extrapolate x,y data using f function
     new_Y_LA = h(new_X_LA)
 
     return apo_image_rgb, new_X_LA, new_Y_LA, new_X_UA, new_Y_UA
