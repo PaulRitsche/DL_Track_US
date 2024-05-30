@@ -17,15 +17,15 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -65,16 +65,7 @@ all_fascicles_x = []
 all_fascicles_y = []
 
 fascicle_data = pd.DataFrame(
-    columns=[
-        "number_contours",
-        "linear_fit",
-        "x_low",
-        "x_high",
-        "y_low",
-        "y_high",
-        "coordsX",
-        "coordsY",
-    ]
+    columns=["number_contours", "linear_fit", "coordsX", "coordsY", "coordsXY"]
 )
 
 # calculate merged fascicle edges
@@ -170,6 +161,7 @@ for i in range(len(contours_sorted)):
         # Get coordinates of fascicle between the two aponeuroses
         coordsX = ex_current_fascicle_x[int(locL) : int(locU)]
         coordsY = ex_current_fascicle_y[int(locL) : int(locU)]
+        coordsXY = list(zip(coordsX, coordsY))
 
         all_fascicles_x.append(ex_current_fascicle_x)
         all_fascicles_y.append(ex_current_fascicle_y)
@@ -180,12 +172,9 @@ for i in range(len(contours_sorted)):
             {
                 "number_contours": [inner_number_contours],
                 "linear_fit": linear_fit,
-                "x_low": [coordsX[0].astype("int32")],
-                "x_high": [coordsX[-1].astype("int32")],
-                "y_low": [coordsY[0].astype("int32")],
-                "y_high": [coordsY[-1].astype("int32")],
                 "coordsX": [coordsX],
                 "coordsY": [coordsY],
+                "coordsXY": [coordsXY],
             }
         )
 
@@ -195,9 +184,7 @@ for i in range(len(contours_sorted)):
 
 data = adapted_filter_fascicles(fascicle_data)
 
-print(fascicle_data)
 print(data)
-print(data["linear_fit"])
 
 end_time = time.time()
 total_time = end_time - start_time

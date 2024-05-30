@@ -108,23 +108,33 @@ def adapted_filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     2      5      3       7       6
     """
 
-    df = df.sort_values(by="x_low").reset_index(drop=True)
-    df["keep"] = True
+    df["count"] = 1
+    max = 1
 
-    x_lows = df["x_low"].values
-    x_highs = df["x_high"].values
+    while max > 0:
 
-    for i in range(len(df)):
-        for j in range(
-            i + 1, min(i + 3, len(df))
-        ):  # Check the current fascicle and the two next ones
-            # Check if the next fascicle(s) intersect
-            if x_lows[i] <= x_lows[j] and x_highs[i] >= x_highs[j]:
-                df.at[i, "keep"] = False
-            elif x_lows[j] <= x_lows[i] and x_highs[j] >= x_highs[i]:
-                df.at[j, "keep"] = False
+        df["keep"] = True
 
-    return df[df["keep"]].drop(columns=["keep"])
+        for i in range(len(df)):
+            curve1 = df.at[i, "coordsXY"]
+            count = 0
+            for j in range(len(df)):
+                if i != j:
+                    curve2 = df.at[j, "coordsXY"]
+                    if do_curves_intersect(curve1, curve2):
+                        count += 1
+            df.at[i, "count"] = count
+
+        max = df["count"].max()
+
+        if max > 0:
+            for i in range(len(df)):
+                if df.at[i, "count"] == max:
+                    df.at[i, "keep"] = False
+            df = df[df["keep"]].drop(columns=["keep"])
+            df = df.reset_index(drop=True)
+
+    return df
 
 
 def is_point_in_range_2(x_point, y_point, x_poly, lb, ub):
