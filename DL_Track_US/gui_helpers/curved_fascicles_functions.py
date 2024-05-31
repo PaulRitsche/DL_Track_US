@@ -116,13 +116,11 @@ def adapted_filter_fascicles(df: pd.DataFrame, tolerance) -> pd.DataFrame:
 
         # detect how many intersection points each fascicle has
         for i in range(len(df)):
-            curve1 = df.at[i, "coordsXY"]
-            curve1 = curve1[tolerance : len(curve1) - tolerance]
+            curve1 = df.at[i, "coordsXY"][tolerance:-tolerance]
             count = 0
             for j in range(len(df)):
                 if i != j:
-                    curve2 = df.at[j, "coordsXY"]
-                    curve2 = curve2[tolerance : len(curve2) - tolerance]
+                    curve2 = df.at[j, "coordsXY"][tolerance:-tolerance]
                     if do_curves_intersect(curve1, curve2):
                         count += 1
             df.at[i, "count"] = count
@@ -140,6 +138,50 @@ def adapted_filter_fascicles(df: pd.DataFrame, tolerance) -> pd.DataFrame:
         df = df[df["keep"]].drop(columns=["keep"]).reset_index(drop=True)
 
     df = df.drop(columns=["count"])
+
+    return df
+
+
+def adapted_filter_fascicles_fast(df, tolerance):
+
+    df["count"] = 0
+    df["intersection"] = [[] for _ in range(len(df))]
+    df["keep"] = True
+
+    # detect how many intersection points each fascicle has
+    for i in range(len(df)):
+        curve1 = df.at[i, "coordsXY"][tolerance:-tolerance]
+        count = 0
+        intersection = []
+        for j in range(len(df)):
+            if i != j:
+                curve2 = df.at[j, "coordsXY"][tolerance:-tolerance]
+                if do_curves_intersect(curve1, curve2):
+                    count += 1
+                    intersection.append(j)
+        df.at[i, "count"] = count
+        df.at[i, "intersection"] = intersection
+
+    while df["count"].max() > 0:
+
+        # determine the maximum amount of intersections
+        max_count = df["count"].max()
+        max_idx = df.index[df["count"] == max_count].tolist()
+
+        intersection_all = [df.at[idx, "intersection"] for idx in max_idx]
+        df.loc[df["count"] == max_count, "keep"] = False
+
+        for i in range(len(max_idx)):
+            df.at[max_idx[i], "count"] = np.nan
+
+        for i in range(len(intersection_all)):
+            for j in range(len(intersection_all[i])):
+                df.at[intersection_all[i][j], "count"] -= 1
+
+    df = df[df["keep"]].drop(columns=["keep"])  # .reset_index(drop=True)
+
+    df = df.drop(columns=["count"])
+    df = df.drop(columns=["intersection"])
 
     return df
 

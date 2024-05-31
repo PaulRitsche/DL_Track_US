@@ -10,21 +10,22 @@ import pandas as pd
 from curved_fascicles_functions import (
     adapted_contourEdge,
     adapted_filter_fascicles,
+    adapted_filter_fascicles_fast,
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00015.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00020.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00015.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00020.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00015.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00020.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -157,6 +158,9 @@ for i in range(len(contours_sorted)):
         diffL = ex_current_fascicle_y - ex_y_LA
         locL = np.where(diffL == min(diffL, key=abs))[0]
 
+        # if min(diffU, key=abs) > 80:
+        # continue
+
         # Get coordinates of fascicle between the two aponeuroses
         coordsX = ex_current_fascicle_x[int(locL) : int(locU)]
         coordsY = ex_current_fascicle_y[int(locL) : int(locU)]
@@ -182,9 +186,11 @@ for i in range(len(contours_sorted)):
         )
 
 tolerance_to_apo = 100
-data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
+# data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
+data = adapted_filter_fascicles_fast(fascicle_data, tolerance_to_apo)
+
 # data = filter_fascicles(fascicle_data)
-# print(data)
+print(data)
 
 end_time = time.time()
 total_time = end_time - start_time
