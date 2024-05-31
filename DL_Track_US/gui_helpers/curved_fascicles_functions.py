@@ -84,7 +84,7 @@ def do_curves_intersect(curve1, curve2):
     return line1.intersects(line2)
 
 
-def adapted_filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
+def adapted_filter_fascicles(df: pd.DataFrame, tolerance) -> pd.DataFrame:
     """
     Filters out fascicles that intersect with their neighboring fascicles based on their x_low and x_high values.
 
@@ -108,31 +108,38 @@ def adapted_filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     2      5      3       7       6
     """
 
-    df["count"] = 1
-    max = 1
+    df["count"] = 0
 
-    while max > 0:
+    while True:
 
         df["keep"] = True
 
+        # detect how many intersection points each fascicle has
         for i in range(len(df)):
             curve1 = df.at[i, "coordsXY"]
+            curve1 = curve1[tolerance : len(curve1) - tolerance]
             count = 0
             for j in range(len(df)):
                 if i != j:
                     curve2 = df.at[j, "coordsXY"]
+                    curve2 = curve2[tolerance : len(curve2) - tolerance]
                     if do_curves_intersect(curve1, curve2):
                         count += 1
             df.at[i, "count"] = count
 
-        max = df["count"].max()
+        # determine the maximum amount of intersections
+        max_count = df["count"].max()
 
-        if max > 0:
-            for i in range(len(df)):
-                if df.at[i, "count"] == max:
-                    df.at[i, "keep"] = False
-            df = df[df["keep"]].drop(columns=["keep"])
-            df = df.reset_index(drop=True)
+        if max_count == 0:
+            break
+
+        # mark the fascicles with maximum count for removal
+        df.loc[df["count"] == max_count, "keep"] = False
+
+        # remove fascicles with maximum count
+        df = df[df["keep"]].drop(columns=["keep"]).reset_index(drop=True)
+
+    df = df.drop(columns=["count"])
 
     return df
 

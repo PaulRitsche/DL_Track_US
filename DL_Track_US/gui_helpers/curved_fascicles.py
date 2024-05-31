@@ -10,22 +10,21 @@ import pandas as pd
 from curved_fascicles_functions import (
     adapted_contourEdge,
     adapted_filter_fascicles,
-    do_curves_intersect,
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00015.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00015.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00015.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -182,9 +181,10 @@ for i in range(len(contours_sorted)):
             [fascicle_data, fascicle_data_temp], ignore_index=True
         )
 
-data = adapted_filter_fascicles(fascicle_data)
-
-print(data)
+tolerance_to_apo = 100
+data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
+# data = filter_fascicles(fascicle_data)
+# print(data)
 
 end_time = time.time()
 total_time = end_time - start_time
