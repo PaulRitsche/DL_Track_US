@@ -70,21 +70,60 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
     return np.array(x), np.array(y)
 
 
-def is_point_in_range(x_point, y_point, x_poly, lb, ub):  # x_point at first place
-    for i in range(len(x_poly) - 1):
-        if x_poly[i] <= x_point <= x_poly[i + 1]:
-            if lb[i] <= y_point <= ub[i]:
-                return True
-    return False
+def do_curves_intersect(curve1: list, curve2: list) -> bool:
+    """Function to detect wheter two curves are intersecting or not.
 
+    Parameters
+    ----------
+    curve1 : list
+        List containing (x,y) coordinate pairs representing one curve
+    curve2 : list
+        List containing (x,y) coordinate pairs representing a second curve
 
-def do_curves_intersect(curve1, curve2):
+    Returns
+    -------
+    Bool
+        'True' if the curves have an intersection point
+        'False' if the curves don't have an intersection point
+
+    Examples
+    --------
+    >>> do_curves_intersect(curve1=[(98.06, 263.24), (98.26, 263.19), ...],
+    curve2=[(63.45, 258.82), (63.65, 258.76), ...])
+    """
+
     line1 = LineString(curve1)
     line2 = LineString(curve2)
+
     return line1.intersects(line2)
 
 
-def adapted_filter_fascicles(df, tolerance):
+def adapted_filter_fascicles(df: pd.DataFrame, tolerance: int) -> pd.DataFrame:
+    """Filters out fascicles that intersect with other fascicles
+
+    This function counts for each fascicle the number of intersections
+    with other fascicles and ranks them based on the number of intersections.
+    The fascicle with the highest intersection count is excluded.
+    This ranking and exclusion process is repeated until there are no more intersections.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A DataFrame containing the fascicle data. Expected columns include 'coordsXY'.
+    tolerance: integer
+        Tolerance to allow intersection points near the aponeuroses
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame with the fascicles that do not intersect with other fascicles.
+
+    Example
+    -------
+    >>> data = {'coordsXY': [[(78, 268), (78, 266), ...], [(43, 265), (42, 264), ...], ...]}
+    >>> tolerance = 100
+    >>> adapted_filter_fascicles(data, tolerance)
+    """
 
     df["count"] = 0
     df["intersection"] = [[] for _ in range(len(df))]
@@ -125,7 +164,41 @@ def adapted_filter_fascicles(df, tolerance):
     return df
 
 
-def is_point_in_range_2(x_point, y_point, x_poly, lb, ub):
+def is_point_in_range(
+    x_point: int, y_point: int, x_poly: list, lb: list, ub: list
+) -> bool:
+    """Function to detect wheter a point is between an upper and a lower
+    boundary or not.
+
+    Parameters
+    ----------
+    x_point :intger
+        Single integer variable representing the x-coordinate of the point to
+        be analyzed
+    y_point : integer
+        Single integer variable representing the y-coordinate of the point to
+        be analyzed
+    x_poly: list
+        List containing all x-coordinates of the range where the point could
+        be located
+    lb: list
+        List containing all y-coordinates of the lower boundary
+    ub: list
+        List containing all y-coordinates of the upper boundary
+
+    Returns
+    -------
+    Bool
+        'True' if point is within both boundaries
+        'False' if point is outside the boundaries
+
+    Examples
+    --------
+    >>> is_point_in_range(x_point=250, y_point=227,
+    x_poly=([-200, ..., 800]), lb=([303.165, ..., 130.044]),
+    ub=([323.165, ..., 150.044]))
+    """
+
     # use binary search to find x-point
     idx = bisect.bisect_left(x_poly, x_point)
 
@@ -143,17 +216,54 @@ def is_point_in_range_2(x_point, y_point, x_poly, lb, ub):
 
 
 def find_next_fascicle(
-    all_contours,
-    contours_sorted_x,
-    contours_sorted_y,
-    x_current_fascicle,
-    y_current_fascicle,
-    x_range,
-    upper_bound,
-    lower_bound,
-    label,
+    all_contours: list,
+    contours_sorted_x: list,
+    contours_sorted_y: list,
+    x_current_fascicle: list,
+    y_current_fascicle: list,
+    x_range: list,
+    upper_bound: list,
+    lower_bound: list,
+    label: dict,
 ):
+    """Function to find the next fascicle contour
 
+    Parameters
+    ----------
+    all_contours : list
+        List containing all (x,y)-coordinates of each detected contour
+    contours_sorted_x : list
+        List containing all x-coordinates of each detected contour
+    contours_sorted_y : list
+        List containing all y-coordinates of each detected contour
+    x_current_fascicle : list
+        List containing the x-coordinates of the currently examined fascicle
+    y_current_fascicle : list
+        List containing the y-coordinates of the currently examined fascicle
+    x_range : list
+        List containing all x-coordinates within the range of the extrapolation
+    upper_bound : list
+        List containing all y-coordinates of the lower boundary
+    lower_bound : list
+        List containing all y-coordinates of the upper boundary
+    label : dictionnary
+        Dictionnary containing a label true or false for every fascicle contour,
+        true if already used for an extrapolation, false if not
+
+    Returns
+    -------
+    new_x : list
+        List containing the x-coordinates of the currently examined fascicle
+        merged with the x-coordinates of the next fascicle contour within the
+        boundary if one was found
+    new_y : list
+        List containing the y-coordinates of the currently examined fascicle
+        merged with the y-coordinates of the next fascicle contour within the
+        boundary if one was found
+    found_fascicle : int
+        Integer value of the found fascicle contour, -1 if no contour was found
+
+    """
     found_fascicle = 0
 
     for i in range(len(all_contours)):
@@ -163,7 +273,7 @@ def find_next_fascicle(
                 and contours_sorted_y[i][0] < y_current_fascicle[-1]
             ):
                 if (
-                    is_point_in_range_2(
+                    is_point_in_range(
                         contours_sorted_x[i][0],
                         contours_sorted_y[i][0],
                         x_range,
