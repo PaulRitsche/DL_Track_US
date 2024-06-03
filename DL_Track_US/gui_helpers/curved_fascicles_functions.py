@@ -151,16 +151,20 @@ def adapted_filter_fascicles_fast(df, tolerance):
     # detect how many intersection points each fascicle has
     for i in range(len(df)):
         curve1 = df.at[i, "coordsXY"][tolerance:-tolerance]
-        count = 0
-        intersection = []
-        for j in range(len(df)):
+        # count = 0
+        # intersection = []
+        for j in range(i + 1, len(df)):
             if i != j:
                 curve2 = df.at[j, "coordsXY"][tolerance:-tolerance]
                 if do_curves_intersect(curve1, curve2):
-                    count += 1
-                    intersection.append(j)
-        df.at[i, "count"] = count
-        df.at[i, "intersection"] = intersection
+                    df.at[i, "count"] += 1
+                    df.at[j, "count"] += 1
+                    df.at[i, "intersection"].append(j)
+                    df.at[j, "intersection"].append(i)
+                    # count += 1
+                    # intersection.append(j)
+        # df.at[i, "count"] = count
+        # df.at[i, "intersection"] = intersection
 
     while df["count"].max() > 0:
 

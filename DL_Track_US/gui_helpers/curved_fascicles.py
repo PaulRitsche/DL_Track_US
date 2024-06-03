@@ -189,12 +189,11 @@ tolerance_to_apo = 100
 # data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 data = adapted_filter_fascicles_fast(fascicle_data, tolerance_to_apo)
 
-# data = filter_fascicles(fascicle_data)
-print(data)
-
 end_time = time.time()
 total_time = end_time - start_time
 print(total_time)
+
+print(data)
 
 # plot extrapolated fascicles
 plt.figure(2)
