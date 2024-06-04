@@ -12,18 +12,19 @@ from curved_fascicles_functions import (
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
+from scipy.integrate import simps
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -60,7 +61,15 @@ all_fascicles_x = []
 all_fascicles_y = []
 
 fascicle_data = pd.DataFrame(
-    columns=["number_contours", "linear_fit", "coordsX", "coordsY", "coordsXY"]
+    columns=[
+        "number_contours",
+        "linear_fit",
+        "coordsX",
+        "coordsY",
+        "coordsXY",
+        "locU",
+        "locL",
+    ]
 )
 
 # calculate merged fascicle edges
@@ -173,6 +182,8 @@ for i in range(len(contours_sorted)):
                 "coordsX": [coordsX],
                 "coordsY": [coordsY],
                 "coordsXY": [coordsXY],
+                "locU": [locU],
+                "locL": [locL],
             }
         )
 
@@ -184,10 +195,41 @@ for i in range(len(contours_sorted)):
 tolerance_to_apo = 100
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
+all_coordsX = list(data["coordsX"])
+all_coordsY = list(data["coordsY"])
+all_locU = list(data["locU"])
+all_locL = list(data["locL"])
+data["fascicle_length"] = np.nan
+data["pennation_angle"] = np.nan
+
+for i in range(len(all_coordsX)):
+    x = all_coordsX[i]
+    y = all_coordsY[i]
+
+    dx = np.diff(x)
+    dy = np.diff(y)
+
+    segment_lengths = np.sqrt(dx**2 + dy**2)
+    curve_length = np.sum(segment_lengths)
+
+    apoangle = np.arctan(
+        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+    ) * (180 / np.pi)
+    fasangle = np.arctan(
+        (all_coordsY[i][0] - all_coordsY[i][50])
+        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+    ) * (180 / np.pi)
+    penangle = fasangle - apoangle
+
+    data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length
+    data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
+
 end_time = time.time()
 total_time = end_time - start_time
 print(total_time)
 
+print(data)
 # plot extrapolated fascicles
 plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
@@ -201,13 +243,7 @@ plt.plot(ex_x_UA, ex_y_UA)
 
 # plot filtered curves between detected fascicles between the two aponeuroses
 
-all_coordsX = []
-all_coordsY = []
 number_contours = list(data["number_contours"])  # contours after filtering
-
-for idx, row in data.iterrows():
-    all_coordsX.append(data.at[idx, "coordsX"])
-    all_coordsY.append(data.at[idx, "coordsY"])
 
 for i in range(len(all_coordsX)):
 
