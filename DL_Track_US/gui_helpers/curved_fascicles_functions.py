@@ -58,7 +58,7 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
     leng = len(un) - 1
     x = []
     y = []
-    for each in range(2, leng - 2):  # Ignore 1st and last 5 points
+    for each in range(leng):  # range(2, leng - 2):  # Ignore 1st and last 5 points
         indices = [i for i, x in enumerate(allx) if x == un[each]]
         if edge == "T":
             loc = indices[0]

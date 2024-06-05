@@ -1,4 +1,4 @@
-"""This is a new file"""
+"""Approach 1"""
 
 import time
 
@@ -16,15 +16,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00005.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00005.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00005.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -396,7 +396,9 @@ plt.imshow(original_image)
 plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
 plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-# plt.show()
+plt.show()
+
+# idea for orientation map
 
 num_grid_lines = 40
 height, width, _ = original_image.shape
@@ -465,6 +467,4 @@ plt.colorbar(label="Value")
 plt.title("Matrix Heatmap")
 plt.xlabel("Column")
 plt.ylabel("Row")
-plt.show()
-
-plt.show()
+# plt.show()
