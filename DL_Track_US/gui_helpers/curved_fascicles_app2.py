@@ -16,15 +16,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00004.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00004.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -67,7 +67,9 @@ fascicle_data = pd.DataFrame(
         "coordsX",
         "coordsY",
         "coordsX_combined",
-        "coordsY_combined",
+        "coordsY_combined" "coordsXY",
+        "locU",
+        "locL",
     ]
 )
 
@@ -169,6 +171,8 @@ for i in range(len(contours_sorted)):
                 "coordsX_combined": None,
                 "coordsY_combined": None,
                 "coordsXY": None,
+                "locU": None,
+                "locL": None,
             }
         )
 
@@ -190,6 +194,7 @@ for i in range(len(number_contours)):
     ex_current_fascicle_x = np.linspace(-200, 800, 5000)
     ex_current_fascicle_y = g(ex_current_fascicle_x)
 
+    # calculate intersection point with lower aponeurosis
     diffL = ex_current_fascicle_y - ex_y_LA
     locL = np.where(diffL == min(diffL, key=abs))[0]
 
@@ -202,12 +207,15 @@ for i in range(len(number_contours)):
     ex_current_fascicle_x = ex_current_fascicle_x[int(locL) : index_first_item]
     ex_current_fascicle_y = ex_current_fascicle_y[int(locL) : index_first_item]
 
+    # convert to list, want list of sections in one list (list in list)
     coordsX = [list(ex_current_fascicle_x)]
     coordsY = [list(ex_current_fascicle_y)]
 
+    # append first contour to list
     coordsX.append(contours_sorted_x[number_contours[i][0]])
     coordsY.append(contours_sorted_y[number_contours[i][0]])
 
+    # append gap between contours and following contours to the list
     if len(number_contours[i]) > 1:
         for j in range(len(number_contours[i]) - 1):
             end_x = contours_sorted_x[number_contours[i][j]][-1]
@@ -228,6 +236,8 @@ for i in range(len(number_contours)):
     g = np.poly1d(coefficients)
     ex_current_fascicle_x_2 = np.linspace(-200, 800, 5000)
     ex_current_fascicle_y_2 = g(ex_current_fascicle_x_2)
+
+    # calulate intersection point with upper aponeurosis
     diffU = ex_current_fascicle_y_2 - ex_y_UA
     locU = np.where(diffU == min(diffU, key=abs))[0]
 
@@ -240,9 +250,11 @@ for i in range(len(number_contours)):
     ex_current_fascicle_x_2 = ex_current_fascicle_x_2[index_last_item : int(locU)]
     ex_current_fascicle_y_2 = ex_current_fascicle_y_2[index_last_item : int(locU)]
 
+    # append to list
     coordsX.append(list(ex_current_fascicle_x_2))
     coordsY.append(list(ex_current_fascicle_y_2))
 
+    # get new list in which the different lists are not separated
     coordsX_combined = []
     coordsX_combined = [item for sublist in coordsX for item in sublist]
 
@@ -251,17 +263,71 @@ for i in range(len(number_contours)):
 
     coordsXY = list(zip(coordsX_combined, coordsY_combined))
 
-    fascicle_data.at[i, "coordsX"] = coordsX
-    fascicle_data.at[i, "coordsY"] = coordsY
-    fascicle_data.at[i, "coordsX_combined"] = coordsX_combined
-    fascicle_data.at[i, "coordsY_combined"] = coordsY_combined
-    fascicle_data.at[i, "coordsXY"] = coordsXY
+    fascicle_data.at[i, "coordsX"] = (
+        coordsX  # x-coordinates of all sections as list in list
+    )
+    fascicle_data.at[i, "coordsY"] = (
+        coordsY  # y-coordinates of all sections as list in list
+    )
+    fascicle_data.at[i, "coordsX_combined"] = (
+        coordsX_combined  # x-coordinates of all sections as one list
+    )
+    fascicle_data.at[i, "coordsY_combined"] = (
+        coordsY_combined  # y-coordinates of all sections as one list
+    )
+    fascicle_data.at[i, "coordsXY"] = (
+        coordsXY  # x- and y-coordinates of all sections as one list
+    )
+    fascicle_data.at[i, "locU"] = locU
+    fascicle_data.at[i, "locL"] = locL
 
 tolerance_to_apo = 50
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
-print(fascicle_data)
-print(fascicle_data.at[0, "coordsX"][4])
+all_coordsX = list(data["coordsX"])
+all_coordsY = list(data["coordsY"])
+all_locU = list(data["locU"])
+all_locL = list(data["locL"])
+data["fascicle_length"] = np.nan
+data["pennation_angle"] = np.nan
+
+for i in range(len(all_coordsX)):
+
+    curve_length_total = 0
+
+    for j in range(len(all_coordsX[i])):
+
+        x = all_coordsX[i][j]
+        y = all_coordsY[i][j]
+
+        dx = np.diff(x)
+        dy = np.diff(y)
+
+        segment_lengths = np.sqrt(dx**2 + dy**2)
+        curve_length = np.sum(segment_lengths)
+        curve_length_total += curve_length
+
+    apoangle = np.arctan(
+        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+    ) * (180 / np.pi)
+    fasangle = np.arctan(
+        (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
+        / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
+    ) * (180 / np.pi)
+    penangle = fasangle - apoangle
+
+    data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
+    data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length_total
+
+end_time = time.time()
+total_time = end_time - start_time
+print(total_time)
+
+print(data)
+print(len(data))
+print(len(all_coordsX))
+print(len(all_coordsX[0]))
 
 plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
@@ -282,13 +348,16 @@ plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
 
 plt.figure(3)
-plt.imshow(contour_image)
-for row in data.iterrows():
-    plt.plot(
-        row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
-    )
-plt.plot(ex_x_LA, ex_y_LA)
-plt.plot(ex_x_UA, ex_y_UA)
-
+plt.imshow(original_image)
+for i in range(len(all_coordsX)):
+    for j in range(len(all_coordsX[i])):
+        if j == 0:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="red", alpha=0.4)
+        if j % 2 == 1:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.4)
+        else:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="red", alpha=0.4)
+plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
 plt.show()
