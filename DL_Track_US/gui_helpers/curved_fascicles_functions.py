@@ -58,7 +58,9 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
     leng = len(un) - 1
     x = []
     y = []
-    for each in range(leng):  # range(2, leng - 2):  # Ignore 1st and last 5 points
+    for each in range(
+        2, leng - 2
+    ):  # range(2, leng - 2):  # Ignore 1st and last 5 points
         indices = [i for i, x in enumerate(allx) if x == un[each]]
         if edge == "T":
             loc = indices[0]
@@ -131,10 +133,12 @@ def adapted_filter_fascicles(df: pd.DataFrame, tolerance: int) -> pd.DataFrame:
 
     # detect how many intersection points each fascicle has
     for i in range(len(df)):
-        curve1 = df.at[i, "coordsXY"][tolerance:-tolerance]
+        curve1 = df.at[i, "coordsXY"]
+        curve1 = curve1[tolerance : len(curve1) - tolerance]
         for j in range(i + 1, len(df)):
             if i != j:
-                curve2 = df.at[j, "coordsXY"][tolerance:-tolerance]
+                curve2 = df.at[j, "coordsXY"]
+                curve2 = curve2[tolerance : len(curve2) - tolerance]
                 if do_curves_intersect(curve1, curve2):
                     df.at[i, "count"] += 1
                     df.at[j, "count"] += 1

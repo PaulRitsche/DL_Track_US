@@ -168,7 +168,7 @@ for i in range(len(contours_sorted)):
                 "coordsY": None,
                 "coordsX_combined": None,
                 "coordsY_combined": None,
-                # "coordsXY": None
+                "coordsXY": None,
             }
         )
 
@@ -180,16 +180,27 @@ number_contours = list(fascicle_data["number_contours"])
 
 for i in range(len(number_contours)):
 
+    # calculate linear fit through first contour of fascicle, extrapolate over the complete image and compute intersection point with lower aponeurosis
     coefficients = np.polyfit(
         contours_sorted_x[number_contours[i][0]],
         contours_sorted_y[number_contours[i][0]],
         1,
     )
     g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(
-        -200, contours_sorted_x[number_contours[i][0]][0]
-    )
+    ex_current_fascicle_x = np.linspace(-200, 800, 5000)
     ex_current_fascicle_y = g(ex_current_fascicle_x)
+
+    diffL = ex_current_fascicle_y - ex_y_LA
+    locL = np.where(diffL == min(diffL, key=abs))[0]
+
+    # find index of first item of first contour
+    first_item = contours_sorted_x[number_contours[i][0]][0]
+    differences = np.abs(ex_current_fascicle_x - first_item)
+    index_first_item = np.argmin(differences)
+
+    # get extrapolation from the intersection with the lower aponeurosis to the beginning of the first fascicle
+    ex_current_fascicle_x = ex_current_fascicle_x[int(locL) : index_first_item]
+    ex_current_fascicle_y = ex_current_fascicle_y[int(locL) : index_first_item]
 
     coordsX = [list(ex_current_fascicle_x)]
     coordsY = [list(ex_current_fascicle_y)]
@@ -208,16 +219,26 @@ for i in range(len(number_contours)):
             coordsX.append(contours_sorted_x[number_contours[i][j + 1]])
             coordsY.append(contours_sorted_y[number_contours[i][j + 1]])
 
+    # calculate linear fit for last contour, extrapolate over complete image to get intersection point with upper aponeurosis
     coefficients = np.polyfit(
         contours_sorted_x[number_contours[i][-1]],
         contours_sorted_y[number_contours[i][-1]],
         1,
     )
     g = np.poly1d(coefficients)
-    ex_current_fascicle_x_2 = np.linspace(
-        contours_sorted_x[number_contours[i][-1]][-1], 800
-    )
+    ex_current_fascicle_x_2 = np.linspace(-200, 800, 5000)
     ex_current_fascicle_y_2 = g(ex_current_fascicle_x_2)
+    diffU = ex_current_fascicle_y_2 - ex_y_UA
+    locU = np.where(diffU == min(diffU, key=abs))[0]
+
+    # find index of last item of last contour
+    last_item = contours_sorted_x[number_contours[i][-1]][-1]
+    differences_2 = np.abs(ex_current_fascicle_x_2 - last_item)
+    index_last_item = np.argmin(differences_2)
+
+    # get extrapolation from the end of the last fascicle to the upper aponeurosis
+    ex_current_fascicle_x_2 = ex_current_fascicle_x_2[index_last_item : int(locU)]
+    ex_current_fascicle_y_2 = ex_current_fascicle_y_2[index_last_item : int(locU)]
 
     coordsX.append(list(ex_current_fascicle_x_2))
     coordsY.append(list(ex_current_fascicle_y_2))
@@ -228,33 +249,19 @@ for i in range(len(number_contours)):
     coordsY_combined = []
     coordsY_combined = [item for sublist in coordsY for item in sublist]
 
-    # diffU = coordsX_combined - ex_y_UA
-    # locU = np.where(diffU == min(diffU, key=abs))[0]
-    # diffL = coordsY_combined - ex_y_LA
-    # locL = np.where(diffL == min(diffL, key=abs))[0]
-
-    # coordsX_combined = coordsX_combined[int(locL) : int(locU)]
-    # coordsY_combined = coordsY_combined[int(locL) : int(locU)]
-    # coordsXY = list(zip(coordsX_combined, coordsY_combined))
+    coordsXY = list(zip(coordsX_combined, coordsY_combined))
 
     fascicle_data.at[i, "coordsX"] = coordsX
     fascicle_data.at[i, "coordsY"] = coordsY
     fascicle_data.at[i, "coordsX_combined"] = coordsX_combined
     fascicle_data.at[i, "coordsY_combined"] = coordsY_combined
-    # fascicle_data.at[i, "coordsXY"] = coordsXY
+    fascicle_data.at[i, "coordsXY"] = coordsXY
+
+tolerance_to_apo = 50
+data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
 print(fascicle_data)
-
-plt.figure(3)
-plt.imshow(contour_image)
-# plt.imshow(original_image)
-for row in fascicle_data.iterrows():
-    plt.plot(
-        row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
-    )
-plt.plot(ex_x_LA, ex_y_LA)
-plt.plot(ex_x_UA, ex_y_UA)
-
+print(fascicle_data.at[0, "coordsX"][4])
 
 plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
@@ -264,5 +271,24 @@ for i in range(len(all_fascicles_x)):
     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
 plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
+
+plt.figure(2)
+plt.imshow(contour_image)
+for row in fascicle_data.iterrows():
+    plt.plot(
+        row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
+    )
+plt.plot(ex_x_LA, ex_y_LA)
+plt.plot(ex_x_UA, ex_y_UA)
+
+plt.figure(3)
+plt.imshow(contour_image)
+for row in data.iterrows():
+    plt.plot(
+        row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
+    )
+plt.plot(ex_x_LA, ex_y_LA)
+plt.plot(ex_x_UA, ex_y_UA)
+
 
 plt.show()
