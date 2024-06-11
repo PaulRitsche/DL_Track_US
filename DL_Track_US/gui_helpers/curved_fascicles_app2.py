@@ -17,15 +17,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00013.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -294,17 +294,13 @@ for i in range(len(number_contours)):
     fascicle_data.at[i, "intersection_LA"] = fas_LA_intersection
     fascicle_data.at[i, "intersection_UA"] = fas_UA_intersection
 
-fascicle_data = (
-    fascicle_data[fascicle_data["intersection_LA"]]
-    .drop(columns="intersection_LA")
-    .reset_index()
-)
-fascicle_data = (
-    fascicle_data[fascicle_data["intersection_UA"]]
-    .drop(columns="intersection_UA")
-    .reset_index()
-)
-# fascicle_data = fascicle_data.reset_index()
+fascicle_data = fascicle_data[fascicle_data["intersection_LA"]].drop(
+    columns="intersection_LA"
+)  # .reset_index()
+fascicle_data = fascicle_data[fascicle_data["intersection_UA"]].drop(
+    columns="intersection_UA"
+)  # .reset_index()
+fascicle_data = fascicle_data.reset_index(drop=True)
 
 tolerance_to_apo = 50
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
@@ -369,16 +365,19 @@ for row in fascicle_data.iterrows():
 plt.plot(ex_x_LA, ex_y_LA)
 plt.plot(ex_x_UA, ex_y_UA)
 
+colormap = plt.get_cmap("rainbow", len(all_coordsX))
+
 plt.figure(3)
 plt.imshow(original_image)
 for i in range(len(all_coordsX)):
+    color = colormap(i)
     for j in range(len(all_coordsX[i])):
         if j == 0:
-            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="red", alpha=0.4)
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
         if j % 2 == 1:
-            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.4)
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6)
         else:
-            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="red", alpha=0.4)
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
 plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
 plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
