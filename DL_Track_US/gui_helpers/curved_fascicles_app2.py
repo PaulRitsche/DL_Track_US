@@ -9,6 +9,7 @@ import pandas as pd
 from curved_fascicles_functions import (
     adapted_contourEdge,
     adapted_filter_fascicles,
+    do_curves_intersect,
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
@@ -16,15 +17,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00042.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00042.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00042.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -61,6 +62,8 @@ all_fascicles_x = []
 all_fascicles_y = []
 width = original_image.shape[1]
 mid = width / 2
+LA_curve = list(zip(ex_x_LA, ex_y_LA))
+UA_curve = list(zip(ex_x_UA, ex_y_UA))
 
 fascicle_data = pd.DataFrame(
     columns=[
@@ -196,6 +199,9 @@ for i in range(len(number_contours)):
     ex_current_fascicle_x = np.linspace(mid - width, mid + width, 5000)
     ex_current_fascicle_y = g(ex_current_fascicle_x)
 
+    fas_LA_curve = list(zip(ex_current_fascicle_x, ex_current_fascicle_y))
+    fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
+
     # calculate intersection point with lower aponeurosis
     diffL = ex_current_fascicle_y - ex_y_LA
     locL = np.where(diffL == min(diffL, key=abs))[0]
@@ -238,6 +244,9 @@ for i in range(len(number_contours)):
     g = np.poly1d(coefficients)
     ex_current_fascicle_x_2 = np.linspace(mid - width, mid + width, 5000)
     ex_current_fascicle_y_2 = g(ex_current_fascicle_x_2)
+
+    fas_UA_curve = list(zip(ex_current_fascicle_x_2, ex_current_fascicle_y_2))
+    fas_UA_intersection = do_curves_intersect(UA_curve, fas_UA_curve)
 
     # calulate intersection point with upper aponeurosis
     diffU = ex_current_fascicle_y_2 - ex_y_UA
@@ -282,6 +291,20 @@ for i in range(len(number_contours)):
     )
     fascicle_data.at[i, "locU"] = locU
     fascicle_data.at[i, "locL"] = locL
+    fascicle_data.at[i, "intersection_LA"] = fas_LA_intersection
+    fascicle_data.at[i, "intersection_UA"] = fas_UA_intersection
+
+fascicle_data = (
+    fascicle_data[fascicle_data["intersection_LA"]]
+    .drop(columns="intersection_LA")
+    .reset_index()
+)
+fascicle_data = (
+    fascicle_data[fascicle_data["intersection_UA"]]
+    .drop(columns="intersection_UA")
+    .reset_index()
+)
+# fascicle_data = fascicle_data.reset_index()
 
 tolerance_to_apo = 50
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
