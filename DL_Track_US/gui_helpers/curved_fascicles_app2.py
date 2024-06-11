@@ -16,15 +16,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00042.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00042.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00042.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -59,6 +59,8 @@ number_contours = []
 tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
+width = original_image.shape[1]
+mid = width / 2
 
 fascicle_data = pd.DataFrame(
     columns=[
@@ -94,7 +96,7 @@ for i in range(len(contours_sorted)):
         if 0 < coefficients[0] < 0.000583:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                -200, 800, 5000
+                mid - width, mid + width, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
             linear_fit = False
@@ -102,7 +104,7 @@ for i in range(len(contours_sorted)):
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                -200, 800, 5000
+                mid - width, mid + width, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
             linear_fit = True
@@ -141,7 +143,7 @@ for i in range(len(contours_sorted)):
             if 0 < coefficients[0] < 0.000583:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
-                    -200, 800, 5000
+                    mid - width, mid + width, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
                 linear_fit = False
@@ -149,7 +151,7 @@ for i in range(len(contours_sorted)):
                 coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
-                    -200, 800, 5000
+                    mid - width, mid + width, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
                 linear_fit = True
@@ -191,7 +193,7 @@ for i in range(len(number_contours)):
         1,
     )
     g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(-200, 800, 5000)
+    ex_current_fascicle_x = np.linspace(mid - width, mid + width, 5000)
     ex_current_fascicle_y = g(ex_current_fascicle_x)
 
     # calculate intersection point with lower aponeurosis
@@ -234,7 +236,7 @@ for i in range(len(number_contours)):
         1,
     )
     g = np.poly1d(coefficients)
-    ex_current_fascicle_x_2 = np.linspace(-200, 800, 5000)
+    ex_current_fascicle_x_2 = np.linspace(mid - width, mid + width, 5000)
     ex_current_fascicle_y_2 = g(ex_current_fascicle_x_2)
 
     # calulate intersection point with upper aponeurosis
@@ -325,9 +327,6 @@ total_time = end_time - start_time
 print(total_time)
 
 print(data)
-print(len(data))
-print(len(all_coordsX))
-print(len(all_coordsX[0]))
 
 plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)

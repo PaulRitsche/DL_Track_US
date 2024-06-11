@@ -9,6 +9,7 @@ import pandas as pd
 from curved_fascicles_functions import (
     adapted_contourEdge,
     adapted_filter_fascicles,
+    do_curves_intersect,
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
@@ -16,15 +17,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00050.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00050.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00050.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -59,6 +60,10 @@ number_contours = []
 tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
+width = original_image.shape[1]
+mid = width / 2
+LA_curve = list(zip(ex_x_LA, ex_y_LA))
+UA_curve = list(zip(ex_x_UA, ex_y_UA))
 
 fascicle_data = pd.DataFrame(
     columns=[
@@ -93,7 +98,7 @@ for i in range(len(contours_sorted)):
         if 0 < coefficients[0] < 0.000583:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                -200, 800, 5000
+                mid - width, mid + width, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
             linear_fit = False
@@ -101,7 +106,7 @@ for i in range(len(contours_sorted)):
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
-                -200, 800, 5000
+                mid - width, mid + width, 5000
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
             linear_fit = True
@@ -140,7 +145,7 @@ for i in range(len(contours_sorted)):
             if 0 < coefficients[0] < 0.000583:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
-                    -200, 800, 5000
+                    mid - width, mid + width, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
                 linear_fit = False
@@ -148,7 +153,7 @@ for i in range(len(contours_sorted)):
                 coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
-                    -200, 800, 5000
+                    mid - width, mid + width, 5000
                 )  # Extrapolate x,y data using f function
                 ex_current_fascicle_y = g(ex_current_fascicle_x)
                 linear_fit = True
@@ -158,38 +163,46 @@ for i in range(len(contours_sorted)):
 
         # Find intersection between fascicle and aponeuroses
         diffU = ex_current_fascicle_y - ex_y_UA
-        locU = np.where(diffU == min(diffU, key=abs))[0]
+        diffU_short = diffU[0:4000]
+        locU = np.where(diffU == min(diffU_short, key=abs))[0]
+        if locU == 3999:
+            locU = np.where(diffU == min(diffU, key=abs))[0]
+
         diffL = ex_current_fascicle_y - ex_y_LA
         locL = np.where(diffL == min(diffL, key=abs))[0]
-
-        if min(diffU, key=abs) > 80:
-            continue
 
         # Get coordinates of fascicle between the two aponeuroses
         coordsX = ex_current_fascicle_x[int(locL) : int(locU)]
         coordsY = ex_current_fascicle_y[int(locL) : int(locU)]
         coordsXY = list(zip(coordsX, coordsY))
 
-        all_fascicles_x.append(ex_current_fascicle_x)
-        all_fascicles_y.append(ex_current_fascicle_y)
-        coefficient_label.append(linear_fit)
-        number_contours.append(inner_number_contours)
+        # only include fascicles that have intersection points with both aponeuroses
+        fas_curve = list(zip(ex_current_fascicle_x, ex_current_fascicle_y))
 
-        fascicle_data_temp = pd.DataFrame(
-            {
-                "number_contours": [inner_number_contours],
-                "linear_fit": linear_fit,
-                "coordsX": [coordsX],
-                "coordsY": [coordsY],
-                "coordsXY": [coordsXY],
-                "locU": [locU],
-                "locL": [locL],
-            }
-        )
+        if do_curves_intersect(fas_curve, LA_curve) and do_curves_intersect(
+            fas_curve, UA_curve
+        ):
 
-        fascicle_data = pd.concat(
-            [fascicle_data, fascicle_data_temp], ignore_index=True
-        )
+            all_fascicles_x.append(ex_current_fascicle_x)
+            all_fascicles_y.append(ex_current_fascicle_y)
+            coefficient_label.append(linear_fit)
+            number_contours.append(inner_number_contours)
+
+            fascicle_data_temp = pd.DataFrame(
+                {
+                    "number_contours": [inner_number_contours],
+                    "linear_fit": linear_fit,
+                    "coordsX": [coordsX],
+                    "coordsY": [coordsY],
+                    "coordsXY": [coordsXY],
+                    "locU": [locU],
+                    "locL": [locL],
+                }
+            )
+
+            fascicle_data = pd.concat(
+                [fascicle_data, fascicle_data_temp], ignore_index=True
+            )
 
 # filter overlapping fascicles
 tolerance_to_apo = 100
@@ -202,28 +215,31 @@ all_locL = list(data["locL"])
 data["fascicle_length"] = np.nan
 data["pennation_angle"] = np.nan
 
+
 for i in range(len(all_coordsX)):
-    x = all_coordsX[i]
-    y = all_coordsY[i]
 
-    dx = np.diff(x)
-    dy = np.diff(y)
+    if len(all_coordsX[i]) > 0:
+        x = all_coordsX[i]
+        y = all_coordsY[i]
 
-    segment_lengths = np.sqrt(dx**2 + dy**2)
-    curve_length = np.sum(segment_lengths)
+        dx = np.diff(x)
+        dy = np.diff(y)
 
-    apoangle = np.arctan(
-        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-    ) * (180 / np.pi)
-    fasangle = np.arctan(
-        (all_coordsY[i][0] - all_coordsY[i][50])
-        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-    ) * (180 / np.pi)
-    penangle = fasangle - apoangle
+        segment_lengths = np.sqrt(dx**2 + dy**2)
+        curve_length = np.sum(segment_lengths)
 
-    data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length
-    data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
+        apoangle = np.arctan(
+            (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+            / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+        ) * (180 / np.pi)
+        fasangle = np.arctan(
+            (all_coordsY[i][0] - all_coordsY[i][50])
+            / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+        ) * (180 / np.pi)
+        penangle = fasangle - apoangle
+
+        data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length
+        data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
 end_time = time.time()
 total_time = end_time - start_time

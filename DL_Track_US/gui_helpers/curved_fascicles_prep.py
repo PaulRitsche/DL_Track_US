@@ -49,6 +49,7 @@ def apo_to_contour(image):
 
     apo_image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
+    width = image.shape[1]
 
     _, thresh = cv2.threshold(
         apo_image_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
@@ -152,15 +153,16 @@ def apo_to_contour(image):
     y_UA = g(x1)
     y_LA = h(x1)
 
-    # new_X_UA = np.linspace(
-    # mid - 700, mid + 700, 5000
-    # )  # Extrapolate x,y data using f function
-    new_X_UA = np.linspace(-200, 800, 5000)
+    mid = width / 2
+    new_X_UA = np.linspace(
+        mid - width, mid + width, 5000
+    )  # Extrapolate x,y data using f function
+    # new_X_UA = np.linspace(-200, 800, 5000)
     new_Y_UA = g(new_X_UA)
-    new_X_LA = np.linspace(-200, 800, 5000)
-    # new_X_LA = np.linspace(
-    # mid - 700, mid + 700, 5000
-    # )  # Extrapolate x,y data using f function
+    # new_X_LA = np.linspace(-200, 800, 5000)
+    new_X_LA = np.linspace(
+        mid - width, mid + width, 5000
+    )  # Extrapolate x,y data using f function
     new_Y_LA = h(new_X_LA)
 
     return apo_image_rgb, new_X_LA, new_Y_LA, new_X_UA, new_Y_UA
