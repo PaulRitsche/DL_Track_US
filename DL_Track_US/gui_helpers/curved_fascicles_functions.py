@@ -302,3 +302,49 @@ def find_next_fascicle(
         found_fascicle = -1
 
     return new_x, new_y, found_fascicle
+
+
+def crop(original_image, image_fas, image_apo):
+    """Function to crop the frame around ultrasound images
+
+    Parameters
+    ----------
+    original_image : list
+        List containing (x,y) coordinate pairs representing one curve
+    image_fas : list
+        List containing (x,y) coordinate pairs representing a second curve
+
+    Returns
+    -------
+    Bool
+        'True' if the curves have an intersection point
+        'False' if the curves don't have an intersection point
+
+    Examples
+    --------
+    >>> do_curves_intersect(curve1=[(98.06, 263.24), (98.26, 263.19), ...],
+    curve2=[(63.45, 258.82), (63.65, 258.76), ...])
+    """
+
+    # define mask, pixel value has to be higher than 10
+    mask = np.array((original_image > 10).astype("f4"))
+
+    # find contours
+    cnts, _ = cv2.findContours(
+        cv2.cvtColor((mask * 255).astype("u1"), cv2.COLOR_BGR2GRAY),
+        mode=cv2.RETR_EXTERNAL,
+        method=cv2.CHAIN_APPROX_SIMPLE,
+    )[-2:]
+
+    # define contour with the biggest area
+    c = max(cnts, key=cv2.contourArea)
+
+    # get starting point and width, height of biggest area as a rectangle
+    x, y, w, h = cv2.boundingRect(c)
+
+    # crop original, fascicle and aponeuroses images
+    croped_US = np.array(original_image[y : y + h, x : x + w])
+    croped_fas = np.array(image_fas[y : y + h, x : x + w])
+    croped_apo = np.array(image_apo[y : y + h, x : x + w])
+
+    return croped_US, croped_fas, croped_apo

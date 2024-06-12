@@ -9,6 +9,7 @@ import pandas as pd
 from curved_fascicles_functions import (
     adapted_contourEdge,
     adapted_filter_fascicles,
+    crop,
     do_curves_intersect,
     find_next_fascicle,
 )
@@ -17,17 +18,19 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00012.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00012.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00012.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
+
+original_image, image, apo_image = crop(original_image, image, apo_image)
 
 # get sorted fascicle contours
 image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
