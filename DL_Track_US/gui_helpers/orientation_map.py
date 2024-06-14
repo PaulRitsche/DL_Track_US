@@ -4,6 +4,7 @@ import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy
 import orientationpy
+import tifffile
 
 # load image as gray scale image
 image = cv2.imread(
@@ -111,6 +112,7 @@ plt.quiver(
     boxVectorsYX[1],
     boxVectorsYX[0],
     angles="xy",
+    scale=0.2,
     scale_units="xy",
     # scale=energyBoxes.ravel(),
     color="r",

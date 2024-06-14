@@ -345,7 +345,7 @@ def doCalculations(
     pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
     pred_apo_t = np.reshape(pred_apo_t, (h, w))
     tf.keras.backend.clear_session()
-
+    pred_apo_t.save()
     # load the fascicle model
     pred_fasc = model_fasc.predict(img)
     pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THS
@@ -354,7 +354,7 @@ def doCalculations(
     pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
     pred_fasc_t = np.reshape(pred_fasc_t, (h, w))
     tf.keras.backend.clear_session()
-
+    pred_fasc_t.save()
     fasc_l = []
     pennation = []
     x_low = []

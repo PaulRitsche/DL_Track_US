@@ -17,16 +17,26 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 from matplotlib.patches import Rectangle
 
 # load image as gray scale image
-image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
-    cv2.IMREAD_UNCHANGED,
+# image = cv2.imread(
+#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00126.tif",
+#    cv2.IMREAD_UNCHANGED,
+# )
+# apo_image = cv2.imread(
+#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00126.jpg",
+#    cv2.IMREAD_UNCHANGED,
+# )
+# original_image = cv2.imread(
+#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00126.tif",
+#    cv2.IMREAD_UNCHANGED,
+# )
+image = np.load(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\fascicle_masks_scaled\im_14_re.npy"
 )
-apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
-    cv2.IMREAD_UNCHANGED,
+apo_image = np.load(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\aponeurosis_masks_scaled\im_14_re.npy"
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\images\im_14_re.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -305,7 +315,7 @@ fascicle_data = fascicle_data[fascicle_data["intersection_UA"]].drop(
 )  # .reset_index()
 fascicle_data = fascicle_data.reset_index(drop=True)
 
-tolerance_to_apo = 50
+tolerance_to_apo = 100
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
 all_coordsX = list(data["coordsX"])
@@ -349,6 +359,13 @@ total_time = end_time - start_time
 print(total_time)
 
 print(data)
+
+median_length = data["fascicle_length"].median()
+mean_length = data["fascicle_length"].mean()
+median_angle = data["pennation_angle"].median()
+mean_angle = data["pennation_angle"].mean()
+
+print(median_length, mean_length, median_angle, mean_angle)
 
 plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)

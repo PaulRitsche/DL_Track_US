@@ -271,7 +271,7 @@ def find_next_fascicle(
     found_fascicle = 0
 
     for i in range(len(all_contours)):
-        if len(contours_sorted_x[i]) > 0:
+        if len(contours_sorted_x[i]) > 1:
             if (
                 contours_sorted_x[i][0] > x_current_fascicle[-1]
                 and contours_sorted_y[i][0] < y_current_fascicle[-1]
@@ -304,26 +304,28 @@ def find_next_fascicle(
     return new_x, new_y, found_fascicle
 
 
-def crop(original_image, image_fas, image_apo):
+def crop(original_image: list, image_fas: list, image_apo: list):
     """Function to crop the frame around ultrasound images
+
+    Additionally crops the fascicle and aponeuroses images in order that all three images have the same size
 
     Parameters
     ----------
     original_image : list
-        List containing (x,y) coordinate pairs representing one curve
+        Image of the original ultrasound image
     image_fas : list
-        List containing (x,y) coordinate pairs representing a second curve
+        Binary image of the fascicles within the original image
+    image_apo: list
+        Binary image of the aponeuroses within the original image
 
     Returns
     -------
-    Bool
-        'True' if the curves have an intersection point
-        'False' if the curves don't have an intersection point
-
-    Examples
-    --------
-    >>> do_curves_intersect(curve1=[(98.06, 263.24), (98.26, 263.19), ...],
-    curve2=[(63.45, 258.82), (63.65, 258.76), ...])
+    cropped_US : list
+        Image of the original ultrasound image without frame around it
+    cropped_fas : list
+        Cropped binary image of fascicles within the original image
+    cropped_apo : list
+        Cropped binary image of the aponeuroses within the original image
     """
 
     # define mask, pixel value has to be higher than 10
@@ -343,8 +345,8 @@ def crop(original_image, image_fas, image_apo):
     x, y, w, h = cv2.boundingRect(c)
 
     # crop original, fascicle and aponeuroses images
-    croped_US = np.array(original_image[y : y + h, x : x + w])
-    croped_fas = np.array(image_fas[y : y + h, x : x + w])
-    croped_apo = np.array(image_apo[y : y + h, x : x + w])
+    cropped_US = np.array(original_image[y : y + h, x : x + w])
+    cropped_fas = np.array(image_fas[y : y + h, x : x + w])
+    cropped_apo = np.array(image_apo[y : y + h, x : x + w])
 
-    return croped_US, croped_fas, croped_apo
+    return cropped_US, cropped_fas, cropped_apo

@@ -17,16 +17,26 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 from matplotlib.patches import Rectangle
 
 # load image as gray scale image
-image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
-    cv2.IMREAD_UNCHANGED,
+# image = cv2.imread(
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00118.tif",
+# cv2.IMREAD_UNCHANGED,
+# )
+# apo_image = cv2.imread(
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00118.jpg",
+# cv2.IMREAD_UNCHANGED,
+# )
+# original_image = cv2.imread(
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00118.tif",
+# cv2.IMREAD_UNCHANGED,
+# )
+image = np.load(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\fascicle_masks_scaled\im_35_re.npy"
 )
-apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
-    cv2.IMREAD_UNCHANGED,
+apo_image = np.load(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\aponeurosis_masks_scaled\im_35_re.npy"
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\images\im_35_re.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -249,6 +259,13 @@ total_time = end_time - start_time
 print(total_time)
 
 print(data)
+
+median_length = data["fascicle_length"].median()
+mean_length = data["fascicle_length"].mean()
+median_angle = data["pennation_angle"].median()
+mean_angle = data["pennation_angle"].mean()
+
+print(median_length, mean_length, median_angle, mean_angle)
 
 # plot extrapolated fascicles
 colormap = plt.get_cmap("rainbow", len(all_fascicles_x))
