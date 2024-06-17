@@ -18,15 +18,15 @@ from matplotlib.patches import Rectangle
 
 # load image as gray scale image
 # image = cv2.imread(
-# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00118.tif",
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00226.tif",
 # cv2.IMREAD_UNCHANGED,
 # )
 # apo_image = cv2.imread(
-# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00118.jpg",
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00226.jpg",
 # cv2.IMREAD_UNCHANGED,
 # )
 # original_image = cv2.imread(
-# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00118.tif",
+# r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00226.tif",
 # cv2.IMREAD_UNCHANGED,
 # )
 image = np.load(
@@ -65,6 +65,22 @@ for i in range(len(contours_sorted)):
     )
     contours_sorted_x.append(contours_sorted[i][0])
     contours_sorted_y.append(contours_sorted[i][1])
+
+paired_contours = [
+    list(zip(x, y)) for x, y in zip(contours_sorted_x, contours_sorted_y)
+]
+plt.figure(figsize=(10, 10))
+for contour in paired_contours:
+    if contour:
+        x, y = zip(*contour)
+        plt.plot(x, y)
+plt.xlim(0, 600)
+plt.ylim(0, 600)
+plt.title("Sorted Contours")
+plt.xlabel("X coordinates")
+plt.ylabel("Y coordinates")
+plt.gca().invert_yaxis()  # Invert Y-axis to match the image coordinate system
+plt.show()
 
 # initialize some important variables
 label = {x: False for x in range(len(contours_sorted))}

@@ -15,6 +15,7 @@ from curved_fascicles_functions import (
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 from matplotlib.patches import Rectangle
+from scipy.signal import savgol_filter
 
 # load image as gray scale image
 # image = cv2.imread(
