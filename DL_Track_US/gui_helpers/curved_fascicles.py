@@ -520,71 +520,71 @@ plt.show()
 
 # idea for orientation map
 
-num_grid_lines = 40
-height, width, _ = original_image.shape
-x_spacing = width // num_grid_lines
-y_spacing = height // num_grid_lines
+# num_grid_lines = 40
+# height, width, _ = original_image.shape
+# x_spacing = width // num_grid_lines
+# y_spacing = height // num_grid_lines
 
-all_coordsXY = list(data["coordsXY"])
+# all_coordsXY = list(data["coordsXY"])
 
-num_rows = height // y_spacing + 1
-num_cols = width // x_spacing + 1
-m_matrix = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
+# num_rows = height // y_spacing + 1
+# num_cols = width // x_spacing + 1
+# m_matrix = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
 
-for idx in range(len(all_coordsXY)):
+# for idx in range(len(all_coordsXY)):
 
-    curve_coords = np.array(all_coordsXY[idx])
-    grid_cells = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
+# curve_coords = np.array(all_coordsXY[idx])
+# grid_cells = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
 
-    for point in curve_coords:
-        x, y = point
-        if 0 <= x <= width and 0 <= y <= height:
-            grid_x = x // x_spacing
-            grid_y = y // y_spacing
-            grid_cells.at[grid_y, grid_x].append((x, y))
+# for point in curve_coords:
+# x, y = point
+# if 0 <= x <= width and 0 <= y <= height:
+# grid_x = x // x_spacing
+# grid_y = y // y_spacing
+# grid_cells.at[grid_y, grid_x].append((x, y))
 
-    for i in range(len(grid_cells)):
-        for j in range(len(grid_cells)):
-            if grid_cells.at[i, j]:
-                x_start = grid_cells.at[i, j][0][0]
-                y_start = grid_cells.at[i, j][0][1]
-                x_end = grid_cells.at[i, j][-1][0]
-                y_end = grid_cells.at[i, j][-1][1]
-                dx = x_end - x_start
-                dy = y_start - y_end
-                m = dy / dx
-                m_matrix.at[i, j].append(m)
+# for i in range(len(grid_cells)):
+# for j in range(len(grid_cells)):
+# if grid_cells.at[i, j]:
+# x_start = grid_cells.at[i, j][0][0]
+# y_start = grid_cells.at[i, j][0][1]
+# x_end = grid_cells.at[i, j][-1][0]
+# y_end = grid_cells.at[i, j][-1][1]
+# dx = x_end - x_start
+# dy = y_start - y_end
+# m = dy / dx
+# m_matrix.at[i, j].append(m)
 
-shape = (len(m_matrix), len(m_matrix))
-m_matrix_total = np.zeros(shape)
+# shape = (len(m_matrix), len(m_matrix))
+# m_matrix_total = np.zeros(shape)
 
-for i in range(len(m_matrix)):
-    for j in range(len(m_matrix)):
-        if m_matrix.at[i, j]:
-            cell_values = m_matrix.at[i, j]
-            cell_length = len(cell_values)
-            cell_sum = sum(cell_values)
-            cell_mean = cell_sum / cell_length
-            m_matrix_total[i, j] = cell_mean
+# for i in range(len(m_matrix)):
+# for j in range(len(m_matrix)):
+# if m_matrix.at[i, j]:
+# cell_values = m_matrix.at[i, j]
+# cell_length = len(cell_values)
+# cell_sum = sum(cell_values)
+# cell_mean = cell_sum / cell_length
+# m_matrix_total[i, j] = cell_mean
 
 # plot complete filtered fascicle curves between the two aponeuroses
 # plt.figure(3)
-fig, ax = plt.subplots()
-plt.imshow(original_image)
-for row in data.iterrows():
-    plt.plot(row[1]["coordsX"], row[1]["coordsY"], color="red", alpha=0.4)
-plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
-plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
+# fig, ax = plt.subplots()
+# plt.imshow(original_image)
+# for row in data.iterrows():
+# plt.plot(row[1]["coordsX"], row[1]["coordsY"], color="red", alpha=0.4)
+# plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+# plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-for x in range(0, width, x_spacing):
-    plt.axvline(x, color="white", linestyle="--", linewidth=1)
-for y in range(0, height, y_spacing):
-    plt.axhline(y, color="white", linestyle="--", linewidth=1)
+# for x in range(0, width, x_spacing):
+# plt.axvline(x, color="white", linestyle="--", linewidth=1)
+# for y in range(0, height, y_spacing):
+# plt.axhline(y, color="white", linestyle="--", linewidth=1)
 
-plt.figure(4)
-plt.imshow(m_matrix_total, cmap="viridis", interpolation="none")
-plt.colorbar(label="Value")
-plt.title("Matrix Heatmap")
-plt.xlabel("Column")
-plt.ylabel("Row")
+# plt.figure(4)
+# plt.imshow(m_matrix_total, cmap="viridis", interpolation="none")
+# plt.colorbar(label="Value")
+# plt.title("Matrix Heatmap")
+# plt.xlabel("Column")
+# plt.ylabel("Row")
 # plt.show()
