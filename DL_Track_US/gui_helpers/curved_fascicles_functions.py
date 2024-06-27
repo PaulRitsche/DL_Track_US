@@ -1,3 +1,5 @@
+""" Curved fascicle helpers"""
+
 import bisect
 
 import cv2

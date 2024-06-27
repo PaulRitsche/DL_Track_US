@@ -40,6 +40,7 @@ import os
 import matplotlib
 
 import tkinter as tk
+import customtkinter as ctk
 from threading import Lock, Thread
 from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk
 
@@ -48,7 +49,7 @@ from DL_Track_US import gui_helpers
 matplotlib.use("TkAgg")
 
 
-class DLTrack:
+class DLTrack(ctk.CTk):
     """
     Python class to automatically or manually annotate longitudinal muscle
     ultrasonography images/videos of human lower limb muscles.
@@ -249,7 +250,12 @@ class DLTrack:
     calculate_architecture_video.py
     """
 
-    def __init__(self, root):
+    def __init__(self, *args, **kwargs):
+        """
+        Initialization of  GUI window upon calling.
+
+        """
+        super().__init__(*args, **kwargs)
 
         # set up threading
         self._lock = Lock()
@@ -257,22 +263,18 @@ class DLTrack:
         self._should_stop = False
 
         # set up gui
-        root.title("DL_Track_US")
+        self.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = master_path + "/gui_helpers/home_im.ico"
         # root.iconbitmap(iconpath)
 
-        self.main = ttk.Frame(root, padding="10 10 12 12")
+        self.main = ctk.CTkFrame(self)
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
         # Configure resizing of user interface
-        self.main.columnconfigure(0, weight=1)
-        self.main.columnconfigure(1, weight=1)
-        self.main.columnconfigure(2, weight=1)
-        self.main.columnconfigure(3, weight=1)
-        self.main.columnconfigure(4, weight=1)
-        self.main.columnconfigure(5, weight=1)
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
+        for row in range(21):
+            self.main.rowconfigure(row, weight=1)
+        self.main.rowconfigure(0, weight=1)
+        self.main.rowconfigure(1, weight=1)
 
         # Style
         style = ttk.Style()
@@ -304,76 +306,103 @@ class DLTrack:
         )
         style.configure("TCombobox", background="#808080", foreground="black")
 
-        # Entryboxes
-        # Input directory
-        self.input = StringVar()
-        input_entry = ttk.Entry(self.main, width=30, textvariable=self.input)
-        input_entry.grid(column=2, row=6, columnspan=3, sticky=(W, E))
-        self.input.set("C:/Users/admin/Documents")
-
-        # Apo Model path
-        self.apo_model = StringVar()
-        apo_model_entry = ttk.Entry(self.main, width=30, textvariable=self.apo_model)
-        apo_model_entry.grid(column=2, row=7, columnspan=3, sticky=(W, E))
-        self.apo_model.set("C:/Users/admin/Documents")
-
-        # Fasc Model path
-        self.fasc_model = StringVar()
-        fasc_model_entry = ttk.Entry(self.main, width=30, textvariable=self.fasc_model)
-        fasc_model_entry.grid(column=2, row=8, columnspan=3, sticky=(W, E))
-        self.fasc_model.set("C:/Users/admin/Documents")
-
-        # Radiobuttons
-        # Analysis Type
-        self.analysis_type = StringVar()
-        image = ttk.Radiobutton(
-            self.main, text="Image", variable=self.analysis_type, value="image"
-        )
-        image.grid(column=2, row=10, sticky=(W, E))
-        video = ttk.Radiobutton(
-            self.main, text="Video", variable=self.analysis_type, value="video"
-        )
-        video.grid(column=3, row=10, sticky=(W, E))
-        image_manual = ttk.Radiobutton(
-            self.main,
-            text="Image Manual",
-            variable=self.analysis_type,
-            value="image_manual",
-        )
-        image_manual.grid(column=2, row=11, sticky=(W, E))
-        video_manual = ttk.Radiobutton(
-            self.main,
-            text="Video Manual",
-            variable=self.analysis_type,
-            value="video_manual",
-        )
-        video_manual.grid(column=3, row=11, sticky=(W, E))
-        self.analysis_type.trace("w", self.change_analysis_type)
-
         # Buttons
         # Input directory
-        input_button = ttk.Button(self.main, text="Input", command=self.get_input_dir)
-        input_button.grid(column=5, row=6, sticky=E)
+        ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
+            column=0, row=3, columnspan=3, sticky=(W, E)
+        )
+        ctk.CTkLabel(self.main, text="Inputs", font=("Verdana", 14)).grid(
+            column=0, row=3, sticky=(W, E)
+        )
+        input_button = ctk.CTkButton(
+            self.main, text="Input", command=self.get_input_dir
+        )
+        input_button.grid(column=0, row=4, sticky=E)
 
         # Apo model path
-        apo_model_button = ttk.Button(
+        apo_model_button = ctk.CTkButton(
             self.main, text="Apo Model", command=self.get_apo_model_path
         )
-        apo_model_button.grid(column=5, row=7, sticky=E)
+        apo_model_button.grid(column=1, row=4, sticky=E)
 
         # Fasc model path
-        fasc_model_button = ttk.Button(
+        fasc_model_button = ctk.CTkButton(
             self.main, text="Fasc Model", command=self.get_fasc_model_path
         )
-        fasc_model_button.grid(column=5, row=8, sticky=E)
+        fasc_model_button.grid(column=2, row=4, sticky=E)
+
+        # Entryboxes
+        # Input directory
+        # self.input = StringVar()
+        # input_entry = ttk.Entry(self.main, width=30, textvariable=self.input)
+        # input_entry.grid(column=2, row=6, columnspan=3, sticky=(W, E))
+        # self.input.set("C:/Users/admin/Documents")
+
+        # TODO only display directory and model objects.
+        # TODO Include analysis in main UI window.
+        # Apo Model path
+        # self.apo_model = StringVar()
+        # apo_model_entry = ttk.Entry(self.main, width=30, textvariable=self.apo_model)
+        # apo_model_entry.grid(column=2, row=7, columnspan=3, sticky=(W, E))
+        # self.apo_model.set("C:/Users/admin/Documents")
+
+        # # Fasc Model path
+        # self.fasc_model = StringVar()
+        # fasc_model_entry = ttk.Entry(self.main, width=30, textvariable=self.fasc_model)
+        # fasc_model_entry.grid(column=2, row=8, columnspan=3, sticky=(W, E))
+        # self.fasc_model.set("C:/Users/admin/Documents")
+
+        # Analysis Type
+        # Separators
+        ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
+            column=0, row=9, columnspan=9, sticky=(W, E)
+        )
+        ctk.CTkLabel(self.main, text="Analysis Type", font=("Verdana", 14)).grid(
+            column=0, row=9, sticky=(W, E)
+        )
+
+        self.analysis_type = StringVar()
+        analysis_values = ["image", "video", "image_manual", "video_manual"]
+        analysis_entry = ctk.CTkComboBox(
+            self.main,
+            width=100,
+            variable=self.analysis_type,
+            values=analysis_values,
+            state="readonly",
+        )
+        analysis_entry.grid(column=0, row=10)
+        self.analysis_type.trace_add("write", self.change_analysis_type)
+
+        # image = ctk.CTkRadioButton(
+        #     self.main, text="Image", variable=self.analysis_type, value="image"
+        # )
+        # image.grid(column=0, row=10, sticky=(W, E))
+        # video = ctk.CTkRadioButton(
+        #     self.main, text="Video", variable=self.analysis_type, value="video"
+        # )
+        # video.grid(column=1, row=10, sticky=(W, E))
+        # image_manual = ctk.CTkRadioButton(
+        #     self.main,
+        #     text="Image Manual",
+        #     variable=self.analysis_type,
+        #     value="image_manual",
+        # )
+        # image_manual.grid(column=0, row=11, sticky=(W, E))
+        # video_manual = ctk.CTkRadioButton(
+        #     self.main,
+        #     text="Video Manual",
+        #     variable=self.analysis_type,
+        #     value="video_manual",
+        # )
+        # video_manual.grid(column=1, row=11, sticky=(W, E))
 
         # Break button
-        break_button = ttk.Button(self.main, text="Break", command=self.do_break)
-        break_button.grid(column=2, row=20, sticky=(W, E))
+        break_button = ctk.CTkButton(self.main, text="Break", command=self.do_break)
+        break_button.grid(column=0, row=20, sticky=(W, E))
 
         # Run button
-        run_button = ttk.Button(self.main, text="Run", command=self.run_code)
-        run_button.grid(column=3, row=20, sticky=(W, E))
+        run_button = ctk.CTkButton(self.main, text="Run", command=self.run_code)
+        run_button.grid(column=1, row=20, sticky=(W, E))
 
         # Advanced button with style
         style.configure(
@@ -382,29 +411,11 @@ class DLTrack:
             foreground="white",
             font=("Lucida Sans", 11),
         )
-        advanced_button = ttk.Button(
-            self.main,
-            text="Advanced Methods",
-            command=self.advanced_methods,
-            style="B.TButton",
+        advanced_button = ctk.CTkButton(
+            self.main, text="Advanced Methods", command=self.advanced_methods
         )
-        advanced_button.grid(column=5, row=20, sticky=E)
+        advanced_button.grid(column=2, row=20, sticky=E)
 
-        # Labels
-        ttk.Label(self.main, text="Directories", font=("Verdana", 14)).grid(
-            column=1, row=5, sticky=(W, E)
-        )
-        ttk.Label(self.main, text="Input Directory").grid(column=1, row=6)
-        ttk.Label(self.main, text="Apo Model Path").grid(column=1, row=7)
-        ttk.Label(self.main, text="Fasc Model Path").grid(column=1, row=8)
-        ttk.Label(self.main, text="Analysis Type", font=("Verdana", 14)).grid(
-            column=1, row=10, sticky=(W, E)
-        )
-
-        # Separators
-        ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
-            column=0, row=9, columnspan=9, sticky=(W, E)
-        )
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
             column=0, row=19, columnspan=9, sticky=(W, E)
         )
@@ -420,24 +431,32 @@ class DLTrack:
         All image files (of the same specified filetype) in
         the input directory are analysed.
         """
-        input_dir = filedialog.askdirectory()
-        self.input.set(input_dir)
+        self.input_dir = filedialog.askdirectory()
+        ctk.CTkLabel(
+            self.main, text=f"Root Folder: {os.path.basename(self.input_dir)}"
+        ).grid(column=0, row=5)
 
     # Get path of aponeurosis model
     def get_apo_model_path(self):
         """Instance method to ask the user to select the apo model path.
         This must be an absolute path and the model must be a .h5 file.
         """
-        apo_model_dir = filedialog.askopenfilename()
-        self.apo_model.set(apo_model_dir)
+        self.apo_model = filedialog.askopenfilename()
+        ctk.CTkLabel(
+            self.main,
+            text=f"Apo Model: {os.path.splitext(os.path.basename(self.apo_model))[0]}",
+        ).grid(column=1, row=5)
 
     # Get path of fascicle model
     def get_fasc_model_path(self):
         """Instance method to ask the user to select the fascicle model path.
         This must be an absolute path and the model must be a .h5 file.
         """
-        fasc_model_dir = filedialog.askopenfilename()
-        self.fasc_model.set(fasc_model_dir)
+        self.fasc_model = filedialog.askopenfilename()
+        ctk.CTkLabel(
+            self.main,
+            text=f"Apo Model: {os.path.splitext(os.path.basename(self.apo_model))[0]}",
+        ).grid(column=1, row=5)
 
     def change_analysis_type(self, *args):
         """
@@ -1921,15 +1940,15 @@ def runMain() -> None:
 
     For documentation of DL_Track see top of this module.
     """
-    root = Tk()
-    DLTrack(root)
-    root.mainloop()
+    app = DLTrack()
+    app._state_before_windows_set_titlebar_color = "zoomed"
+    app.mainloop()
 
 
 # This statement is required to execute the GUI by typing
 # 'python DL_Track_US_GUI.py' in the prompt
 # when navigated to the folder containing the file and all dependencies.
 if __name__ == "__main__":
-    root = Tk()
-    DLTrack(root)
-    root.mainloop()
+    app = DLTrack()
+    app._state_before_windows_set_titlebar_color = "zoomed"
+    app.mainloop()

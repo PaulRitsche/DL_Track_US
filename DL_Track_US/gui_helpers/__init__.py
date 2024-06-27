@@ -9,7 +9,9 @@ __all__ = [
     "model_training",
     "file_analysis",
     "data_augmentation",
+    "curved_fascicles_functions",
     "curved_fascicles",
+    "curved_fascicles_prep",
 ]
 
 __author__ = "Paul Ritsche, Olivier Seynnes, Neil Cronin"
@@ -25,3 +27,5 @@ from DL_Track_US.gui_helpers.do_calculations_video import *
 from DL_Track_US.gui_helpers.file_analysis import *
 from DL_Track_US.gui_helpers.manual_tracing import *
 from DL_Track_US.gui_helpers.model_training import *
+from DL_Track_US.gui_helpers.curved_fascicles import *
+from DL_Track_US.gui_helpers.curved_fascicles_prep import *

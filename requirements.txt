@@ -12,3 +12,4 @@ scikit-learn==1.1.2
 sewar==0.4.5
 tensorflow-macos==2.10.0
 tqdm==4.64.1
+shapely

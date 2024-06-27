@@ -456,15 +456,3 @@ def redact_images_in_directory(directory):
                 print(f"Processed {filename}")
             except Exception as e:
                 print(f"Failed to process {filename}: {e}")
-
-
-# Example usage
-directory = "C:/Users/admin/Desktop/images"
-redact_images_in_directory(directory)
-
-
-root_dir = "C:/Users/admin/Desktop/images"
-target_dir = "C:/Users/admin/Desktop/images/proc"
-image_type = "tif"
-
-collect_images(root_dir, target_dir, image_type)

@@ -1,6 +1,8 @@
+"""Curved fascicles"""
+
 import cv2
 import numpy as np
-from do_calculations import contourEdge, sortContours
+from DL_Track_US.gui_helpers.do_calculations import contourEdge, sortContours
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 
