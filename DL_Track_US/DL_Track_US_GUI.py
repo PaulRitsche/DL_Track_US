@@ -265,6 +265,10 @@ class DLTrack(ctk.CTk):
         # set up gui
         self.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
+        ctk.set_default_color_theme(
+            master_path + "/gui_helpers/gui_files/gui_color_theme.json"
+        )
+
         iconpath = master_path + "/gui_helpers/home_im.ico"
         # root.iconbitmap(iconpath)
 
@@ -276,46 +280,16 @@ class DLTrack(ctk.CTk):
         self.main.rowconfigure(0, weight=1)
         self.main.rowconfigure(1, weight=1)
 
-        # Style
-        style = ttk.Style()
-        style.theme_use("clam")
-        style.configure("TFrame", background="#808080")
-        style.configure(
-            "TLabel",
-            font=("Lucida Sans", 12),
-            foreground="black",
-            background="#808080",
-        )
-        style.configure(
-            "TRadiobutton",
-            background="#808080",
-            foreground="black",
-            font=("Lucida Sans", 12),
-        )
-        style.configure(
-            "TButton",
-            background="papaya whip",
-            foreground="black",
-            font=("Lucida Sans", 11),
-        )
-        style.configure(
-            "TEntry",
-            font=("Lucida Sans", 12),
-            background="papaya whip",
-            foregrund="black",
-        )
-        style.configure("TCombobox", background="#808080", foreground="black")
-
         # Buttons
         # Input directory
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
             column=0, row=3, columnspan=3, sticky=(W, E)
         )
-        ctk.CTkLabel(self.main, text="Inputs", font=("Verdana", 14)).grid(
+        ctk.CTkLabel(self.main, text="Directories", font=("Verdana", 20)).grid(
             column=0, row=3, sticky=(W, E)
         )
         input_button = ctk.CTkButton(
-            self.main, text="Input", command=self.get_input_dir
+            self.main, text="Inputs", command=self.get_input_dir
         )
         input_button.grid(column=0, row=4, sticky=E)
 
@@ -357,7 +331,7 @@ class DLTrack(ctk.CTk):
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
             column=0, row=9, columnspan=9, sticky=(W, E)
         )
-        ctk.CTkLabel(self.main, text="Analysis Type", font=("Verdana", 14)).grid(
+        ctk.CTkLabel(self.main, text="Analysis Type", font=("Verdana", 20)).grid(
             column=0, row=9, sticky=(W, E)
         )
 
@@ -404,13 +378,6 @@ class DLTrack(ctk.CTk):
         run_button = ctk.CTkButton(self.main, text="Run", command=self.run_code)
         run_button.grid(column=1, row=20, sticky=(W, E))
 
-        # Advanced button with style
-        style.configure(
-            "B.TButton",
-            background="black",
-            foreground="white",
-            font=("Lucida Sans", 11),
-        )
         advanced_button = ctk.CTkButton(
             self.main, text="Advanced Methods", command=self.advanced_methods
         )
