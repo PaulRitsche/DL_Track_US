@@ -40,13 +40,15 @@ import os
 import subprocess
 import sys
 import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import importlib
 from PIL import Image
 
 import tkinter as tk
 import customtkinter as ctk
 from threading import Lock, Thread
-from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk
+from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk, Canvas
 
 from DL_Track_US import gui_helpers
 from DL_Track_US import settings
@@ -263,6 +265,9 @@ class DLTrack(ctk.CTk):
         """
         super().__init__(*args, **kwargs)
 
+        # Load settings
+        self.load_settings()
+
         # set up threading
         self._lock = Lock()
         self._is_running = False
@@ -280,11 +285,15 @@ class DLTrack(ctk.CTk):
 
         self.main = ctk.CTkFrame(self)
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
+        
         # Configure resizing of user interface
         for row in range(21):
             self.main.rowconfigure(row, weight=1)
-        self.main.rowconfigure(0, weight=1)
-        self.main.rowconfigure(1, weight=1)
+        for column in range(4):
+            self.main.rowconfigure(column, weight=1)
+
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
 
         # Buttons
         # Input directory
@@ -309,7 +318,7 @@ class DLTrack(ctk.CTk):
         fasc_model_button = ctk.CTkButton(
             self.main, text="Fasc Model", command=self.get_fasc_model_path
         )
-        fasc_model_button.grid(column=2, row=4, sticky=E)
+        fasc_model_button.grid(column=2, row=4, sticky=W)
 
         # Entryboxes
         # TODO Include analysis in main UI window.
@@ -423,6 +432,8 @@ class DLTrack(ctk.CTk):
         self.filter_no.grid(column=2, row=16, sticky=(W, E))
         self.filter_fasc.set(False)
 
+        ctk.CTkSwitch(self.main).grid(column=3, row=13)
+
         # Image Flipping
         self.flip_label = ctk.CTkLabel(self.main, text="Flip File Path")
         self.flip_label.grid(column=0, row=17)
@@ -463,8 +474,6 @@ class DLTrack(ctk.CTk):
         self.step_entry.grid(column=1, row=18, sticky=(W, E))
         self.step.set("1")
 
-        # TODO turn into settings file
-
         # Break button
         break_button = ctk.CTkButton(self.main, text="Break", command=self.do_break)
         break_button.grid(column=0, row=20, sticky=(W, E))
@@ -474,8 +483,8 @@ class DLTrack(ctk.CTk):
         run_button.grid(column=1, row=20, sticky=(W, E))
 
         advanced_button = ctk.CTkButton(
-            self.main, text="Advanced Methods", command=lambda: (AdvancedAnalysis(self))
-        )
+            self.main, text="Advanced Methods", command=lambda: (AdvancedAnalysis(self),),
+            fg_color="#000000", text_color="#FFFFFF", border_color="yellow3")
         advanced_button.grid(column=2, row=20, sticky=E)
 
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
@@ -505,6 +514,37 @@ class DLTrack(ctk.CTk):
         for child in self.main.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
+        # Make frame for results
+        self.results = ctk.CTkFrame(self)
+        self.results.grid(column=1, row=0,  sticky=(N, S, W, E))
+
+        # Create logo canvas figure
+        self.logo_canvas = Canvas(
+            self.results,
+            width=800,
+            height=600,
+            bg="white",
+        )
+        self.logo_canvas.grid(
+            row=0, column=0, rowspan=6, sticky=(N, S, E, W), pady=(5, 0),
+        )
+
+        # Load the logo as a resizable matplotlib figure
+        logo_path = master_path + "/gui_helpers/gui_files/Gear.png"
+        logo = plt.imread(logo_path)
+        logo_fig, ax = plt.subplots()
+        ax.imshow(logo)
+        ax.axis('off')  # Turn off axis
+        logo_fig.tight_layout()  # Adjust layout padding
+
+        # Plot the figure in the in_gui_plotting canvas
+        self.canvas = FigureCanvasTkAgg(logo_fig, master=self.logo_canvas)
+        self.canvas.get_tk_widget().pack(
+            expand=True, fill="both", padx=5, pady=5,
+        )
+        plt.close()
+        # This solution is more flexible and memory efficient than previously.
+
     # Methods used in main GUI window when respective buttons are pressed.
     # Define functionalities for buttons used in GUI master window
     def load_settings(self):
@@ -515,7 +555,6 @@ class DLTrack(ctk.CTk):
         The settings specified by the user will then be transferred
         to the code and used.
         """
-
         # If not previously imported, just import it
         global settings
         self.settings = importlib.reload(settings)
@@ -528,7 +567,6 @@ class DLTrack(ctk.CTk):
         A python file is openend containing a dictionary with relevant
         variables that users should be able to customize.
         """
-
         # Determine relative filepath
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/settings.py"
 
@@ -557,7 +595,7 @@ class DLTrack(ctk.CTk):
         """Instance method to ask the user to select the apo model path.
         This must be an absolute path and the model must be a .h5 file.
         """
-        self.apo_model = filedialog.askopenfilename()
+        self.apo_model = filedialog.askopenfilename(title="Open aponeurosis model.")
         ctk.CTkLabel(
             self.main,
             text=f"{os.path.splitext(os.path.basename(self.apo_model))[0]}",
@@ -569,10 +607,10 @@ class DLTrack(ctk.CTk):
         """Instance method to ask the user to select the fascicle model path.
         This must be an absolute path and the model must be a .h5 file.
         """
-        self.fasc_model = filedialog.askopenfilename()
+        self.fasc_model = filedialog.askopenfilename(title="Open fascicle model.")
         ctk.CTkLabel(
             self.main,
-            text=f"{os.path.splitext(os.path.basename(self.apo_model))[0]}",
+            text=f"{os.path.splitext(os.path.basename(self.fasc_model))[0]}",
             font=("Segue UI", 8, "bold")
         ).grid(column=2, row=5)
 
@@ -625,12 +663,13 @@ class DLTrack(ctk.CTk):
             self.filetype_entry.configure(state="normal", values=["/*.avi", "/*.mp4"])
             self.scaling_entry.configure(values=["Manual", "None"], state="normal")
             # Reset flipping variable for Video
-            self.flip = None  # BUG Idk what this does
             self.flip_label.configure(text="Flip Option")
             self.flip_entry.configure(state="normal")
             self.flipfile_button.configure(state="disabled")
             self.scaling_entry.configure(values=["Manual", "None"], state="normal")
             self.step_entry.configure(state="normal")
+            self.filter_no.configure(state="normal")
+            self.filter_yes.configure(state="normal")
 
         elif self.analysis_type.get() == "image_manual":
             """
@@ -684,7 +723,7 @@ class DLTrack(ctk.CTk):
         flipped. This must be an absolute path.
         """
         self.flipflag_dir = filedialog.askopenfilename(
-            title="Open flip flag file for image flipping", filetypes=[("*.txt")]
+            title="Open flip flag file for image flipping",
         )
 
     def get_video_path(self):
@@ -697,153 +736,8 @@ class DLTrack(ctk.CTk):
         )
 
     # ---------------------------------------------------------------------------------------------------
-    # Open new toplevel instance for analysis parameter specification
-
-    # ----------------------------------------------------------
-    # Open new toplevel instance for model training
-
-    # Open new toplevel instance for advanced methods
-    def advanced_methods(self):
-        pass
-    # ---------------------------------------------------------------------------------------------------
-    # Methods used for model training
-
-    def get_train_dir(self):
-        """
-        Instance method to ask the user to select the training image
-        directory path. All image files (of the same specified filetype) in
-        the directory are analysed. This must be an absolute path.
-        """
-        train_image_dir = filedialog.askdirectory()
-        self.train_image_dir.set(train_image_dir)
-
-    def get_mask_dir(self):
-        """
-        Instance method to ask the user to select the training mask
-        directory path. All mask files (of the same specified filetype) in
-        the directory are analysed.The mask files and the corresponding
-        image must have the exact same name. This must be an absolute path.
-        """
-        mask_dir = filedialog.askdirectory()
-        self.mask_dir.set(mask_dir)
-
-    def get_output_dir(self):
-        """
-        Instance method to ask the user to select the output
-        directory path. Here, all file created during model
-        training (model file, weight file, graphs) are saved.
-        This must be an absolute path.
-        """
-        out_dir = filedialog.askdirectory()
-        self.out_dir.set(out_dir)
-
-    def train_model(self):
-        """
-        Instance method to execute the model training when the
-        "start training" button is pressed.
-
-        By pressing the button, a seperate thread is started
-        in which the model training is run. This allows the user to break any
-        training process at certain stages. When the analysis can be
-        interrupted, a tk.messagebox opens asking the user to either
-        continue or terminate the analysis. Moreover, the threading allows interaction
-        with the GUI during ongoing analysis process.
-        """
-        try:
-            # See if GUI is already running
-            if self.is_running:
-                # don't run again if it is already running
-                return
-            self.is_running = True
-
-            # Get input paremeter
-            selected_images = self.train_image_dir.get()
-            selected_masks = self.mask_dir.get()
-            selected_outpath = self.out_dir.get()
-
-            # Make sure some kind of filetype is specified.
-            if (
-                len(selected_images) < 3
-                or len(selected_masks) < 3
-                or len(selected_outpath) < 3
-            ):
-                tk.messagebox.showerror("Information", "Specified directories invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
-
-            selected_batch_size = int(self.batch_size.get())
-            selected_learning_rate = float(self.learn_rate.get())
-            selected_epochs = int(self.epochs.get())
-            selected_loss_function = self.loss_function.get()
-
-            # Start thread
-            thread = Thread(
-                target=gui_helpers.trainModel,
-                args=(
-                    selected_images,
-                    selected_masks,
-                    selected_outpath,
-                    selected_batch_size,
-                    selected_learning_rate,
-                    selected_epochs,
-                    selected_loss_function,
-                    self,
-                ),
-            )
-
-            thread.start()
-
-        # Error handling
-        except ValueError:
-            tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
-            )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
-
-    # Method used for data augmentation
-    def augment_images(self):
-        """
-        Instance method to augment input images, when the "Augment Images" button is pressed.
-        Input parameters for the gui_helpers.image_augmentation function are taken from the chosen
-        image and mask directories. The newly generated data will be saved under the same
-        directories.
-        """
-        try:
-            # See if GUI is already running
-            if self.is_running:
-                # don't run again if it is already running
-                return
-            self.is_running = True
-
-            # Get input paremeters
-            selected_images = self.train_image_dir.get()
-            selected_masks = self.mask_dir.get()
-
-            # Make sure some kind of filetype is specified.
-            if len(selected_images) < 3 or len(selected_masks) < 3:
-                tk.messagebox.showerror("Information", "Specified directories invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
-
-            gui_helpers.image_augmentation(selected_images, selected_masks, self)
-
-        # Error handling
-        except ValueError:
-            tk.messagebox.showerror(
-                "Information",
-                "Check input parameters"
-                + "\nPotential error source: Invalid directories",
-            )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
-
+    # Open new toplevel instance for analysis parameter specification------------------------------------------------------------------------------------------
+    
     # ---------------------------------------------------------------------------------------------------
     # Methods and properties required for threading
 
@@ -947,215 +841,216 @@ class DLTrack(ctk.CTk):
             file or training parameters correctly. A tk.messagebox
             is openend containing hints how to solve the issue.
         """
-        try:
-            if self.is_running:
-                # don't run again if it is already running
-                return
-            self.is_running = True
+        #try:
+        if self.is_running:
+            # don't run again if it is already running
+            return
+        self.is_running = True
 
-            # Get input dir
-            selected_input_dir = self.input.get()
+        # load settings
+        self.load_settings()
 
-            # Make sure some kind of input directory is specified.
-            if len(selected_input_dir) < 3:
-                tk.messagebox.showerror("Information", "Input directory is incorrect.")
+        # Get input dir
+        selected_input_dir = self.input_dir
+
+        # Make sure some kind of input directory is specified.
+        if len(selected_input_dir) < 3:
+            tk.messagebox.showerror("Information", "Input directory is incorrect.")
+            self.should_stop = False
+            self.is_running = False
+            self.do_break()
+            return
+
+        # Start thread depending on Analysis type
+        if self.analysis_type.get() == "image":
+
+            selected_filetype = self.filetype.get()
+
+            # Make sure some kind of filetype is specified.
+            if len(selected_filetype) < 3:
+                tk.messagebox.showerror("Information", "Filetype is invalid.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
                 return
 
-            # Get selected analysis
-            selected_analysis = self.analysis_type.get()
+            selected_flipflag_path = self.flipflag_dir
+            selected_apo_model_path = self.apo_model
+            selected_fasc_model_path = self.fasc_model
+            selected_scaling = self.scaling.get()
+            selected_spacing = self.spacing.get()
+            selected_apo_threshold = self.settings.aponeurosis_detection_threshold
+            selected_apo_length_threshold = self.settings.aponeurosis_length_threshold
+            selected_fasc_threshold = self.settings.fascicle_detection_threshold
+            selected_fasc_cont_threshold = self.settings.fascicle_length_threshold
+            selected_min_width = self.settings.minimal_muscle_width
+            selected_min_pennation = self.settings.minimal_pennation_angle
+            selected_max_pennation = self.settings.maximal_pennation_angle
+            selected_filter_fasc = self.filter_fasc.get()
+            thread = Thread(
+                target=gui_helpers.calculateBatch,
+                args=(
+                    selected_input_dir,
+                    selected_apo_model_path,
+                    selected_fasc_model_path,
+                    selected_flipflag_path,
+                    selected_filetype,
+                    selected_scaling,
+                    int(selected_spacing),
+                    int(selected_filter_fasc),
 
-            # Start thread depending on Analysis type
-            if selected_analysis == "image":
-
-                selected_filetype = self.filetype.get()
-
-                # Make sure some kind of filetype is specified.
-                if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
-                    self.should_stop = False
-                    self.is_running = False
-                    self.do_break()
-                    return
-
-                selected_flipflag_path = self.flipflag.get()
-                selected_apo_model_path = self.apo_model.get()
-                selected_fasc_model_path = self.fasc_model.get()
-                selected_scaling = self.scaling.get()
-                selected_spacing = self.spacing.get()
-                selected_apo_threshold = self.apo_threshold.get()
-                selected_apo_length_threshold = self.apo_length_thresh.get()
-                selected_fasc_threshold = self.fasc_threshold.get()
-                selected_fasc_cont_threshold = self.fasc_cont_threshold.get()
-                selected_min_width = self.min_width.get()
-                selected_min_pennation = self.min_pennation.get()
-                selected_max_pennation = self.max_pennation.get()
-                selected_filter_fasc = self.filter_fasc.get()
-                thread = Thread(
-                    target=gui_helpers.calculateBatch,
-                    args=(
-                        selected_input_dir,
-                        selected_apo_model_path,
-                        selected_fasc_model_path,
-                        selected_flipflag_path,
-                        selected_filetype,
-                        selected_scaling,
-                        int(selected_spacing),
-                        int(selected_filter_fasc),
-                        float(selected_apo_threshold),
-                        int(selected_apo_length_threshold),
-                        float(selected_fasc_threshold),
-                        int(selected_fasc_cont_threshold),
-                        int(selected_min_width),
-                        int(selected_min_pennation),
-                        int(selected_max_pennation),
-                        self,
-                    ),
-                )
-            elif selected_analysis == "video":
-
-                selected_filetype = self.filetype.get()
-
-                # Make sure some kind of filetype is specified.
-                if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
-                    self.should_stop = False
-                    self.is_running = False
-                    self.do_break()
-                    return
-
-                selected_step = self.step.get()
-
-                # Make sure some kind of step is specified.
-                if len(selected_step) < 1 or int(selected_step) < 1:
-                    tk.messagebox.showerror("Information", "Frame Steps is invalid.")
-                    self.should_stop = False
-                    self.is_running = False
-                    self.do_break()
-                    return
-
-                selected_flip = self.flip.get()
-                selected_apo_model_path = self.apo_model.get()
-                selected_fasc_model_path = self.fasc_model.get()
-                selected_scaling = self.scaling.get()
-                selected_spacing = self.spacing.get()
-                selected_filter_fasc = self.filter_fasc.get()
-                selected_apo_threshold = self.apo_threshold.get()
-                selected_apo_length_threshold = self.apo_length_thresh.get()
-                selected_fasc_threshold = self.fasc_threshold.get()
-                selected_fasc_cont_threshold = self.fasc_cont_threshold.get()
-                selected_min_width = self.min_width.get()
-                selected_min_pennation = self.min_pennation.get()
-                selected_max_pennation = self.max_pennation.get()
-                thread = Thread(
-                    target=gui_helpers.calculateArchitectureVideo,
-                    args=(
-                        selected_input_dir,
-                        selected_apo_model_path,
-                        selected_fasc_model_path,
-                        selected_filetype,
-                        selected_scaling,
-                        selected_flip,
-                        int(selected_spacing),
-                        int(selected_step),
-                        int(selected_filter_fasc),
-                        float(selected_apo_threshold),
-                        int(selected_apo_length_threshold),
-                        float(selected_fasc_threshold),
-                        int(selected_fasc_cont_threshold),
-                        int(selected_min_width),
-                        int(selected_min_pennation),
-                        int(selected_max_pennation),
-                        self,
-                    ),
-                )
-            elif selected_analysis == "image_manual":
-
-                selected_filetype = self.filetype.get()
-
-                # Make sure some kind of filetype is specified.
-                if len(selected_filetype) < 3:
-                    tk.messagebox.showerror("Information", "Filetype is invalid.")
-                    self.should_stop = False
-                    self.is_running = False
-                    self.do_break()
-                    return
-
-                thread = Thread(
-                    target=gui_helpers.calculateBatchManual,
-                    args=(
-                        selected_input_dir,
-                        selected_filetype,
-                        self,
-                    ),
-                )
-            else:
-                selected_video_path = self.video.get()
-
-                # Make sure some kind of input directory is specified.
-                if len(selected_video_path) < 3:
-                    tk.messagebox.showerror(
-                        "Information", "Input directory is incorrect."
-                    )
-                    self.should_stop = False
-                    self.is_running = False
-                    self.do_break()
-                    return
-
-                thread = Thread(
-                    target=gui_helpers.calculateArchitectureVideoManual,
-                    args=(
-                        selected_video_path,
-                        self,
-                    ),
-                )
-
-            thread.start()
-
-        # Error handling
-        except AttributeError:
-            tk.messagebox.showerror(
-                "Information",
-                "Check input parameters."
-                + "\nPotential error sources:"
-                + "\n - Invalid specified directory."
-                "\n - Analysis Type not set" + "\n - Analysis parameters not set.",
+                    float(selected_apo_threshold),
+                    int(selected_apo_length_threshold),
+                    float(selected_fasc_threshold),
+                    int(selected_fasc_cont_threshold),
+                    int(selected_min_width),
+                    int(selected_min_pennation),
+                    int(selected_max_pennation),
+                    self,
+                ),
             )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
+        elif self.analysis_type.get() == "video":
 
-        except FileNotFoundError:
-            tk.messagebox.showerror(
-                "Information",
-                "Check input parameters."
-                + "\nPotential error source:"
-                + "\n - Invalid specified directory.",
-            )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
+            selected_filetype = self.filetype.get()
 
-        except PermissionError:
-            tk.messagebox.showerror(
-                "Information",
-                "Check input parameters."
-                + "\nPotential error source:"
-                + "\n - Invalid specified directory.",
-            )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
+            # Make sure some kind of filetype is specified.
+            if len(selected_filetype) < 3:
+                tk.messagebox.showerror("Information", "Filetype is invalid.")
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
 
-        except ValueError:
-            tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
+            selected_step = self.step.get()
+
+            # Make sure some kind of step is specified.
+            if len(selected_step) < 1 or int(selected_step) < 1:
+                tk.messagebox.showerror("Information", "Frame Steps is invalid.")
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
+
+            selected_flip = self.flip.get()
+            selected_apo_model_path = self.apo_model
+            selected_fasc_model_path = self.fasc_model
+            selected_scaling = self.scaling.get()
+            selected_spacing = self.spacing.get()
+            selected_filter_fasc = self.filter_fasc.get()
+            selected_apo_threshold = 0.2
+            selected_apo_length_threshold = 600
+            selected_fasc_threshold = 0.05
+            selected_fasc_cont_threshold = 40
+            selected_min_width = 60
+            selected_min_pennation = 10
+            selected_max_pennation = 40
+            thread = Thread(
+                target=gui_helpers.calculateArchitectureVideo,
+                args=(
+                    selected_input_dir,
+                    selected_apo_model_path,
+                    selected_fasc_model_path,
+                    selected_filetype,
+                    selected_scaling,
+                    selected_flip,
+                    int(selected_spacing),
+                    int(selected_step),
+                    int(selected_filter_fasc),
+                    float(selected_apo_threshold),
+                    int(selected_apo_length_threshold),
+                    float(selected_fasc_threshold),
+                    int(selected_fasc_cont_threshold),
+                    int(selected_min_width),
+                    int(selected_min_pennation),
+                    int(selected_max_pennation),
+                    self,
+                ),
             )
-            self.do_break()
-            self.should_stop = False
-            self.is_running = False
+        elif self.analysis_type.get() == "image_manual":
+
+            selected_filetype = self.filetype.get()
+
+            # Make sure some kind of filetype is specified.
+            if len(selected_filetype) < 3:
+                tk.messagebox.showerror("Information", "Filetype is invalid.")
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
+
+            thread = Thread(
+                target=gui_helpers.calculateBatchManual,
+                args=(
+                    selected_input_dir,
+                    selected_filetype,
+                    self,
+                ),
+            )
+        else:
+            selected_video_path = self.video.get()
+
+            # Make sure some kind of input directory is specified.
+            if len(selected_video_path) < 3:
+                tk.messagebox.showerror(
+                    "Information", "Input directory is incorrect."
+                )
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
+
+            thread = Thread(
+                target=gui_helpers.calculateArchitectureVideoManual,
+                args=(
+                    selected_video_path,
+                    self,
+                ),
+            )
+
+        thread.start()
+
+        # # Error handling
+        # except AttributeError:
+        #     tk.messagebox.showerror(
+        #         "Information",
+        #         "Check input parameters."
+        #         + "\nPotential error sources:"
+        #         + "\n - Invalid specified directory."
+        #         "\n - Analysis Type not set" + "\n - Analysis parameters not set.",
+        #     )
+        #     self.do_break()
+        #     self.should_stop = False
+        #     self.is_running = False
+
+        # except FileNotFoundError:
+        #     tk.messagebox.showerror(
+        #         "Information",
+        #         "Check input parameters."
+        #         + "\nPotential error source:"
+        #         + "\n - Invalid specified directory.",
+        #     )
+        #     self.do_break()
+        #     self.should_stop = False
+        #     self.is_running = False
+
+        # except PermissionError:
+        #     tk.messagebox.showerror(
+        #         "Information",
+        #         "Check input parameters."
+        #         + "\nPotential error source:"
+        #         + "\n - Invalid specified directory.",
+        #     )
+        #     self.do_break()
+        #     self.should_stop = False
+        #     self.is_running = False
+
+        # except ValueError:
+        #     tk.messagebox.showerror(
+        #         "Information", "Analysis parameter entry fields" + " must not be empty."
+        #     )
+        #     self.do_break()
+        #     self.should_stop = False
+        #     self.is_running = False
 
     def do_break(self):
         """Instance method to break the analysis process when the

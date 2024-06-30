@@ -19,12 +19,12 @@
       "#2A484E"
     ],
     "top_fg_color": [
-      "LightBlue4",
-      "LightBlue4"
+      "#2A484E",
+      "#2A484E"
     ],
     "border_color": [
-      "LightBlue4",
-      "LightBlue4"
+      "#2A484E",
+      "#2A484E"
     ]
   },
   "CTkButton": {

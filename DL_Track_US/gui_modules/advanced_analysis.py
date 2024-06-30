@@ -3,11 +3,10 @@
 """
 
 import os
-import platform
 import customtkinter as ctk
 from tkinter import ttk, W, E, N, S, StringVar, BooleanVar, filedialog
 from DL_Track_US import gui_helpers
-import importlib
+import tkinter as tk
 
 
 class AdvancedAnalysis:
@@ -23,12 +22,12 @@ class AdvancedAnalysis:
         self.parent.load_settings()
 
         # Open Window
-        self.advanced_window = ctk.CTkToplevel(fg_color="#808080")
+        self.advanced_window = ctk.CTkToplevel(fg_color="#2A484E")
         self.advanced_window.title("Advanced Methods Window")
 
         head_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = head_path + "/gui_helpers/home_im.ico"
-        self.advanced_window.iconbitmap(iconpath)
+        # self.advanced_window.iconbitmap(iconpath)
 
         # if platform.startswith("win"):
         #     self.a_window.after(200, lambda: self.a_window.iconbitmap(iconpath))
@@ -239,153 +238,134 @@ class AdvancedAnalysis:
                 ctk.CTkLabel(
                     self.advanced_window_frame,
                     text="Training Directories",
-                    font=("Verdana", 14),
+                    font=("Verdana", 20),
                 ).grid(column=1, row=0, padx=10)
-                ctk.CTkLabel(self.advanced_window_frame, text="Image Directory").grid(
-                    column=1, row=2
-                )
-                ttk.Label(self.advanced_window_frame, text="Mask Directory").grid(
-                    column=1, row=3
-                )
-                ttk.Label(self.advanced_window_frame, text="Output Directory").grid(
-                    column=1, row=4
-                )
 
-                ttk.Label(
-                    self.advanced_window_frame,
-                    text="Hyperparameters",
-                    font=("Verdana", 14),
-                ).grid(column=1, row=6, padx=10)
-                ttk.Label(self.advanced_window_frame, text="Batch Size").grid(
-                    column=1, row=7
-                )
-                ttk.Label(self.advanced_window_frame, text="Learning Rate").grid(
-                    column=1, row=8
-                )
-                ttk.Label(self.advanced_window_frame, text="Epochs").grid(
-                    column=1, row=9
-                )
-                ttk.Label(self.advanced_window_frame, text="Loss Function").grid(
-                    column=1, row=10
-                )
-
-                # Entryboxes
-                # Train image directory
-                self.train_image_dir = StringVar()
-                train_image_entry = ttk.Entry(
-                    self.advanced_window_frame,
-                    width=30,
-                    textvariable=self.train_image_dir,
-                )
-                train_image_entry.grid(column=2, row=2, columnspan=3, sticky=(W, E))
-                self.train_image_dir.set("C:/Users/admin/Documents/DeepACSA")
-
-                # Mask directory
-                self.mask_dir = StringVar()
-                mask_entry = ttk.Entry(
-                    self.advanced_window_frame, width=30, textvariable=self.mask_dir
-                )
-                mask_entry.grid(column=2, row=3, columnspan=3, sticky=(W, E))
-                self.mask_dir.set("C:/Users/admin/Documents/DeepACSA")
-
-                # Output path
-                self.out_dir = StringVar()
-                out_entry = ttk.Entry(
-                    self.advanced_window_frame, width=30, textvariable=self.out_dir
-                )
-                out_entry.grid(column=2, row=4, columnspan=3, sticky=(W, E))
-                self.out_dir.set("C:/Users/admin/Documents/DeepACSA")
-
-                # Buttons
                 # Train image button
-                train_img_button = ttk.Button(
+                train_img_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Images",
                     command=self.get_train_dir,
                 )
-                train_img_button.grid(column=5, row=2, sticky=E)
+                train_img_button.grid(column=0, row=2, sticky=E)
 
                 # Mask button
-                mask_button = ttk.Button(
+                mask_button = ctk.CTkButton(
                     self.advanced_window_frame, text="Masks", command=self.get_mask_dir
                 )
-                mask_button.grid(column=5, row=3, sticky=E)
-
-                # Data augmentation button
-                data_augmentation_button = ttk.Button(
-                    self.advanced_window_frame,
-                    text="Augment Images",
-                    command=self.augment_images,
-                )
-                data_augmentation_button.grid(column=4, row=12, sticky=E)
+                mask_button.grid(column=1, row=2, sticky=(W, E))
 
                 # Input directory
-                out_button = ttk.Button(
+                out_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Output",
                     command=self.get_output_dir,
                 )
-                out_button.grid(column=5, row=4, sticky=E)
+                out_button.grid(column=2, row=2, sticky=W)
+
+                ttk.Separator(
+                    self.advanced_window_frame, orient="horizontal", style="TSeparator"
+                ).grid(column=0, row=5, columnspan=9, sticky=(W, E))
+
+                # Hyperparameters
+                ctk.CTkLabel(
+                    self.advanced_window_frame,
+                    text="Hyperparameters",
+                    font=("Verdana", 20),
+                ).grid(column=0, row=6, padx=10)
+
+                # Batch Size Label
+                ctk.CTkLabel(self.advanced_window_frame, text="Batch Size").grid(
+                    column=0, row=7
+                )
+                # Batch size Combobox
+                self.batch_size = StringVar()
+                size = ["1", "2", "3", "4", "5", "6"]
+                size_entry = ctk.CTkComboBox(
+                    self.advanced_window_frame,
+                    width=10,
+                    variable=self.batch_size,
+                    values=size,
+                )
+                size_entry.grid(column=1, row=7, sticky=(W, E))
+                self.batch_size.set("1")
+
+                # Learning Rate Label
+                ctk.CTkLabel(self.advanced_window_frame, text="Learning Rate").grid(
+                    column=0, row=8
+                )
+                # Learning Rate Combobox
+                self.learn_rate = StringVar()
+                learn = ["0.005", "0.001", "0.0005", "0.0001", "0.00005", "0.00001"]
+                learn_entry = ctk.CTkComboBox(
+                    self.advanced_window_frame,
+                    width=10,
+                    variable=self.learn_rate,
+                    values=learn,
+                )
+                learn_entry.grid(column=1, row=8, sticky=(W, E))
+                self.learn_rate.set("0.00001")
+
+                # Epochs Label
+                ctk.CTkLabel(self.advanced_window_frame, text="Epochs").grid(
+                    column=0, row=9
+                )
+                # Number of training epochs
+                self.epochs = StringVar()
+                epoch = ["30", "40", "50", "60", "70", "80"]
+                epoch_entry = ctk.CTkComboBox(
+                    self.advanced_window_frame,
+                    width=10,
+                    variable=self.epochs,
+                    values=epoch,
+                )
+                epoch_entry.grid(column=1, row=9, sticky=(W, E))
+                self.epochs.set("3")
+
+                # Loss function Label
+                ctk.CTkLabel(self.advanced_window_frame, text="Loss Function").grid(
+                    column=0, row=10
+                )
+                # Loss function Combobox
+                # Loss function
+                self.loss_function = StringVar()
+                loss_entry = ctk.CTkComboBox(
+                    self.advanced_window_frame,
+                    width=10,
+                    variable=self.loss_function,
+                    values=["BCE"],
+                )
+                loss_entry["state"] = "readonly"
+                loss_entry.grid(column=1, row=10, sticky=(W, E))
+                self.loss_function.set("BCE")
+
+                ttk.Separator(
+                    self.advanced_window_frame, orient="horizontal", style="TSeparator"
+                ).grid(column=0, row=11, columnspan=9, sticky=(W, E))
+
+                # Data augmentation button
+                data_augmentation_button = ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Augment Images",
+                    command=self.augment_images,
+                )
+                data_augmentation_button.grid(column=1, row=12, sticky=(W, E))
+
+                # Augmentation Warning
+                ctk.CTkLabel(
+                    self.advanced_window_frame,
+                    text="*Use augmentation only with \nbacked-up original images*",
+                    font=("Segue UI", 8, "bold"),
+                    text_color="#000000",
+                ).grid(column=0, row=12, sticky=E)
 
                 # Model train button
-                model_button = ttk.Button(
+                model_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Start Training",
                     command=self.train_model,
                 )
-                model_button.grid(column=5, row=12, sticky=E)
-
-                # Comboboxes
-                # Batch size
-                self.batch_size = StringVar()
-                size = ("1", "2", "3", "4", "5", "6")
-                size_entry = ttk.Combobox(
-                    self.advanced_window_frame, width=10, textvariable=self.batch_size
-                )
-                size_entry["values"] = size
-                size_entry.grid(column=2, row=7, sticky=(W, E))
-                self.batch_size.set("1")
-
-                # Learning rate
-                self.learn_rate = StringVar()
-                learn = ("0.005", "0.001", "0.0005", "0.0001", "0.00005", "0.00001")
-                learn_entry = ttk.Combobox(
-                    self.advanced_window_frame, width=10, textvariable=self.learn_rate
-                )
-                learn_entry["values"] = learn
-                learn_entry.grid(column=2, row=8, sticky=(W, E))
-                self.learn_rate.set("0.00001")
-
-                # Number of training epochs
-                self.epochs = StringVar()
-                epoch = ("30", "40", "50", "60", "70", "80")
-                epoch_entry = ttk.Combobox(
-                    self.advanced_window_frame, width=10, textvariable=self.epochs
-                )
-                epoch_entry["values"] = epoch
-                epoch_entry.grid(column=2, row=9, sticky=(W, E))
-                self.epochs.set("3")
-
-                # Loss function
-                self.loss_function = StringVar()
-                loss = "BCE"
-                loss_entry = ttk.Combobox(
-                    self.advanced_window_frame,
-                    width=10,
-                    textvariable=self.loss_function,
-                )
-                loss_entry["values"] = loss
-                loss_entry["state"] = "readonly"
-                loss_entry.grid(column=2, row=10, sticky=(W, E))
-                self.loss_function.set("BCE")
-
-                # Seperators
-                ttk.Separator(
-                    self.advanced_window_frame, orient="horizontal", style="TSeparator"
-                ).grid(column=0, row=5, columnspan=9, sticky=(W, E))
-                ttk.Separator(
-                    self.advanced_window_frame, orient="horizontal", style="TSeparator"
-                ).grid(column=0, row=11, columnspan=9, sticky=(W, E))
+                model_button.grid(column=2, row=12, sticky=E)
 
         except FileNotFoundError:
             tk.messagebox.showerror("Information", "Enter the correct folder path!")
@@ -393,3 +373,153 @@ class AdvancedAnalysis:
         # Add padding
         for child in self.advanced_window_frame.winfo_children():
             child.grid_configure(padx=5, pady=5)
+
+    # Methods used for model training
+
+    def get_train_dir(self):
+        """
+        Instance method to ask the user to select the training image
+        directory path. All image files (of the same specified filetype) in
+        the directory are analysed. This must be an absolute path.
+        """
+        self.train_image_dir = filedialog.askdirectory()
+        ctk.CTkLabel(
+            self.advanced_window_frame,
+            text=f"Folder: {os.path.basename(self.train_image_dir)}",
+            font=("Segue UI", 8, "bold"),
+        ).grid(column=0, row=3)
+
+    def get_mask_dir(self):
+        """
+        Instance method to ask the user to select the training mask
+        directory path. All mask files (of the same specified filetype) in
+        the directory are analysed.The mask files and the corresponding
+        image must have the exact same name. This must be an absolute path.
+        """
+        self.mask_dir = filedialog.askdirectory()
+        ctk.CTkLabel(
+            self.advanced_window_frame,
+            text=f"Folder: {os.path.basename(self.mask_dir)}",
+            font=("Segue UI", 8, "bold"),
+        ).grid(column=1, row=3)
+
+    def get_output_dir(self):
+        """
+        Instance method to ask the user to select the output
+        directory path. Here, all file created during model
+        training (model file, weight file, graphs) are saved.
+        This must be an absolute path.
+        """
+        self.out_dir = filedialog.askdirectory()
+        ctk.CTkLabel(
+            self.advanced_window_frame,
+            text=f"Folder: {os.path.basename(self.out_dir)}",
+            font=("Segue UI", 8, "bold"),
+        ).grid(column=2, row=3)
+
+    def train_model(self):
+        """
+        Instance method to execute the model training when the
+        "start training" button is pressed.
+
+        By pressing the button, a seperate thread is started
+        in which the model training is run. This allows the user to break any
+        training process at certain stages. When the analysis can be
+        interrupted, a tk.messagebox opens asking the user to either
+        continue or terminate the analysis. Moreover, the threading allows interaction
+        with the GUI during ongoing analysis process.
+        """
+        try:
+            # See if GUI is already running
+            if self.is_running:
+                # don't run again if it is already running
+                return
+            self.is_running = True
+
+            # Get input paremeter
+            selected_images = self.train_image_dir.get()
+            selected_masks = self.mask_dir.get()
+            selected_outpath = self.out_dir.get()
+
+            # Make sure some kind of filetype is specified.
+            if (
+                len(selected_images) < 3
+                or len(selected_masks) < 3
+                or len(selected_outpath) < 3
+            ):
+                tk.messagebox.showerror("Information", "Specified directories invalid.")
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
+
+            selected_batch_size = int(self.batch_size.get())
+            selected_learning_rate = float(self.learn_rate.get())
+            selected_epochs = int(self.epochs.get())
+            selected_loss_function = self.loss_function.get()
+
+            # Start thread
+            thread = Thread(
+                target=gui_helpers.trainModel,
+                args=(
+                    selected_images,
+                    selected_masks,
+                    selected_outpath,
+                    selected_batch_size,
+                    selected_learning_rate,
+                    selected_epochs,
+                    selected_loss_function,
+                    self,
+                ),
+            )
+
+            thread.start()
+
+        # Error handling
+        except ValueError:
+            tk.messagebox.showerror(
+                "Information", "Analysis parameter entry fields" + " must not be empty."
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
+
+    # Method used for data augmentation
+    def augment_images(self):
+        """
+        Instance method to augment input images, when the "Augment Images" button is pressed.
+        Input parameters for the gui_helpers.image_augmentation function are taken from the chosen
+        image and mask directories. The newly generated data will be saved under the same
+        directories.
+        """
+        try:
+            # See if GUI is already running
+            if self.is_running:
+                # don't run again if it is already running
+                return
+            self.is_running = True
+
+            # Get input paremeters
+            selected_images = self.train_image_dir.get()
+            selected_masks = self.mask_dir.get()
+
+            # Make sure some kind of filetype is specified.
+            if len(selected_images) < 3 or len(selected_masks) < 3:
+                tk.messagebox.showerror("Information", "Specified directories invalid.")
+                self.should_stop = False
+                self.is_running = False
+                self.do_break()
+                return
+
+            gui_helpers.image_augmentation(selected_images, selected_masks, self)
+
+        # Error handling
+        except ValueError:
+            tk.messagebox.showerror(
+                "Information",
+                "Check input parameters"
+                + "\nPotential error source: Invalid directories",
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False

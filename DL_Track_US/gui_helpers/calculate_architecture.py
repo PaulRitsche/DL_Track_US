@@ -544,7 +544,6 @@ def calculateBatch(
         # Load models
         model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
         model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
-
     except OSError:
         tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
         gui.should_stop = False
