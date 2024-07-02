@@ -1,41 +1,35 @@
+import math
+
 import cv2
-import matplotlib
-import matplotlib.colors
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy
 import numpy as np
 import orientationpy
-import tifffile
-from curved_fascicles_prep import apo_to_contour
-from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator, Rbf, griddata
+from curved_fascicles_prep import apo_to_contour_orientation_map
+from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00014.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00017.tif",
     cv2.IMREAD_UNCHANGED,
 )
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
 
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00014.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00017.jpg",
     cv2.IMREAD_UNCHANGED,
 )
-apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
+apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour_orientation_map(
+    apo_image
+)
+width = apo_image_gray.shape[1]
 
-# plt.figure(1)
 for n, mode in enumerate(["finite_difference", "gaussian", "splines"]):
     Gy, Gx = orientationpy.computeGradient(image_gray, mode=mode)
-    # plt.subplot(2, 3, n + 1)
-    # plt.title(f"{mode}-Gy")
-    # plt.imshow(Gy, cmap="coolwarm", vmin=-64, vmax=64)
-
-    # plt.subplot(2, 3, 3 + n + 1)
-    # plt.title(f"{mode}-Gx")
-    # plt.imshow(Gx, cmap="coolwarm", vmin=-64, vmax=64)
 
 structureTensor = orientationpy.computeStructureTensor([Gy, Gx], sigma=2)
 
@@ -43,43 +37,11 @@ orientations = orientationpy.computeOrientation(
     structureTensor, computeEnergy=True, computeCoherency=True
 )
 
-# plt.figure(2, figsize=(10, 4))
-
-# The energy represents how strong the orientation signal is
-# plt.subplot(1, 2, 1)
-# plt.imshow(orientations["energy"] / orientations["energy"].max(), vmin=0, vmax=1)
-# plt.colorbar(shrink=0.7)
-# plt.title("Energy Normalised")
-
 # The coherency measures how strongly aligned the image is locally
 orientations["coherency"][image == 0] = 0
 
-# plt.subplot(1, 2, 2)
-# plt.imshow(orientations["coherency"], vmin=0, vmax=1)
-# plt.title("Coherency")
-# plt.colorbar(shrink=0.7)
-# plt.tight_layout()
-
-# plt.figure(3)
-# try:
-# plt.suptitle("Overlay with orientation")
-# plt.title(
-# "Greyscale image with HSV orientations overlaid\nwith transparency as coherency"
-# )
-# plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-# plt.imshow(
-# orientations["theta"],
-# cmap="hsv",
-# alpha=orientations["coherency"] / (2 * orientations["coherency"].max()),
-# vmin=-90,
-# vmax=90,
-# )
-
-# plt.colorbar(shrink=0.7)
-# except:
-# print("Didn't manage to make the plot :(")
-
 boxSizePixels = 7
+
 structureTensorBoxes = orientationpy.computeStructureTensorBoxes(
     [Gy, Gx],
     [boxSizePixels, boxSizePixels],
@@ -107,14 +69,16 @@ boxCentresX = (
     + boxSizePixels // 2
 )
 
+# get grid points where vectors originate
 boxCentres_grid = np.meshgrid(boxCentresX, boxCentresY)
 boxCentres_grid_X = boxCentres_grid[0]
 boxCentres_grid_Y = boxCentres_grid[1]
 boxCentres_grid_X = [item for sublist in boxCentres_grid_X for item in sublist]
 boxCentres_grid_Y = [item for sublist in boxCentres_grid_Y for item in sublist]
 
-size_x = boxCentresX.shape[0]
-size_y = boxCentresY.shape[0]
+# get number of points along the x- and y-axis (size of grid)
+size_y = boxCentresX.shape[0]
+size_x = boxCentresY.shape[0]
 
 # Compute X and Y components of the vector
 boxVectorsYX = orientationpy.anglesToVectors(orientationsBoxes)
@@ -122,10 +86,11 @@ boxVectorsYX = orientationpy.anglesToVectors(orientationsBoxes)
 # Vectors with low energy reset
 boxVectorsYX[:, orientationsBoxes["energy"] < 0.05] = 0.0
 
+# only allow vectors which have an angle between 50° and 10°
 boxVectorsYX[:, orientationsBoxes["theta"] > 50] = 0.0
-# boxVectorsYX[:, orientationsBoxes["theta"] < 10] = 0.0
+boxVectorsYX[:, orientationsBoxes["theta"] < 10] = 0.0
 
-plt.figure(4)
+plt.figure(1)
 plt.title("Local orientation vector in boxes")
 plt.imshow(image_gray, cmap="Greys_r", vmin=0)
 
@@ -144,61 +109,25 @@ plt.quiver(
     headlength=0,
     headaxislength=1,
 )
-# plt.show()
-
-# Show image
-# plt.figure(5)
-# plt.imshow(image_gray, cmap="Greys_r")
-# plt.suptitle("Original image")
-# plt.show()
 
 # boxVectorsYX = [list(zip(x, y)) for x, y in zip(boxVectorsYX[0], boxVectorsYX[1])]
 boxVectorsX = [item for sublist in boxVectorsYX[1] for item in sublist]
 boxVectorsY = [item for sublist in boxVectorsYX[0] for item in sublist]
 
+# create mask representing valid vectors (not 0)
 mask = (np.array(boxVectorsX) != 0) & (np.array(boxVectorsY) != 0)
 
+# find grid points which are the origin of valid vectors
 valid_boxCentres_grid_X = np.array(boxCentres_grid_X)[mask]
 valid_boxCentres_grid_Y = np.array(boxCentres_grid_Y)[mask]
+
+# get valid vectors separate
 valid_boxVectorsX = np.array(boxVectorsX)[mask]
 valid_boxVectorsY = np.array(boxVectorsY)[mask]
 
 valid_points = np.array(list(zip(valid_boxCentres_grid_X, valid_boxCentres_grid_Y)))
 
-# interpolation with griddata, methods: linear, cubic, nearest
-grid_x = griddata(
-    valid_points,
-    valid_boxVectorsX,
-    (boxCentres_grid_X, boxCentres_grid_Y),
-    method="linear",
-)
-grid_y = griddata(
-    valid_points,
-    valid_boxVectorsY,
-    (boxCentres_grid_X, boxCentres_grid_Y),
-    method="linear",
-)
-
-# Plotting the interpolated x- and y-component as an arrow
-# plt.figure(6)
-# plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-# plt.title("linear interpolation with griddata")
-# plt.quiver(
-# boxCentres_grid_X,
-# boxCentres_grid_Y,
-# grid_x,
-# grid_y,
-# angles="xy",
-# scale=0.2,
-# scale_units="xy",
-## scale=energyBoxes.ravel(),
-# color="r",
-# headwidth=0,
-# headlength=0,
-# headaxislength=1,
-# )
-
-# interpolation and extrapolation with rbf
+# interpolation and extrapolation valid vectors with rbf along the grid
 grid_x_rbf = Rbf(
     valid_boxCentres_grid_X,
     valid_boxCentres_grid_Y,
@@ -212,19 +141,22 @@ grid_y_rbf = Rbf(
     function="linear",
 )
 
+# extra- and interpolated values
 di_x = grid_x_rbf(boxCentres_grid_X, boxCentres_grid_Y)
 di_y = grid_y_rbf(boxCentres_grid_X, boxCentres_grid_Y)
 
 window_length = 5  # Length of the filter window (must be odd)
 polyorder = 2  # Order of the polynomial fit
 
+# smoothened extra- and interpolated values with savgol filter
 # di_x_smooth = savgol_filter(di_x, window_length=window_length, polyorder=polyorder)
 # di_y_smooth = savgol_filter(di_y, window_length=window_length, polyorder=polyorder)
 
+# smoothened extra- and intrapolated values with gaussian filter
 di_x_smooth = gaussian_filter1d(di_x, sigma=1)
 di_y_smooth = gaussian_filter1d(di_y, sigma=1)
 
-plt.figure(7)
+plt.figure(2)
 plt.imshow(image_gray, cmap="Greys_r", vmin=0)
 plt.title("linear interpolation and extrapolation with Rbf")
 plt.quiver(
@@ -242,7 +174,7 @@ plt.quiver(
     headaxislength=1,
 )
 
-plt.figure(8)
+plt.figure(3)
 plt.imshow(image_gray, cmap="Greys_r", vmin=0)
 plt.plot(ex_x_UA, ex_y_UA, color="white")
 plt.plot(ex_x_LA, ex_y_LA, color="white")
@@ -262,35 +194,47 @@ plt.quiver(
     headaxislength=1,
 )
 
-# interpolation with NearestNDInterpolator, nearest neighbour method
-nearest_inter_x = NearestNDInterpolator(valid_points, valid_boxVectorsX)
-nearest_inter_y = NearestNDInterpolator(valid_points, valid_boxVectorsY)
+# Make a binary mask to only include fascicles within the region
+# between the 2 aponeuroses
+di_x_smooth_masked = np.array(di_x_smooth).reshape(size_x, size_y)
+di_y_smooth_masked = np.array(di_y_smooth).reshape(size_x, size_y)
+# di_x_y = np.stack((di_x_smooth, di_y_smooth), axis = -1)
+# di_x_y = di_x_y.reshape(size_x, size_y, 2)
 
-zi_nearest_x = nearest_inter_x(boxCentres_grid_X, boxCentres_grid_Y)
-zi_nearest_y = nearest_inter_y(boxCentres_grid_X, boxCentres_grid_Y)
+# define new mask which contains only the points of the grid which are between the two aponeuroses
+ex_mask = np.zeros((size_x, size_y), dtype=bool)
 
-# zi_nearest_x_smooth = savgol_filter(
-# zi_nearest_x, window_length=window_length, polyorder=polyorder
-# )
-# zi_nearest_y_smooth = savgol_filter(
-# zi_nearest_y, window_length=window_length, polyorder=polyorder
-# )
+for ii in range(size_y):
+    coord = boxCentresX[ii]
+    ymin = int(ex_y_UA[coord])
+    ymax = int(ex_y_LA[coord])
 
-zi_nearest_x_smooth = gaussian_filter1d(zi_nearest_x, sigma=1)
-zi_nearest_y_smooth = gaussian_filter1d(zi_nearest_y, sigma=1)
+    for jj in range(size_x):
+        if boxCentresY[jj] < ymin:
+            ex_mask[jj][ii] = False
+        elif boxCentresY[jj] > ymax:
+            ex_mask[jj][ii] = False
+        else:
+            ex_mask[jj][ii] = True
 
-plt.figure(9)
+# apply mask to smoothened data, 2D data
+di_x_masked_2 = di_x_smooth_masked * ex_mask.astype(int)
+di_y_masked_2 = di_y_smooth_masked * ex_mask.astype(int)
+
+# flatten data to 1D, is needed in this format for the quiver plot
+di_x_masked_1 = di_x_masked_2.flatten()
+di_y_masked_1 = di_y_masked_2.flatten()
+
+plt.figure(4)
 plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-plt.plot(ex_x_LA, ex_y_LA, color="white")
 plt.plot(ex_x_UA, ex_y_UA, color="white")
-plt.title(
-    "nearest neighbour interpolation and extrapolation with NearestNDInterpolator"
-)
+plt.plot(ex_x_LA, ex_y_LA, color="white")
+plt.title("smoothened linear interpolation and extrapolation with Rbf")
 plt.quiver(
     boxCentres_grid_X,
     boxCentres_grid_Y,
-    zi_nearest_x,
-    zi_nearest_y,
+    di_x_masked_1,
+    di_y_masked_1,
     angles="xy",
     scale=0.2,
     scale_units="xy",
@@ -300,64 +244,38 @@ plt.quiver(
     headlength=0,
     headaxislength=1,
 )
-
-plt.figure(10)
-plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-plt.plot(ex_x_LA, ex_y_LA, color="white")
-plt.plot(ex_x_UA, ex_y_UA, color="white")
-plt.title(
-    "nearest neighbour interpolation and extrapolation with NearestNDInterpolator"
-)
-plt.quiver(
-    boxCentres_grid_X,
-    boxCentres_grid_Y,
-    zi_nearest_x_smooth,
-    zi_nearest_y_smooth,
-    angles="xy",
-    scale=0.2,
-    scale_units="xy",
-    # scale=energyBoxes.ravel(),
-    color="r",
-    headwidth=0,
-    headlength=0,
-    headaxislength=1,
-)
-
-# interpolation with LinearNDInterpolator, method: linear
-linear_inter_x = LinearNDInterpolator(
-    valid_points, valid_boxVectorsX
-)  # fill_value=np.nan-> define which values should be filled to points outside
-linear_inter_y = LinearNDInterpolator(valid_points, valid_boxVectorsY)
-
-zi_linear_x = linear_inter_x(boxCentres_grid_X, boxCentres_grid_Y)
-zi_linear_y = linear_inter_y(boxCentres_grid_X, boxCentres_grid_Y)
-
-# plt.figure(11)
-# plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-# plt.title("linear interpolation with LinearNDInterpolator")
-# plt.quiver(
-# boxCentres_grid_X,
-# boxCentres_grid_Y,
-# zi_linear_x,
-# zi_linear_y,
-# angles="xy",
-# scale=0.2,
-# scale_units="xy",
-## scale=energyBoxes.ravel(),
-# color="r",
-# headwidth=0,
-# headlength=0,
-# headaxislength=1,
-# )
 
 # get slope
-slope = [((-1) * di_y_smooth[i]) / di_x_smooth[i] for i in range(len(di_x))]
+slope = np.zeros_like(di_x)
+slope_without_zeros = []
+
+# calculate slope for the vectors in the region between the aponeuroses
+for i in range(len(di_x)):
+    if di_x_masked_1[i] != 0 and di_y_masked_1[i] != 0:
+        slope[i] = (-1) * di_y_masked_1[i] / di_x_masked_1[i]
+        slope_without_zeros.append(slope[i])
+
 slope = np.array(slope).reshape(size_x, size_y)
 slope = np.repeat(np.repeat(slope, boxSizePixels, axis=0), boxSizePixels, axis=1)
 
+# calculate mean and median slope of the region between the aponeuroses
+slope_mean = np.mean(slope_without_zeros)
+slope_median = np.median(slope_without_zeros)
+
+# calculate mean and median angle of the region between the aponeuroses
+angle_rad_mean = math.atan(slope_mean)
+angle_deg_mean = math.degrees(angle_rad_mean)
+angle_rad_median = math.atan(slope_median)
+angle_deg_median = math.degrees(angle_rad_median)
+
+print(f"Mean angle in degrees: {angle_deg_mean}")
+print(f"Median angle in degrees: {angle_deg_median}")
+print(f"Mean slope: {slope_mean}")
+print(f"Median slope: {slope_median}")
+
 norm = mcolors.Normalize(vmin=np.min(slope), vmax=np.max(slope))
 
-plt.figure(12)
+plt.figure(5)
 plt.imshow(slope, cmap="viridis", norm=norm, interpolation="none")
 plt.plot(ex_x_LA, ex_y_LA, color="white")
 plt.plot(ex_x_UA, ex_y_UA, color="white")
