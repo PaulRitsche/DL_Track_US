@@ -14,8 +14,6 @@ from curved_fascicles_functions import (
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
-from matplotlib.patches import Rectangle
-from scipy.signal import savgol_filter
 
 # load image as gray scale image
 image = cv2.imread(
@@ -34,16 +32,10 @@ original_image = cv2.imread(
 original_image, image, apo_image = crop(original_image, image, apo_image)
 
 # get sorted fascicle contours
-image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
+image_gray, contours_sorted = fascicle_to_contour(image)
 
 # get extrapolation of aponeuroses
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
-
-# get contours around detected fascicles
-contour_image = cv2.cvtColor(
-    image_gray, cv2.COLOR_GRAY2BGR
-)  # Convert to BGR for visualization
-cv2.drawContours(contour_image, contoursF, -1, (0, 255, 0), 2)  # Draw contours in green
 
 start_time = time.time()
 
@@ -58,10 +50,12 @@ for i in range(len(contours_sorted)):
     contours_sorted_y.append(contours_sorted[i][1])
 
 # initialize some important variables
+
+tolerance = 10
+
 label = {x: False for x in range(len(contours_sorted))}
 coefficient_label = []
 number_contours = []
-tolerance = 10
 all_fascicles_x = []
 all_fascicles_y = []
 width = original_image.shape[1]
@@ -76,7 +70,8 @@ fascicle_data = pd.DataFrame(
         "coordsX",
         "coordsY",
         "coordsX_combined",
-        "coordsY_combined" "coordsXY",
+        "coordsY_combined",
+        "coordsXY",
         "locU",
         "locL",
     ]
@@ -306,6 +301,7 @@ fascicle_data = fascicle_data[fascicle_data["intersection_UA"]].drop(
 )  # .reset_index()
 fascicle_data = fascicle_data.reset_index(drop=True)
 
+# filter overlapping fascicles
 tolerance_to_apo = 100
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
@@ -318,6 +314,7 @@ data["pennation_angle"] = np.nan
 
 for i in range(len(all_coordsX)):
 
+    # calculate length of fascicle
     curve_length_total = 0
 
     for j in range(len(all_coordsX[i])):
@@ -332,6 +329,7 @@ for i in range(len(all_coordsX)):
         curve_length = np.sum(segment_lengths)
         curve_length_total += curve_length
 
+    # calculate pennation angle
     apoangle = np.arctan(
         (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
         / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
@@ -347,38 +345,19 @@ for i in range(len(all_coordsX)):
 
 end_time = time.time()
 total_time = end_time - start_time
-print(total_time)
-
-print(data)
 
 median_length = data["fascicle_length"].median()
 mean_length = data["fascicle_length"].mean()
 median_angle = data["pennation_angle"].median()
 mean_angle = data["pennation_angle"].mean()
 
+print(total_time)
+print(data)
 print(median_length, mean_length, median_angle, mean_angle)
-
-plt.figure(1)
-plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-plt.imshow(contour_image, alpha=0.5)
-for i in range(len(all_fascicles_x)):
-    # if coefficient_label[i] is False:
-    plt.plot(all_fascicles_x[i], all_fascicles_y[i])
-plt.plot(ex_x_LA, ex_y_LA)
-plt.plot(ex_x_UA, ex_y_UA)
-
-plt.figure(2)
-plt.imshow(contour_image)
-for row in fascicle_data.iterrows():
-    plt.plot(
-        row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
-    )
-plt.plot(ex_x_LA, ex_y_LA)
-plt.plot(ex_x_UA, ex_y_UA)
 
 colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
-plt.figure(3)
+plt.figure(1)
 plt.imshow(original_image)
 for i in range(len(all_coordsX)):
     color = colormap(i)

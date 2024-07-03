@@ -14,7 +14,6 @@ from curved_fascicles_functions import (
     find_next_fascicle,
 )
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
-from matplotlib.patches import Rectangle
 
 # load fascicle mask
 image = cv2.imread(
@@ -40,11 +39,6 @@ image_gray, contours_sorted = fascicle_to_contour(image)
 
 # get extrapolation of aponeuroses
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
-
-# get contours around detected fascicles, needed for plotting
-contour_image = cv2.cvtColor(
-    image_gray, cv2.COLOR_GRAY2BGR
-)  # Convert to BGR for visualization
 
 start_time = time.time()
 
@@ -261,18 +255,6 @@ print(total_time)
 print(data)
 print(median_length, mean_length, median_angle, mean_angle)
 
-# plot extrapolated fascicles
-colormap = plt.get_cmap("rainbow", len(all_fascicles_x))
-
-plt.figure(1)
-plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-plt.imshow(contour_image, alpha=0.5)
-for i in range(len(all_fascicles_x)):
-    color = colormap(i)
-    plt.plot(all_fascicles_x[i], all_fascicles_y[i], color=color)
-plt.plot(ex_x_LA, ex_y_LA, color="blue")
-plt.plot(ex_x_UA, ex_y_UA, color="blue")
-
 # plot filtered curves between detected fascicles between the two aponeuroses
 
 colormap = plt.get_cmap("rainbow", len(all_coordsX))
@@ -292,7 +274,7 @@ for i in range(len(all_coordsX)):
         x_after_b = x[x >= b]
         y_after_b = y[x >= b]
 
-        plt.figure(2)
+        plt.figure(1)
         plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
         plt.plot(x_after_b, y_after_b, color=color, alpha=0.4)
         plt.plot(
@@ -314,7 +296,7 @@ for i in range(len(all_coordsX)):
         x_after_d = x[x >= d]
         y_after_d = y[x >= d]
 
-        plt.figure(2)
+        plt.figure(1)
         plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
         plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
         plt.plot(x_after_d, y_after_d, color=color, alpha=0.4)
@@ -347,7 +329,7 @@ for i in range(len(all_coordsX)):
         x_after_f = x[x >= f]
         y_after_f = y[x >= f]
 
-        plt.figure(2)
+        plt.figure(1)
         plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
         plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
         plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -391,7 +373,7 @@ for i in range(len(all_coordsX)):
         x_after_h = x[x >= h]
         y_after_h = y[x >= h]
 
-        plt.figure(2)
+        plt.figure(1)
         plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
         plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
         plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -446,7 +428,7 @@ for i in range(len(all_coordsX)):
         x_after_n = x[x >= n]
         y_after_n = y[x >= n]
 
-        plt.figure(2)
+        plt.figure(1)
         plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
         plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
         plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -487,7 +469,7 @@ for i in range(len(all_coordsX)):
     if len(number_contours[i]) > 5:
         print(">=6 contours detected")
 
-plt.figure(2)
+plt.figure(1)
 plt.imshow(original_image)
 plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
 plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
