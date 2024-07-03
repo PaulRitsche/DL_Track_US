@@ -16,33 +16,35 @@ from curved_fascicles_functions import (
 from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 from matplotlib.patches import Rectangle
 
-# load image as gray scale image
+# load fascicle mask
 image = cv2.imread(
     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
+# load aponeurosis mask
 apo_image = cv2.imread(
     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
     cv2.IMREAD_UNCHANGED,
 )
+# load ultrasound image
 original_image = cv2.imread(
     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
+# crop all three images in order that they don't have a frame
 original_image, image, apo_image = crop(original_image, image, apo_image)
 
 # get sorted fascicle contours
-image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
+image_gray, contours_sorted = fascicle_to_contour(image)
 
 # get extrapolation of aponeuroses
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
 
-# get contours around detected fascicles
+# get contours around detected fascicles, needed for plotting
 contour_image = cv2.cvtColor(
     image_gray, cv2.COLOR_GRAY2BGR
 )  # Convert to BGR for visualization
-cv2.drawContours(contour_image, contoursF, -1, (0, 255, 0), 2)  # Draw contours in green
 
 start_time = time.time()
 
@@ -56,11 +58,12 @@ for i in range(len(contours_sorted)):
     contours_sorted_x.append(contours_sorted[i][0])
     contours_sorted_y.append(contours_sorted[i][1])
 
-# initialize some important variables
-label = {x: False for x in range(len(contours_sorted))}
-coefficient_label = []
-number_contours = []
+# initialize important variables
+
 tolerance = 10
+
+label = {x: False for x in range(len(contours_sorted))}
+number_contours = []
 all_fascicles_x = []
 all_fascicles_y = []
 width = original_image.shape[1]
@@ -186,9 +189,10 @@ for i in range(len(contours_sorted)):
             fas_curve, UA_curve
         ):
 
-            all_fascicles_x.append(ex_current_fascicle_x)
+            all_fascicles_x.append(
+                ex_current_fascicle_x
+            )  # store all points of fascicle, beyond apos
             all_fascicles_y.append(ex_current_fascicle_y)
-            coefficient_label.append(linear_fit)
             number_contours.append(inner_number_contours)
 
             fascicle_data_temp = pd.DataFrame(
@@ -218,10 +222,10 @@ all_locL = list(data["locL"])
 data["fascicle_length"] = np.nan
 data["pennation_angle"] = np.nan
 
-
 for i in range(len(all_coordsX)):
 
     if len(all_coordsX[i]) > 0:
+        # calculate length of fascicle
         x = all_coordsX[i]
         y = all_coordsY[i]
 
@@ -231,6 +235,7 @@ for i in range(len(all_coordsX)):
         segment_lengths = np.sqrt(dx**2 + dy**2)
         curve_length = np.sum(segment_lengths)
 
+        # calculate pennation angle of fascicle
         apoangle = np.arctan(
             (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
             / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
@@ -246,15 +251,14 @@ for i in range(len(all_coordsX)):
 
 end_time = time.time()
 total_time = end_time - start_time
-print(total_time)
-
-print(data)
 
 median_length = data["fascicle_length"].median()
 mean_length = data["fascicle_length"].mean()
 median_angle = data["pennation_angle"].median()
 mean_angle = data["pennation_angle"].mean()
 
+print(total_time)
+print(data)
 print(median_length, mean_length, median_angle, mean_angle)
 
 # plot extrapolated fascicles
@@ -264,12 +268,10 @@ plt.figure(1)
 plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
 plt.imshow(contour_image, alpha=0.5)
 for i in range(len(all_fascicles_x)):
-    # if coefficient_label[i] is False:
     color = colormap(i)
     plt.plot(all_fascicles_x[i], all_fascicles_y[i], color=color)
 plt.plot(ex_x_LA, ex_y_LA, color="blue")
 plt.plot(ex_x_UA, ex_y_UA, color="blue")
-# plt.show()
 
 # plot filtered curves between detected fascicles between the two aponeuroses
 
@@ -491,74 +493,3 @@ plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
 plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
 plt.show()
-
-# idea for orientation map
-
-# num_grid_lines = 40
-# height, width, _ = original_image.shape
-# x_spacing = width // num_grid_lines
-# y_spacing = height // num_grid_lines
-
-# all_coordsXY = list(data["coordsXY"])
-
-# num_rows = height // y_spacing + 1
-# num_cols = width // x_spacing + 1
-# m_matrix = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
-
-# for idx in range(len(all_coordsXY)):
-
-# curve_coords = np.array(all_coordsXY[idx])
-# grid_cells = pd.DataFrame([[[] for _ in range(num_cols)] for _ in range(num_rows)])
-
-# for point in curve_coords:
-# x, y = point
-# if 0 <= x <= width and 0 <= y <= height:
-# grid_x = x // x_spacing
-# grid_y = y // y_spacing
-# grid_cells.at[grid_y, grid_x].append((x, y))
-
-# for i in range(len(grid_cells)):
-# for j in range(len(grid_cells)):
-# if grid_cells.at[i, j]:
-# x_start = grid_cells.at[i, j][0][0]
-# y_start = grid_cells.at[i, j][0][1]
-# x_end = grid_cells.at[i, j][-1][0]
-# y_end = grid_cells.at[i, j][-1][1]
-# dx = x_end - x_start
-# dy = y_start - y_end
-# m = dy / dx
-# m_matrix.at[i, j].append(m)
-
-# shape = (len(m_matrix), len(m_matrix))
-# m_matrix_total = np.zeros(shape)
-
-# for i in range(len(m_matrix)):
-# for j in range(len(m_matrix)):
-# if m_matrix.at[i, j]:
-# cell_values = m_matrix.at[i, j]
-# cell_length = len(cell_values)
-# cell_sum = sum(cell_values)
-# cell_mean = cell_sum / cell_length
-# m_matrix_total[i, j] = cell_mean
-
-# plot complete filtered fascicle curves between the two aponeuroses
-# plt.figure(3)
-# fig, ax = plt.subplots()
-# plt.imshow(original_image)
-# for row in data.iterrows():
-# plt.plot(row[1]["coordsX"], row[1]["coordsY"], color="red", alpha=0.4)
-# plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
-# plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
-
-# for x in range(0, width, x_spacing):
-# plt.axvline(x, color="white", linestyle="--", linewidth=1)
-# for y in range(0, height, y_spacing):
-# plt.axhline(y, color="white", linestyle="--", linewidth=1)
-
-# plt.figure(4)
-# plt.imshow(m_matrix_total, cmap="viridis", interpolation="none")
-# plt.colorbar(label="Value")
-# plt.title("Matrix Heatmap")
-# plt.xlabel("Column")
-# plt.ylabel("Row")
-# plt.show()
