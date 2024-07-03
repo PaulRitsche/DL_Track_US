@@ -18,26 +18,16 @@ from matplotlib.patches import Rectangle
 from scipy.signal import savgol_filter
 
 # load image as gray scale image
-# image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00126.tif",
-#    cv2.IMREAD_UNCHANGED,
-# )
-# apo_image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00126.jpg",
-#    cv2.IMREAD_UNCHANGED,
-# )
-# original_image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00126.tif",
-#    cv2.IMREAD_UNCHANGED,
-# )
-image = np.load(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\fascicle_masks_scaled\im_14_re.npy"
+image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
+    cv2.IMREAD_UNCHANGED,
 )
-apo_image = np.load(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\aponeurosis_masks_scaled\im_14_re.npy"
+apo_image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
+    cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\images\im_14_re.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
