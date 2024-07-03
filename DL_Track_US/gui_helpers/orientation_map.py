@@ -182,17 +182,44 @@ for i in range(len(di_x)):
         slope_without_zeros.append(slope[i])
 
 slope = np.array(slope).reshape(size_x, size_y)
+slope_non_zero_rows = slope[~np.all(slope == 0, axis=1)]
 slope = np.repeat(np.repeat(slope, boxSizePixels, axis=0), boxSizePixels, axis=1)
 
-# calculate mean and median slope of the region between the aponeuroses
+# calculate mean and median slope of the complete region between the aponeuroses
 slope_mean = np.mean(slope_without_zeros)
 slope_median = np.median(slope_without_zeros)
 
-# calculate mean and median angle of the region between the aponeuroses
+# calculate mean and median angle of the complete region between the aponeuroses
 angle_rad_mean = math.atan(slope_mean)
 angle_deg_mean = math.degrees(angle_rad_mean)
 angle_rad_median = math.atan(slope_median)
 angle_deg_median = math.degrees(angle_rad_median)
+
+# Step 1: Split the array in the middle horizontally
+middle_split = np.array_split(slope_non_zero_rows, 2, axis=0)
+
+# Step 2: Split each of the resulting arrays vertically into 3 parts
+split_arrays = [np.array_split(sub_array, 3, axis=1) for sub_array in middle_split]
+
+# Flatten the list of lists into a single list
+split_arrays = [sub_array for sublist in split_arrays for sub_array in sublist]
+
+split_angles_deg_mean = []
+split_angles_deg_median = []
+
+for i in range(len(split_arrays)):
+    non_zero_mask = split_arrays[i] != 0
+    non_zero_elements = split_arrays[i][non_zero_mask]
+
+    mean_non_zero = np.mean(non_zero_elements)
+    split_angle_rad_mean = math.atan(mean_non_zero)
+    split_angle_deg_mean = math.degrees(split_angle_rad_mean)
+    split_angles_deg_mean.append(split_angle_deg_mean)
+
+    median_non_zero = np.median(non_zero_elements)
+    split_angle_rad_median = math.atan(median_non_zero)
+    split_angle_deg_median = math.degrees(split_angle_rad_median)
+    split_angles_deg_median.append(split_angle_deg_median)
 
 end_time = time.time()
 total_time = end_time - start_time
@@ -202,6 +229,8 @@ print(f"Mean angle in degrees: {angle_deg_mean}")
 print(f"Median angle in degrees: {angle_deg_median}")
 print(f"Mean slope: {slope_mean}")
 print(f"Median slope: {slope_median}")
+print(f"Mean angles in degree for 6 parts: {split_angles_deg_mean}")
+print(f"Median angles in degree for 6 parts: {split_angles_deg_median}")
 
 # figure 1: plot orientation vectors calculated from orientationpy
 plt.figure(1)
