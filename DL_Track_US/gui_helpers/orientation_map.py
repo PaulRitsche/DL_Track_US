@@ -1,4 +1,5 @@
 import math
+import time
 
 import cv2
 import matplotlib.colors as mcolors
@@ -13,20 +14,22 @@ from scipy.signal import savgol_filter
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00017.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
 
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00017.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour_orientation_map(
     apo_image
 )
 width = apo_image_gray.shape[1]
+
+start_time = time.time()
 
 for n, mode in enumerate(["finite_difference", "gaussian", "splines"]):
     Gy, Gx = orientationpy.computeGradient(image_gray, mode=mode)
@@ -77,6 +80,8 @@ boxCentres_grid_X = [item for sublist in boxCentres_grid_X for item in sublist]
 boxCentres_grid_Y = [item for sublist in boxCentres_grid_Y for item in sublist]
 
 # get number of points along the x- and y-axis (size of grid)
+# attention with the dimensions, before a system (x,y) like normal coordinates was used,
+# in an array the convention is the other way around array[row (y in image), column (x in image)]
 size_y = boxCentresX.shape[0]
 size_x = boxCentresY.shape[0]
 
@@ -89,26 +94,6 @@ boxVectorsYX[:, orientationsBoxes["energy"] < 0.05] = 0.0
 # only allow vectors which have an angle between 50° and 10°
 boxVectorsYX[:, orientationsBoxes["theta"] > 50] = 0.0
 boxVectorsYX[:, orientationsBoxes["theta"] < 10] = 0.0
-
-plt.figure(1)
-plt.title("Local orientation vector in boxes")
-plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-
-# Warning, matplotlib is XY convention, not YX!
-plt.quiver(
-    boxCentresX,
-    boxCentresY,
-    boxVectorsYX[1],
-    boxVectorsYX[0],
-    angles="xy",
-    scale=0.2,
-    scale_units="xy",
-    # scale=energyBoxes.ravel(),
-    color="r",
-    headwidth=0,
-    headlength=0,
-    headaxislength=1,
-)
 
 # boxVectorsYX = [list(zip(x, y)) for x, y in zip(boxVectorsYX[0], boxVectorsYX[1])]
 boxVectorsX = [item for sublist in boxVectorsYX[1] for item in sublist]
@@ -156,54 +141,15 @@ polyorder = 2  # Order of the polynomial fit
 di_x_smooth = gaussian_filter1d(di_x, sigma=1)
 di_y_smooth = gaussian_filter1d(di_y, sigma=1)
 
-plt.figure(2)
-plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-plt.title("linear interpolation and extrapolation with Rbf")
-plt.quiver(
-    boxCentres_grid_X,
-    boxCentres_grid_Y,
-    di_x,
-    di_y,
-    angles="xy",
-    scale=0.2,
-    scale_units="xy",
-    # scale=energyBoxes.ravel(),
-    color="r",
-    headwidth=0,
-    headlength=0,
-    headaxislength=1,
-)
-
-plt.figure(3)
-plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-plt.plot(ex_x_UA, ex_y_UA, color="white")
-plt.plot(ex_x_LA, ex_y_LA, color="white")
-plt.title("smoothened linear interpolation and extrapolation with Rbf")
-plt.quiver(
-    boxCentres_grid_X,
-    boxCentres_grid_Y,
-    di_x_smooth,
-    di_y_smooth,
-    angles="xy",
-    scale=0.2,
-    scale_units="xy",
-    # scale=energyBoxes.ravel(),
-    color="r",
-    headwidth=0,
-    headlength=0,
-    headaxislength=1,
-)
-
 # Make a binary mask to only include fascicles within the region
 # between the 2 aponeuroses
 di_x_smooth_masked = np.array(di_x_smooth).reshape(size_x, size_y)
 di_y_smooth_masked = np.array(di_y_smooth).reshape(size_x, size_y)
-# di_x_y = np.stack((di_x_smooth, di_y_smooth), axis = -1)
-# di_x_y = di_x_y.reshape(size_x, size_y, 2)
 
 # define new mask which contains only the points of the grid which are between the two aponeuroses
 ex_mask = np.zeros((size_x, size_y), dtype=bool)
 
+# mixture of both conventions!
 for ii in range(size_y):
     coord = boxCentresX[ii]
     ymin = int(ex_y_UA[coord])
@@ -224,26 +170,6 @@ di_y_masked_2 = di_y_smooth_masked * ex_mask.astype(int)
 # flatten data to 1D, is needed in this format for the quiver plot
 di_x_masked_1 = di_x_masked_2.flatten()
 di_y_masked_1 = di_y_masked_2.flatten()
-
-plt.figure(4)
-plt.imshow(image_gray, cmap="Greys_r", vmin=0)
-plt.plot(ex_x_UA, ex_y_UA, color="white")
-plt.plot(ex_x_LA, ex_y_LA, color="white")
-plt.title("smoothened linear interpolation and extrapolation with Rbf")
-plt.quiver(
-    boxCentres_grid_X,
-    boxCentres_grid_Y,
-    di_x_masked_1,
-    di_y_masked_1,
-    angles="xy",
-    scale=0.2,
-    scale_units="xy",
-    # scale=energyBoxes.ravel(),
-    color="r",
-    headwidth=0,
-    headlength=0,
-    headaxislength=1,
-)
 
 # get slope
 slope = np.zeros_like(di_x)
@@ -268,13 +194,102 @@ angle_deg_mean = math.degrees(angle_rad_mean)
 angle_rad_median = math.atan(slope_median)
 angle_deg_median = math.degrees(angle_rad_median)
 
+end_time = time.time()
+total_time = end_time - start_time
+
+print(total_time)
 print(f"Mean angle in degrees: {angle_deg_mean}")
 print(f"Median angle in degrees: {angle_deg_median}")
 print(f"Mean slope: {slope_mean}")
 print(f"Median slope: {slope_median}")
 
+# figure 1: plot orientation vectors calculated from orientationpy
+plt.figure(1)
+plt.title("Local orientation vector in boxes")
+plt.imshow(image_gray, cmap="Greys_r", vmin=0)
+
+# Warning, matplotlib is XY convention, not YX!
+plt.quiver(
+    boxCentresX,
+    boxCentresY,
+    boxVectorsYX[1],
+    boxVectorsYX[0],
+    angles="xy",
+    scale=0.2,
+    scale_units="xy",
+    # scale=energyBoxes.ravel(),
+    color="r",
+    headwidth=0,
+    headlength=0,
+    headaxislength=1,
+)
+
+# figure 2: plot inter- and extrapolated vectors for complete image
+plt.figure(2)
+plt.imshow(image_gray, cmap="Greys_r", vmin=0)
+plt.plot(ex_x_UA, ex_y_UA, color="white")
+plt.plot(ex_x_LA, ex_y_LA, color="white")
+plt.title("linear interpolation and extrapolation with Rbf")
+plt.quiver(
+    boxCentres_grid_X,
+    boxCentres_grid_Y,
+    di_x,
+    di_y,
+    angles="xy",
+    scale=0.2,
+    scale_units="xy",
+    # scale=energyBoxes.ravel(),
+    color="r",
+    headwidth=0,
+    headlength=0,
+    headaxislength=1,
+)
+
+# figure 3: plot smoothened inter- and extrapolated vectors for complete image
+plt.figure(3)
+plt.imshow(image_gray, cmap="Greys_r", vmin=0)
+plt.plot(ex_x_UA, ex_y_UA, color="white")
+plt.plot(ex_x_LA, ex_y_LA, color="white")
+plt.title("smoothened linear interpolation and extrapolation with Rbf")
+plt.quiver(
+    boxCentres_grid_X,
+    boxCentres_grid_Y,
+    di_x_smooth,
+    di_y_smooth,
+    angles="xy",
+    scale=0.2,
+    scale_units="xy",
+    # scale=energyBoxes.ravel(),
+    color="r",
+    headwidth=0,
+    headlength=0,
+    headaxislength=1,
+)
+
+# figure 4: plot smoothened inter- and extrapolation vectors only for the region between the two aponeuroses
+plt.figure(4)
+plt.imshow(image_gray, cmap="Greys_r", vmin=0)
+plt.plot(ex_x_UA, ex_y_UA, color="white")
+plt.plot(ex_x_LA, ex_y_LA, color="white")
+plt.title("smoothened linear interpolation and extrapolation with Rbf")
+plt.quiver(
+    boxCentres_grid_X,
+    boxCentres_grid_Y,
+    di_x_masked_1,
+    di_y_masked_1,
+    angles="xy",
+    scale=0.2,
+    scale_units="xy",
+    # scale=energyBoxes.ravel(),
+    color="r",
+    headwidth=0,
+    headlength=0,
+    headaxislength=1,
+)
+
 norm = mcolors.Normalize(vmin=np.min(slope), vmax=np.max(slope))
 
+# figure 5: plot heat map of slopes for region between the two aponeuroses
 plt.figure(5)
 plt.imshow(slope, cmap="viridis", norm=norm, interpolation="none")
 plt.plot(ex_x_LA, ex_y_LA, color="white")
