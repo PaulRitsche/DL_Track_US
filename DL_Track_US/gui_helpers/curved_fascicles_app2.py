@@ -37,7 +37,13 @@ image_gray, contours_sorted = fascicle_to_contour(image)
 # get extrapolation of aponeuroses
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
 
+#### start of independent function ####
 start_time = time.time()
+
+# set parameteres
+tolerance = 10
+tolerance_to_apo = 100
+coeff_limit = 0.000583
 
 # get upper edge of each contour
 contours_sorted_x = []
@@ -50,9 +56,6 @@ for i in range(len(contours_sorted)):
     contours_sorted_y.append(contours_sorted[i][1])
 
 # initialize some important variables
-
-tolerance = 10
-
 label = {x: False for x in range(len(contours_sorted))}
 coefficient_label = []
 number_contours = []
@@ -95,7 +98,7 @@ for i in range(len(contours_sorted)):
         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
         # depending on coefficients edge gets extrapolated as first or second order polynomial
-        if 0 < coefficients[0] < 0.000583:
+        if 0 < coefficients[0] < coeff_limit:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
                 mid - width, mid + width, 5000
@@ -142,7 +145,7 @@ for i in range(len(contours_sorted)):
 
             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-            if 0 < coefficients[0] < 0.000583:
+            if 0 < coefficients[0] < coeff_limit:
                 g = np.poly1d(coefficients)
                 ex_current_fascicle_x = np.linspace(
                     mid - width, mid + width, 5000
@@ -302,7 +305,6 @@ fascicle_data = fascicle_data[fascicle_data["intersection_UA"]].drop(
 fascicle_data = fascicle_data.reset_index(drop=True)
 
 # filter overlapping fascicles
-tolerance_to_apo = 100
 data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
 all_coordsX = list(data["coordsX"])
