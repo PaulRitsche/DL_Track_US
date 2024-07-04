@@ -1,4 +1,4 @@
-"""Approach 2"""
+"""Approach 3"""
 
 import time
 
@@ -17,15 +17,15 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00068.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00010.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00068.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00010.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00068.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00010.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -192,30 +192,22 @@ number_contours = list(fascicle_data["number_contours"])
 for i in range(len(number_contours)):
 
     # calculate linear fit through first contour of fascicle, extrapolate over the complete image and compute intersection point with lower aponeurosis
-    coefficients = np.polyfit(
-        contours_sorted_x[number_contours[i][0]],
-        contours_sorted_y[number_contours[i][0]],
-        1,
-    )
-    g = np.poly1d(coefficients)
-    ex_current_fascicle_x = np.linspace(mid - width, mid + width, 5000)
-    ex_current_fascicle_y = g(ex_current_fascicle_x)
 
-    fas_LA_curve = list(zip(ex_current_fascicle_x, ex_current_fascicle_y))
+    fas_LA_curve = list(zip(all_fascicles_x[i], all_fascicles_y[i]))
     fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
 
     # calculate intersection point with lower aponeurosis
-    diffL = ex_current_fascicle_y - ex_y_LA
+    diffL = all_fascicles_y[i] - ex_y_LA
     locL = np.where(diffL == min(diffL, key=abs))[0]
 
     # find index of first item of first contour
     first_item = contours_sorted_x[number_contours[i][0]][0]
-    differences = np.abs(ex_current_fascicle_x - first_item)
+    differences = np.abs(all_fascicles_x[i] - first_item)
     index_first_item = np.argmin(differences)
 
     # get extrapolation from the intersection with the lower aponeurosis to the beginning of the first fascicle
-    ex_current_fascicle_x = ex_current_fascicle_x[int(locL) : index_first_item]
-    ex_current_fascicle_y = ex_current_fascicle_y[int(locL) : index_first_item]
+    ex_current_fascicle_x = all_fascicles_x[i][int(locL) : index_first_item]
+    ex_current_fascicle_y = all_fascicles_y[i][int(locL) : index_first_item]
 
     # convert to list, want list of sections in one list (list in list)
     coordsX = [list(ex_current_fascicle_x)]
@@ -332,7 +324,7 @@ for i in range(len(all_coordsX)):
         curve_length_total += curve_length
 
     # calculate pennation angle
-    if len(all_coordsX[i][0]) > 1:
+    if len(all_coordsX[i][0]) > 0:
         apoangle = np.arctan(
             (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
             / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])

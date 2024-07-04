@@ -42,7 +42,7 @@ def fascicle_to_contour(image):
         ),
     )
 
-    return image_gray, contours_sorted  # contoursF, contours_sorted
+    return image_gray, contours_sorted
 
 
 def apo_to_contour(image):

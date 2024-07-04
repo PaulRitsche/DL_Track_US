@@ -14,14 +14,14 @@ from scipy.signal import savgol_filter
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00027.tif",
     cv2.IMREAD_UNCHANGED,
 )
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
 
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00027.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour_orientation_map(
@@ -171,7 +171,7 @@ di_y_masked_2 = di_y_smooth_masked * ex_mask.astype(int)
 di_x_masked_1 = di_x_masked_2.flatten()
 di_y_masked_1 = di_y_masked_2.flatten()
 
-# get slope
+# initialize variables to store slope
 slope = np.zeros_like(di_x)
 slope_without_zeros = []
 
@@ -182,7 +182,11 @@ for i in range(len(di_x)):
         slope_without_zeros.append(slope[i])
 
 slope = np.array(slope).reshape(size_x, size_y)
+
+# get rows which contain information for the region between the two aponeuroses
 slope_non_zero_rows = slope[~np.all(slope == 0, axis=1)]
+
+# increase size of slope array for plotting
 slope = np.repeat(np.repeat(slope, boxSizePixels, axis=0), boxSizePixels, axis=1)
 
 # calculate mean and median slope of the complete region between the aponeuroses
@@ -195,19 +199,24 @@ angle_deg_mean = math.degrees(angle_rad_mean)
 angle_rad_median = math.atan(slope_median)
 angle_deg_median = math.degrees(angle_rad_median)
 
+# split image to calculate mean and median angle for different parts
 # Step 1: Split the array in the middle horizontally
 middle_split = np.array_split(slope_non_zero_rows, 2, axis=0)
+# split_arrays = np.array_split(slope_non_zero_rows, 3, axis=0) # uncomment for horizontal split into three parts, comment step 2 and 3 if no vertical split is needed
 
 # Step 2: Split each of the resulting arrays vertically into 3 parts
 split_arrays = [np.array_split(sub_array, 3, axis=1) for sub_array in middle_split]
 
-# Flatten the list of lists into a single list
+# Step 3: Flatten the list of lists into a single list
 split_arrays = [sub_array for sublist in split_arrays for sub_array in sublist]
+
+# calculate mean and median angle for each part
 
 split_angles_deg_mean = []
 split_angles_deg_median = []
 
 for i in range(len(split_arrays)):
+    # apply mask in order that no 0 are in calculation (not part of region between aponeuroses)
     non_zero_mask = split_arrays[i] != 0
     non_zero_elements = split_arrays[i][non_zero_mask]
 
