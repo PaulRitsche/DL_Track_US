@@ -35,7 +35,6 @@ from PIL import Image, ImageGrab, ImageTk
 from scipy.spatial import distance
 
 
-# TODO adapt to ctk.
 # TODO add option of drag (as is) or points.
 # TODO add register FL and PA butten to respective radio, to allow labelling
 # TODO add linewidth to settings
