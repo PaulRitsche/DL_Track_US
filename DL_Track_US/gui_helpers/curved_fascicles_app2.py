@@ -13,52 +13,37 @@ from DL_Track_US.gui_helpers.curved_fascicles_functions import (
     do_curves_intersect,
     find_next_fascicle,
 )
-from DL_Track_US.gui_helpers.curved_fascicles_prep import (
-    apo_to_contour,
-    fascicle_to_contour,
-)
-from matplotlib.patches import Rectangle
-from scipy.signal import savgol_filter
+from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
-# image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00126.tif",
-#    cv2.IMREAD_UNCHANGED,
-# )
-# apo_image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00126.jpg",
-#    cv2.IMREAD_UNCHANGED,
-# )
-# original_image = cv2.imread(
-#    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00126.tif",
-#    cv2.IMREAD_UNCHANGED,
-# # )
-# image = np.load(
-#     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\fascicle_masks_scaled\im_14_re.npy"
-# )
-# apo_image = np.load(
-#     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\aponeurosis_masks_scaled\im_14_re.npy"
-# )
-# original_image = cv2.imread(
-#     r"C:\Users\carla\Documents\Master_Thesis\Example_Images\Paul_35_images\images\im_14_re.tif",
-#     cv2.IMREAD_UNCHANGED,
-# )
+image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
+    cv2.IMREAD_UNCHANGED,
+)
+apo_image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
+    cv2.IMREAD_UNCHANGED,
+)
+original_image = cv2.imread(
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00029.tif",
+    cv2.IMREAD_UNCHANGED,
+)
 
 # original_image, image, apo_image = crop(original_image, image, apo_image)
 
-# # get sorted fascicle contours
-# image_gray, contoursF, contours_sorted = fascicle_to_contour(image)
+# get sorted fascicle contours
+image_gray, contours_sorted = fascicle_to_contour(image)
 
 # # get extrapolation of aponeuroses
 # apo_image_gray, ex_x_LA, ex_y_LA, ex_x_UA, ex_y_UA = apo_to_contour(apo_image)
 
-# # get contours around detected fascicles
-# contour_image = cv2.cvtColor(
-#     image_gray, cv2.COLOR_GRAY2BGR
-# )  # Convert to BGR for visualization
-# cv2.drawContours(contour_image, contoursF, -1, (0, 255, 0), 2)  # Draw contours in green
+#### start of independent function ####
+start_time = time.time()
 
-# start_time = time.time()
+# set parameteres
+tolerance = 10
+tolerance_to_apo = 100
+coeff_limit = 0.000583
 
 # # get upper edge of each contour
 # contours_sorted_x = []
@@ -70,30 +55,30 @@ from scipy.signal import savgol_filter
 #     contours_sorted_x.append(contours_sorted[i][0])
 #     contours_sorted_y.append(contours_sorted[i][1])
 
-# # initialize some important variables
-# label = {x: False for x in range(len(contours_sorted))}
-# coefficient_label = []
-# number_contours = []
-# tolerance = 10
-# all_fascicles_x = []
-# all_fascicles_y = []
-# width = original_image.shape[1]
-# mid = width / 2
-# LA_curve = list(zip(ex_x_LA, ex_y_LA))
-# UA_curve = list(zip(ex_x_UA, ex_y_UA))
+# initialize some important variables
+label = {x: False for x in range(len(contours_sorted))}
+coefficient_label = []
+number_contours = []
+all_fascicles_x = []
+all_fascicles_y = []
+width = original_image.shape[1]
+mid = width / 2
+LA_curve = list(zip(ex_x_LA, ex_y_LA))
+UA_curve = list(zip(ex_x_UA, ex_y_UA))
 
-# fascicle_data = pd.DataFrame(
-#     columns=[
-#         "number_contours",
-#         "linear_fit",
-#         "coordsX",
-#         "coordsY",
-#         "coordsX_combined",
-#         "coordsY_combined" "coordsXY",
-#         "locU",
-#         "locL",
-#     ]
-# )
+fascicle_data = pd.DataFrame(
+    columns=[
+        "number_contours",
+        "linear_fit",
+        "coordsX",
+        "coordsY",
+        "coordsX_combined",
+        "coordsY_combined",
+        "coordsXY",
+        "locU",
+        "locL",
+    ]
+)
 
 # # calculate merged fascicle edges
 # for i in range(len(contours_sorted)):
@@ -112,22 +97,22 @@ from scipy.signal import savgol_filter
 #         # calculate second polynomial coefficients
 #         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-#         # depending on coefficients edge gets extrapolated as first or second order polynomial
-#         if 0 < coefficients[0] < 0.000583:
-#             g = np.poly1d(coefficients)
-#             ex_current_fascicle_x = np.linspace(
-#                 mid - width, mid + width, 5000
-#             )  # Extrapolate x,y data using f function
-#             ex_current_fascicle_y = g(ex_current_fascicle_x)
-#             linear_fit = False
-#         else:
-#             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-#             g = np.poly1d(coefficients)
-#             ex_current_fascicle_x = np.linspace(
-#                 mid - width, mid + width, 5000
-#             )  # Extrapolate x,y data using f function
-#             ex_current_fascicle_y = g(ex_current_fascicle_x)
-#             linear_fit = True
+        # depending on coefficients edge gets extrapolated as first or second order polynomial
+        if 0 < coefficients[0] < coeff_limit:
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                mid - width, mid + width, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = False
+        else:
+            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                mid - width, mid + width, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = True
 
 #         # compute upper and lower boundary of extrapolation
 #         upper_bound = ex_current_fascicle_y - tolerance
@@ -160,21 +145,21 @@ from scipy.signal import savgol_filter
 
 #             coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-#             if 0 < coefficients[0] < 0.000583:
-#                 g = np.poly1d(coefficients)
-#                 ex_current_fascicle_x = np.linspace(
-#                     mid - width, mid + width, 5000
-#                 )  # Extrapolate x,y data using f function
-#                 ex_current_fascicle_y = g(ex_current_fascicle_x)
-#                 linear_fit = False
-#             else:
-#                 coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-#                 g = np.poly1d(coefficients)
-#                 ex_current_fascicle_x = np.linspace(
-#                     mid - width, mid + width, 5000
-#                 )  # Extrapolate x,y data using f function
-#                 ex_current_fascicle_y = g(ex_current_fascicle_x)
-#                 linear_fit = True
+            if 0 < coefficients[0] < coeff_limit:
+                g = np.poly1d(coefficients)
+                ex_current_fascicle_x = np.linspace(
+                    mid - width, mid + width, 5000
+                )  # Extrapolate x,y data using f function
+                ex_current_fascicle_y = g(ex_current_fascicle_x)
+                linear_fit = False
+            else:
+                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+                g = np.poly1d(coefficients)
+                ex_current_fascicle_x = np.linspace(
+                    mid - width, mid + width, 5000
+                )  # Extrapolate x,y data using f function
+                ex_current_fascicle_y = g(ex_current_fascicle_x)
+                linear_fit = True
 
 #             upper_bound = ex_current_fascicle_y - tolerance
 #             lower_bound = ex_current_fascicle_y + tolerance
@@ -319,8 +304,8 @@ from scipy.signal import savgol_filter
 # )  # .reset_index()
 # fascicle_data = fascicle_data.reset_index(drop=True)
 
-# tolerance_to_apo = 100
-# data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
+# filter overlapping fascicles
+data = adapted_filter_fascicles(fascicle_data, tolerance_to_apo)
 
 # all_coordsX = list(data["coordsX"])
 # all_coordsY = list(data["coordsY"])
@@ -331,7 +316,8 @@ from scipy.signal import savgol_filter
 
 # for i in range(len(all_coordsX)):
 
-#     curve_length_total = 0
+    # calculate length of fascicle
+    curve_length_total = 0
 
 #     for j in range(len(all_coordsX[i])):
 
@@ -345,64 +331,46 @@ from scipy.signal import savgol_filter
 #         curve_length = np.sum(segment_lengths)
 #         curve_length_total += curve_length
 
-#     apoangle = np.arctan(
-#         (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-#         / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-#     ) * (180 / np.pi)
-#     fasangle = np.arctan(
-#         (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
-#         / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
-#     ) * (180 / np.pi)
-#     penangle = fasangle - apoangle
+    # calculate pennation angle
+    apoangle = np.arctan(
+        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+    ) * (180 / np.pi)
+    fasangle = np.arctan(
+        (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
+        / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
+    ) * (180 / np.pi)
+    penangle = fasangle - apoangle
 
 #     data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 #     data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length_total
 
-# end_time = time.time()
-# total_time = end_time - start_time
-# print(total_time)
-
-# print(data)
+end_time = time.time()
+total_time = end_time - start_time
 
 # median_length = data["fascicle_length"].median()
 # mean_length = data["fascicle_length"].mean()
 # median_angle = data["pennation_angle"].median()
 # mean_angle = data["pennation_angle"].mean()
 
-# print(median_length, mean_length, median_angle, mean_angle)
-
-# plt.figure(1)
-# plt.imshow(apo_image_gray, cmap="gray", alpha=0.5)
-# plt.imshow(contour_image, alpha=0.5)
-# for i in range(len(all_fascicles_x)):
-#     # if coefficient_label[i] is False:
-#     plt.plot(all_fascicles_x[i], all_fascicles_y[i])
-# plt.plot(ex_x_LA, ex_y_LA)
-# plt.plot(ex_x_UA, ex_y_UA)
-
-# plt.figure(2)
-# plt.imshow(contour_image)
-# for row in fascicle_data.iterrows():
-#     plt.plot(
-#         row[1]["coordsX_combined"], row[1]["coordsY_combined"], color="red", alpha=0.4
-#     )
-# plt.plot(ex_x_LA, ex_y_LA)
-# plt.plot(ex_x_UA, ex_y_UA)
+print(total_time)
+print(data)
+print(median_length, mean_length, median_angle, mean_angle)
 
 # colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
-# plt.figure(3)
-# plt.imshow(original_image)
-# for i in range(len(all_coordsX)):
-#     color = colormap(i)
-#     for j in range(len(all_coordsX[i])):
-#         if j == 0:
-#             plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
-#         if j % 2 == 1:
-#             plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6)
-#         else:
-#             plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
-# plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
-# plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
+plt.figure(1)
+plt.imshow(original_image)
+for i in range(len(all_coordsX)):
+    color = colormap(i)
+    for j in range(len(all_coordsX[i])):
+        if j == 0:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
+        if j % 2 == 1:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6)
+        else:
+            plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
+plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
 # plt.show()
