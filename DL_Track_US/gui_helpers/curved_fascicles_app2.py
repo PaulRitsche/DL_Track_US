@@ -17,15 +17,15 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00068.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00068.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00013.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00068.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 

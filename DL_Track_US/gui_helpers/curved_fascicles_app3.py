@@ -17,15 +17,15 @@ from curved_fascicles_prep import apo_to_contour, fascicle_to_contour
 
 # load image as gray scale image
 image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00010.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00010.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00013.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00010.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00013.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -191,7 +191,7 @@ number_contours = list(fascicle_data["number_contours"])
 
 for i in range(len(number_contours)):
 
-    # calculate linear fit through first contour of fascicle, extrapolate over the complete image and compute intersection point with lower aponeurosis
+    # calculate line from lower aponeurosis to first fascicle according to computed fit from before
 
     fas_LA_curve = list(zip(all_fascicles_x[i], all_fascicles_y[i]))
     fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
