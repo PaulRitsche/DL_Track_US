@@ -48,20 +48,58 @@ filter_fasc = True
 calib_dist = None
 spacing = 5
 
-approach = 4
+approach = 1
 
 
 def Curved_Approach_1(
-    contours_sorted,
-    ex_x_LA,
-    ex_y_LA,
-    ex_x_UA,
-    ex_y_UA,
-    original_image,
-    parameters,
-    filter_fasc,
+    contours_sorted: list,
+    ex_x_LA: list,
+    ex_y_LA: list,
+    ex_x_UA: list,
+    ex_y_UA: list,
+    original_image: np.ndarray,
+    parameters: dict,
+    filter_fasc: bool,
 ):
+    """Function to calculate the fascicle length and pennation angle accounted for curvature following approach 1
 
+    This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. By knowing the positions of the aponeuroses, the intersection points between the fascicles and the lower and upper aponeuroses can be determined. Using these intersection points, the fascicle length and pennation angle are calculated.
+
+     Parameters
+     ----------
+     contours_sorted : list
+         List containing all (x,y)-coordinates of each detected contour
+     ex_x_LA : list
+         List containing all x-values of the extrapolated lower aponeurosis
+     ex_y_LA: list
+         List containing all y-values of the extrapolated lower aponeurosis
+     ex_x_UA : list
+         List containing all x-values of the extrapolated upper aponeurosis
+     ex_y_UA : list
+         List containing all y-values of the extrapolated upper aponeurosis
+     original_image : np.ndarray
+         Ultrasound image to be analysed
+     parameters : dict
+         Dictionary variable containing analysis parameters.
+         These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo, coeff_limit
+     filter_fasc : bool
+         If True, fascicles will be filtered so that no crossings are included.
+         This may reduce number of totally detected fascicles.
+
+     Returns
+     -------
+     fascicle_length : list
+         List variable containing the estimated fascicle lengths
+         based on the segmented fascicle fragments in pixel units
+         as float.
+     pennation_angle : list
+         List variable containing the estimated pennation angles
+         based on the segmented fascicle fragments and aponeuroses
+         as float.
+     fig : matplot.figure
+         Figure including the input ultrasound image, the segmented aponeuroses and
+         the found fascicles extrapolated between the two aponeuroses.
+    """
     start_time = time.time()
 
     # Set parameters
@@ -450,17 +488,61 @@ def Curved_Approach_1(
 
 
 def Curved_Approach_2_3(
-    contours_sorted,
-    ex_x_LA,
-    ex_y_LA,
-    ex_x_UA,
-    ex_y_UA,
-    original_image,
-    parameters,
-    filter_fasc,
-    approach,
+    contours_sorted: list,
+    ex_x_LA: list,
+    ex_y_LA: list,
+    ex_x_UA: list,
+    ex_y_UA: list,
+    original_image: np.ndarray,
+    parameters: dict,
+    filter_fasc: bool,
+    approach: int,
 ):
+    """Function to calculate the fascicle length and pennation angle accounted for curvature following approach 2 and 3
 
+    This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. This fit is solely for detecting the contours.
+    Approach 2: The first contour of the fascicle is extrapolated to determine its intersection point with the lower aponeurosis.
+    Approach 3: The lower aponeurosis and the first contour are connected using a second-order polynomial fit based on all detected contours.
+    Following common path for both approaches: After the initial extrapolation, the first contour is added. A linear connection is made from the last point of the current contour to the first point of the next contour, and this next contour is added. This process continues until the final contour is reached. The final contour is then used for a linear extrapolation to determine the intersection point with the upper aponeurosis.
+    Adding all these parts together, the function calculates the fascicle length and pennation angle.
+
+    Parameters
+    ----------
+    contours_sorted : list
+        List containing all (x,y)-coordinates of each detected contour
+    ex_x_LA : list
+        List containing all x-values of the extrapolated lower aponeurosis
+    ex_y_LA: list
+        List containing all y-values of the extrapolated lower aponeurosis
+    ex_x_UA : list
+        List containing all x-values of the extrapolated upper aponeurosis
+    ex_y_UA : list
+        List containing all y-values of the extrapolated upper aponeurosis
+    original_image : np.ndarray
+        Ultrasound image to be analysed
+    parameters : dict
+        Dictionary variable containing analysis parameters.
+        These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo, coeff_limit
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles.
+    approach: int
+        Can either be 2 or 3. If approach 2 is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used. If approach 3 is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
+
+    Returns
+    -------
+    fascicle_length : list
+        List variable containing the estimated fascicle lengths
+        based on the segmented fascicle fragments in pixel units
+        as float.
+    pennation_angle : list
+        List variable containing the estimated pennation angles
+        based on the segmented fascicle fragments and aponeuroses
+        as float.
+    fig : matplot.figure
+        Figure including the input ultrasound image, the segmented aponeuroses and
+        the found fascicles extrapolated between the two aponeuroses.
+    """
     start_time = time.time()
 
     # set parameteres
@@ -779,8 +861,38 @@ def Curved_Approach_2_3(
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
-def Orientation_map(original_image, fas_image, apo_image, g, h):
+def Orientation_map(
+    original_image: np.ndarray, fas_image: np.ndarray, apo_image: np.ndarray, g, h
+):
+    """Function to calculate a orientation map based on the fascicle mask
 
+    Parameters
+    ----------
+    original_image : np.ndarray
+        Ultrasound image to be analysed
+    fas_image : np.ndarray
+        Mask of fascicles
+    apo_image: np.ndarray
+        Mask of aponeuroses
+    g : list
+        List containing all x-values of the extrapolated upper aponeurosis
+    h : list
+        List containing all y-values of the extrapolated upper aponeurosis
+
+    Returns
+    -------
+    fascicle_length : list
+        List variable containing the estimated fascicle lengths
+        based on the segmented fascicle fragments in pixel units
+        as float.
+    pennation_angle : list
+        List variable containing the estimated pennation angles
+        based on the segmented fascicle fragments and aponeuroses
+        as float.
+    fig : matplot.figure
+        Figure including the input ultrasound image, the segmented aponeuroses and
+        the found fascicles extrapolated between the two aponeuroses.
+    """
     start_time = time.time()
 
     width = apo_image.shape[1]
@@ -1264,6 +1376,7 @@ def doCalculations_curved(
             ),
         )
 
+        # calculations depending on chosen approach
         if approach == 1:
             fascicle_length, pennation_angle, fig = Curved_Approach_1(
                 contours_sorted,

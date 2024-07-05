@@ -1,7 +1,6 @@
 import bisect
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
@@ -414,17 +413,55 @@ def find_next_fascicle(
 
 
 def find_complete_fascicle(
-    i,
-    contours_sorted_x,
-    contours_sorted_y,
-    contours_sorted,
-    label,
-    mid,
-    width,
-    tolerance,
-    coeff_limit,
+    i: int,
+    contours_sorted_x: list,
+    contours_sorted_y: list,
+    contours_sorted: list,
+    label: dict,
+    mid: int,
+    width: int,
+    tolerance: int,
+    coeff_limit: float,
 ):
+    """Function to find complete fascicles based on connection of single contours.
 
+    The function extrapolates a second order polynomial fit through the first contour. If the coefficients fall outside a specified range, the curve is considered too curved. As a result, a linear fit is calculated and used for subsequent calculations. The next contour is identified if its first point lies within a specified tolerance range in the positive and negative y-direction around the extrapolated fit. If this condition is met, both contours serve as the basis for the next polynomial fit. This process is repeated until no more possible connecting contours are found.
+
+    Parameters
+    ----------
+    i : int
+        Integer value defining the starting contour
+    contours_sorted_x : list
+        List containing all x-coordinates of each detected contour
+    contours_sorted_y : list
+        List containing all y-coordinates of each detected contour
+    contours_sorted : list
+        List containing all (x,y)-coordinates of each detected contour
+    label : dictionnary
+        Dictionnary containing a label true or false for every fascicle contour,
+        true if already used for an extrapolation, false if not
+    mid : int
+        Integer value defining the middle of the image
+    width : int
+        Integer value defining the width of the image
+    tolerance: int
+        Integer value specifing the permissible range in the positive and negative y-direction within which the next contour can be located to still be considered a part of the extrapolated fascicle
+    coeff_limit: float
+        Value defining the maximum value of the first coefficient in the second polynomial fit
+
+    Returns
+    -------
+    ex_current_fascicle_x : list
+        List containing the x-coordinates of each found and extrapolated fascicle
+    ex_current_fascicle_y : list
+        List containing the y-coordinates of each found and extrapolated fascicle
+    linear_fit : bool
+        'True' if extrapolated fit is linear
+        'False' if extrapolated fit follows a second order polynomial
+    inner_number_contours: list
+        List containing the indices of each contour that constitute each fascicle
+
+    """
     # get upper edge contour of starting fascicle
     current_fascicle_x = contours_sorted_x[i]
     current_fascicle_y = contours_sorted_y[i]
