@@ -8,14 +8,7 @@ import numpy
 import numpy as np
 import orientationpy
 import pandas as pd
-from curved_fascicles_functions import (
-    adapted_contourEdge,
-    adapted_filter_fascicles,
-    crop,
-    do_curves_intersect,
-    find_next_fascicle,
-)
-from do_calculations import contourEdge, sortContours
+from curved_fascicles_functions import *
 from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
@@ -23,17 +16,17 @@ from skimage.morphology import skeletonize
 
 # load fascicle mask
 fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00049.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
 # load aponeurosis mask
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00049.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 # load ultrasound image
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00049.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00029.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -52,260 +45,10 @@ parameters = dict(
 )
 
 filter_fasc = True
+calib_dist = None
+spacing = 5
 
-approach = 3
-
-
-def doCalculations_curved(
-    original_image, fas_image, apo_image, parameters, filter_fasc, approach
-):
-
-    parameters = parameters
-
-    apo_length_tresh = int(parameters["apo_length_thresh"])
-    fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
-    min_width = int(parameters["min_width"])
-
-    # calculations for aponeuroses
-    apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
-    apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
-    width = fas_image.shape[1]
-
-    _, thresh = cv2.threshold(
-        apo_image_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
-    thresh = thresh.astype("uint8")
-    contours, hierarchy = cv2.findContours(
-        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-    )
-
-    contours_re = []
-    for contour in contours:  # Remove any contours that are very small
-        if len(contour) > apo_length_tresh:
-            contours_re.append(contour)
-    contours = contours_re
-
-    # Check whether contours are detected
-    # If not, break function
-    # if len(contours) < 1:
-    # return None
-
-    (contours, _) = sortContours(contours)  # Sort contours from top to bottom
-
-    contours_re2 = []
-    for contour in contours:
-        #     cv2.drawContours(mask_apo,[contour],0,255,-1)
-        pts = list(contour)
-        ptsT = sorted(
-            pts, key=lambda k: [k[0][0], k[0][1]]
-        )  # Sort each contour based on x values
-        allx = []
-        ally = []
-        for a in range(0, len(ptsT)):
-            allx.append(ptsT[a][0, 0])
-            ally.append(ptsT[a][0, 1])
-        app = np.array(list(zip(allx, ally)))
-        contours_re2.append(app)
-
-    # Merge nearby contours
-    # countU = 0
-    xs1 = []
-    xs2 = []
-    ys1 = []
-    ys2 = []
-    maskT = np.zeros(thresh.shape, np.uint8)
-    for cnt in contours_re2:
-        ys1.append(cnt[0][1])
-        ys2.append(cnt[-1][1])
-        xs1.append(cnt[0][0])
-        xs2.append(cnt[-1][0])
-        cv2.drawContours(maskT, [cnt], 0, 255, -1)
-
-    for countU in range(0, len(contours_re2) - 1):
-        if (
-            xs1[countU + 1] > xs2[countU]
-        ):  # Check if x of contour2 is higher than x of contour 1
-            y1 = ys2[countU]
-            y2 = ys1[countU + 1]
-            if y1 - 10 <= y2 <= y1 + 10:
-                m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
-                cv2.drawContours(maskT, [m], 0, 255, -1)
-        countU += 1
-
-    maskT[maskT > 0] = 1
-    skeleton = skeletonize(maskT).astype(np.uint8)
-    kernel = np.ones((3, 7), np.uint8)
-    dilate = cv2.dilate(skeleton, kernel, iterations=15)
-    erode = cv2.erode(dilate, kernel, iterations=10)
-
-    contoursE, hierarchy = cv2.findContours(
-        erode, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-    )
-    mask_apoE = np.zeros(thresh.shape, np.uint8)
-
-    contoursE = [
-        i for i in contoursE if len(i) > apo_length_tresh
-    ]  # Remove any contours that are very small
-
-    for contour in contoursE:
-        cv2.drawContours(mask_apoE, [contour], 0, 255, -1)
-    contoursE, _ = sortContours(contoursE)
-
-    # Only continues beyond this point if 2 aponeuroses can be detected
-    if len(contoursE) >= 2:
-        # Get the x,y coordinates of the upper/lower edge of the 2 aponeuroses
-        upp_x, upp_y = contourEdge("B", contoursE[0])
-
-        if contoursE[1][0, 0, 1] > contoursE[0][0, 0, 1] + min_width:
-            low_x, low_y = contourEdge("T", contoursE[1])
-        else:
-            low_x, low_y = contourEdge("T", contoursE[2])
-
-        upp_y_new = savgol_filter(upp_y, 81, 2)  # window size 51, polynomial 3
-        low_y_new = savgol_filter(low_y, 81, 2)
-
-        # Make a binary mask to only include fascicles within the region
-        # between the 2 aponeuroses
-        ex_mask = np.zeros(thresh.shape, np.uint8)
-        ex_1 = 0
-        ex_2 = np.minimum(len(low_x), len(upp_x))
-
-        for ii in range(ex_1, ex_2):
-            ymin = int(np.floor(upp_y_new[ii]))
-            ymax = int(np.ceil(low_y_new[ii]))
-
-            ex_mask[:ymin, ii] = 0
-            ex_mask[ymax:, ii] = 0
-            ex_mask[ymin:ymax, ii] = 255
-
-        # Calculate slope of central portion of each aponeurosis & use this to
-        # compute muscle thickness
-        Alist = list(set(upp_x).intersection(low_x))
-        Alist = sorted(Alist)
-        Alen = len(
-            list(set(upp_x).intersection(low_x))
-        )  # How many values overlap between x-axes
-        A1 = int(Alist[0] + (0.33 * Alen))
-        A2 = int(Alist[0] + (0.66 * Alen))
-        mid = int((A2 - A1) / 2 + A1)
-        mindist = 10000
-        upp_ind = np.where(upp_x == mid)
-
-        if upp_ind == len(upp_x):
-
-            upp_ind -= 1
-
-        for val in range(A1, A2):
-            if val >= len(low_x):
-                continue
-            else:
-                dist = math.dist(
-                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val], low_y_new[val])
-                )
-                if dist < mindist:
-                    mindist = dist
-
-        # Compute functions to approximate the shape of the aponeuroses
-        zUA = np.polyfit(upp_x, upp_y_new, 2)
-        g = np.poly1d(zUA)
-        zLA = np.polyfit(low_x, low_y_new, 2)
-        h = np.poly1d(zLA)
-
-        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
-        x1 = np.linspace(-200, 800, 5000)
-        # x1 = np.linspace(
-        # low_x[0] - 700, low_x[-1] + 700, 10000
-        # )  # Extrapolate polynomial fits to either side of the mid-point
-        y_UA = g(x1)
-        y_LA = h(x1)
-
-        mid = width / 2
-        new_X_UA = np.linspace(
-            mid - width, mid + width, 5000
-        )  # Extrapolate x,y data using f function
-        # new_X_UA = np.linspace(-200, 800, 5000)
-        new_Y_UA = g(new_X_UA)
-        # new_X_LA = np.linspace(-200, 800, 5000)
-        new_X_LA = np.linspace(
-            mid - width, mid + width, 5000
-        )  # Extrapolate x,y data using f function
-        new_Y_LA = h(new_X_LA)
-
-        # calculations for fascicle mask
-        image_rgb = cv2.cvtColor(fas_image, cv2.COLOR_BGR2RGB)
-        image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
-
-        # define threshold and find contours around fascicles
-        _, threshF = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY)
-        threshF = threshF.astype("uint8")
-        contoursF, hierarchy = cv2.findContours(
-            threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-
-        # Remove any contours that are very small
-        maskF = np.zeros(threshF.shape, np.uint8)
-        for contour in contoursF:  # Remove any contours that are very small
-            if len(contour) > fasc_cont_thresh:
-                cv2.drawContours(maskF, [contour], 0, 255, -1)
-
-        # Only include fascicles within the region of the 2 aponeuroses
-        mask_Fi = maskF & ex_mask
-        contoursF2, hierarchy = cv2.findContours(
-            mask_Fi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-        )
-
-        contoursF3 = [i for i in contoursF2 if len(i) > fasc_cont_thresh]
-
-        # convert contours into a list
-        contours = list(contoursF3)
-
-        # Convert each contour to a NumPy array, reshape, and sort
-        for i in range(len(contours)):
-            contour_array = np.array(contours[i])  # Convert to NumPy array
-            if contour_array.shape[1] == 1 and contour_array.shape[2] == 2:
-                reshaped_contour = contour_array.reshape(-1, 2)  # Reshape to (58, 2)
-                sorted_contour = sorted(
-                    reshaped_contour, key=lambda k: (k[0], k[1])
-                )  # Sort by x and y
-                contours[i] = sorted_contour  # Update the contour in the list
-            else:
-                print(
-                    f"Contour {i} does not have the expected shape: {contour_array.shape}"
-                )
-
-        # Now, contours are sorted, and we can sort the list of contours based on the first point
-        contours_sorted = sorted(
-            contours,
-            key=lambda k: (
-                (k[0][0], -k[0][1]) if len(k) > 0 else (float("inf"), float("inf"))
-            ),
-        )
-
-        if approach == 1:
-            Curved_Approach_1(
-                contours_sorted,
-                new_X_LA,
-                new_Y_LA,
-                new_X_UA,
-                new_Y_UA,
-                original_image,
-                parameters,
-                filter_fasc,
-            )
-        if approach == 2 or approach == 3:
-            Curved_Approach_2_3(
-                contours_sorted,
-                new_X_LA,
-                new_Y_LA,
-                new_X_UA,
-                new_Y_UA,
-                original_image,
-                parameters,
-                filter_fasc,
-                approach,
-            )
-        if approach == 4:
-            Orientation_map(original_image, fas_image, apo_image, g, h)
+approach = 4
 
 
 def Curved_Approach_1(
@@ -364,87 +107,23 @@ def Curved_Approach_1(
     for i in range(len(contours_sorted)):
 
         if label[i] is False and len(contours_sorted_x[i]) > 1:
-            # get upper edge contour of starting fascicle
-            current_fascicle_x = contours_sorted_x[i]
-            current_fascicle_y = contours_sorted_y[i]
 
-            # set label to true as fascicle is used
-            label[i] = True
-            linear_fit = False
-            inner_number_contours = []
-            inner_number_contours.append(i)
-
-            # calculate second polynomial coefficients
-            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-
-            # depending on coefficients edge gets extrapolated as first or second order polynomial
-            if 0 < coefficients[0] < coeff_limit:
-                g = np.poly1d(coefficients)
-                ex_current_fascicle_x = np.linspace(
-                    mid - width, mid + width, 5000
-                )  # Extrapolate x,y data using f function
-                ex_current_fascicle_y = g(ex_current_fascicle_x)
-                linear_fit = False
-            else:
-                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-                g = np.poly1d(coefficients)
-                ex_current_fascicle_x = np.linspace(
-                    mid - width, mid + width, 5000
-                )  # Extrapolate x,y data using f function
-                ex_current_fascicle_y = g(ex_current_fascicle_x)
-                linear_fit = True
-
-            # compute upper and lower boundary of extrapolation
-            upper_bound = ex_current_fascicle_y - tolerance
-            lower_bound = ex_current_fascicle_y + tolerance
-
-            # find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
-            # if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
-
-            found_fascicle = 0
-
-            while found_fascicle >= 0:
-
-                current_fascicle_x, current_fascicle_y, found_fascicle = (
-                    find_next_fascicle(
-                        contours_sorted,
-                        contours_sorted_x,
-                        contours_sorted_y,
-                        current_fascicle_x,
-                        current_fascicle_y,
-                        ex_current_fascicle_x,
-                        upper_bound,
-                        lower_bound,
-                        label,
-                    )
-                )
-
-                if found_fascicle > 0:
-                    label[found_fascicle] = True
-                    inner_number_contours.append(found_fascicle)
-                else:
-                    break
-
-                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-
-                if 0 < coefficients[0] < coeff_limit:
-                    g = np.poly1d(coefficients)
-                    ex_current_fascicle_x = np.linspace(
-                        mid - width, mid + width, 5000
-                    )  # Extrapolate x,y data using f function
-                    ex_current_fascicle_y = g(ex_current_fascicle_x)
-                    linear_fit = False
-                else:
-                    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-                    g = np.poly1d(coefficients)
-                    ex_current_fascicle_x = np.linspace(
-                        mid - width, mid + width, 5000
-                    )  # Extrapolate x,y data using f function
-                    ex_current_fascicle_y = g(ex_current_fascicle_x)
-                    linear_fit = True
-
-                upper_bound = ex_current_fascicle_y - tolerance
-                lower_bound = ex_current_fascicle_y + tolerance
+            (
+                ex_current_fascicle_x,
+                ex_current_fascicle_y,
+                linear_fit,
+                inner_number_contours,
+            ) = find_complete_fascicle(
+                i,
+                contours_sorted_x,
+                contours_sorted_y,
+                contours_sorted,
+                label,
+                mid,
+                width,
+                tolerance,
+                coeff_limit,
+            )
 
             # Find intersection between fascicle and aponeuroses
             diffU = ex_current_fascicle_y - ex_y_UA
@@ -547,7 +226,7 @@ def Curved_Approach_1(
     print(median_length, mean_length, median_angle, mean_angle)
 
     # plot filtered curves between detected fascicles between the two aponeuroses
-
+    fig = plt.figure(1)
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
     number_contours = list(data["number_contours"])  # contours after filtering
 
@@ -767,6 +446,8 @@ def Curved_Approach_1(
 
     plt.show()
 
+    return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
+
 
 def Curved_Approach_2_3(
     contours_sorted,
@@ -828,87 +509,23 @@ def Curved_Approach_2_3(
     for i in range(len(contours_sorted)):
 
         if label[i] is False and len(contours_sorted_x[i]) > 1:
-            # get upper edge contour of starting fascicle
-            current_fascicle_x = contours_sorted_x[i]
-            current_fascicle_y = contours_sorted_y[i]
 
-            # set label to true as fascicle is used
-            label[i] = True
-            linear_fit = False
-            inner_number_contours = []
-            inner_number_contours.append(i)
-
-            # calculate second polynomial coefficients
-            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-
-            # depending on coefficients edge gets extrapolated as first or second order polynomial
-            if 0 < coefficients[0] < coeff_limit:
-                g = np.poly1d(coefficients)
-                ex_current_fascicle_x = np.linspace(
-                    mid - width, mid + width, 5000
-                )  # Extrapolate x,y data using f function
-                ex_current_fascicle_y = g(ex_current_fascicle_x)
-                linear_fit = False
-            else:
-                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-                g = np.poly1d(coefficients)
-                ex_current_fascicle_x = np.linspace(
-                    mid - width, mid + width, 5000
-                )  # Extrapolate x,y data using f function
-                ex_current_fascicle_y = g(ex_current_fascicle_x)
-                linear_fit = True
-
-            # compute upper and lower boundary of extrapolation
-            upper_bound = ex_current_fascicle_y - tolerance
-            lower_bound = ex_current_fascicle_y + tolerance
-
-            # find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
-            # if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
-
-            found_fascicle = 0
-
-            while found_fascicle >= 0:
-
-                current_fascicle_x, current_fascicle_y, found_fascicle = (
-                    find_next_fascicle(
-                        contours_sorted,
-                        contours_sorted_x,
-                        contours_sorted_y,
-                        current_fascicle_x,
-                        current_fascicle_y,
-                        ex_current_fascicle_x,
-                        upper_bound,
-                        lower_bound,
-                        label,
-                    )
-                )
-
-                if found_fascicle > 0:
-                    label[found_fascicle] = True
-                    inner_number_contours.append(found_fascicle)
-                else:
-                    break
-
-                coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
-
-                if 0 < coefficients[0] < coeff_limit:
-                    g = np.poly1d(coefficients)
-                    ex_current_fascicle_x = np.linspace(
-                        mid - width, mid + width, 5000
-                    )  # Extrapolate x,y data using f function
-                    ex_current_fascicle_y = g(ex_current_fascicle_x)
-                    linear_fit = False
-                else:
-                    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
-                    g = np.poly1d(coefficients)
-                    ex_current_fascicle_x = np.linspace(
-                        mid - width, mid + width, 5000
-                    )  # Extrapolate x,y data using f function
-                    ex_current_fascicle_y = g(ex_current_fascicle_x)
-                    linear_fit = True
-
-                upper_bound = ex_current_fascicle_y - tolerance
-                lower_bound = ex_current_fascicle_y + tolerance
+            (
+                ex_current_fascicle_x,
+                ex_current_fascicle_y,
+                linear_fit,
+                inner_number_contours,
+            ) = find_complete_fascicle(
+                i,
+                contours_sorted_x,
+                contours_sorted_y,
+                contours_sorted,
+                label,
+                mid,
+                width,
+                tolerance,
+                coeff_limit,
+            )
 
             all_fascicles_x.append(ex_current_fascicle_x)
             all_fascicles_y.append(ex_current_fascicle_y)
@@ -1140,6 +757,7 @@ def Curved_Approach_2_3(
     print(data)
     print(median_length, mean_length, median_angle, mean_angle)
 
+    fig = plt.figure(1)
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
     plt.figure(1)
@@ -1157,6 +775,8 @@ def Curved_Approach_2_3(
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
     plt.show()
+
+    return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
 def Orientation_map(original_image, fas_image, apo_image, g, h):
@@ -1399,7 +1019,7 @@ def Orientation_map(original_image, fas_image, apo_image, g, h):
     norm = mcolors.Normalize(vmin=np.min(slope), vmax=np.max(slope))
 
     # figure 2: plot heat map of slopes for region between the two aponeuroses
-    plt.figure(2)
+    fig = plt.figure(2)
     plt.imshow(slope, cmap="viridis", norm=norm, interpolation="none")
     plt.plot(ex_x_LA, ex_y_LA, color="white")
     plt.plot(ex_x_UA, ex_y_UA, color="white")
@@ -1409,7 +1029,292 @@ def Orientation_map(original_image, fas_image, apo_image, g, h):
     plt.ylabel("Row")
     plt.show()
 
+    return None, split_angles_deg_median, fig
 
-doCalculations_curved(
-    original_image, fas_image, apo_image, parameters, filter_fasc, approach
+
+def doCalculations_curved(
+    original_image,
+    fas_image,
+    apo_image,
+    parameters,
+    filter_fasc,
+    calib_dist,
+    spacing,
+    approach,
+):
+
+    parameters = parameters
+
+    apo_length_tresh = int(parameters["apo_length_thresh"])
+    fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
+    min_width = int(parameters["min_width"])
+
+    # calculations for aponeuroses
+    apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
+    apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
+    width = fas_image.shape[1]
+
+    _, thresh = cv2.threshold(
+        apo_image_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+    )
+    thresh = thresh.astype("uint8")
+    contours, hierarchy = cv2.findContours(
+        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+    )
+
+    contours_re = []
+    for contour in contours:  # Remove any contours that are very small
+        if len(contour) > apo_length_tresh:
+            contours_re.append(contour)
+    contours = contours_re
+
+    # Check whether contours are detected
+    # If not, break function
+    # if len(contours) < 1:
+    # return None
+
+    (contours, _) = sortContours(contours)  # Sort contours from top to bottom
+
+    contours_re2 = []
+    for contour in contours:
+        #     cv2.drawContours(mask_apo,[contour],0,255,-1)
+        pts = list(contour)
+        ptsT = sorted(
+            pts, key=lambda k: [k[0][0], k[0][1]]
+        )  # Sort each contour based on x values
+        allx = []
+        ally = []
+        for a in range(0, len(ptsT)):
+            allx.append(ptsT[a][0, 0])
+            ally.append(ptsT[a][0, 1])
+        app = np.array(list(zip(allx, ally)))
+        contours_re2.append(app)
+
+    # Merge nearby contours
+    # countU = 0
+    xs1 = []
+    xs2 = []
+    ys1 = []
+    ys2 = []
+    maskT = np.zeros(thresh.shape, np.uint8)
+    for cnt in contours_re2:
+        ys1.append(cnt[0][1])
+        ys2.append(cnt[-1][1])
+        xs1.append(cnt[0][0])
+        xs2.append(cnt[-1][0])
+        cv2.drawContours(maskT, [cnt], 0, 255, -1)
+
+    for countU in range(0, len(contours_re2) - 1):
+        if (
+            xs1[countU + 1] > xs2[countU]
+        ):  # Check if x of contour2 is higher than x of contour 1
+            y1 = ys2[countU]
+            y2 = ys1[countU + 1]
+            if y1 - 10 <= y2 <= y1 + 10:
+                m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
+                cv2.drawContours(maskT, [m], 0, 255, -1)
+        countU += 1
+
+    maskT[maskT > 0] = 1
+    skeleton = skeletonize(maskT).astype(np.uint8)
+    kernel = np.ones((3, 7), np.uint8)
+    dilate = cv2.dilate(skeleton, kernel, iterations=15)
+    erode = cv2.erode(dilate, kernel, iterations=10)
+
+    contoursE, hierarchy = cv2.findContours(
+        erode, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+    )
+    mask_apoE = np.zeros(thresh.shape, np.uint8)
+
+    contoursE = [
+        i for i in contoursE if len(i) > apo_length_tresh
+    ]  # Remove any contours that are very small
+
+    for contour in contoursE:
+        cv2.drawContours(mask_apoE, [contour], 0, 255, -1)
+    contoursE, _ = sortContours(contoursE)
+
+    # Only continues beyond this point if 2 aponeuroses can be detected
+    if len(contoursE) >= 2:
+        # Get the x,y coordinates of the upper/lower edge of the 2 aponeuroses
+        upp_x, upp_y = contourEdge("B", contoursE[0])
+
+        if contoursE[1][0, 0, 1] > contoursE[0][0, 0, 1] + min_width:
+            low_x, low_y = contourEdge("T", contoursE[1])
+        else:
+            low_x, low_y = contourEdge("T", contoursE[2])
+
+        upp_y_new = savgol_filter(upp_y, 81, 2)  # window size 51, polynomial 3
+        low_y_new = savgol_filter(low_y, 81, 2)
+
+        # Make a binary mask to only include fascicles within the region
+        # between the 2 aponeuroses
+        ex_mask = np.zeros(thresh.shape, np.uint8)
+        ex_1 = 0
+        ex_2 = np.minimum(len(low_x), len(upp_x))
+
+        for ii in range(ex_1, ex_2):
+            ymin = int(np.floor(upp_y_new[ii]))
+            ymax = int(np.ceil(low_y_new[ii]))
+
+            ex_mask[:ymin, ii] = 0
+            ex_mask[ymax:, ii] = 0
+            ex_mask[ymin:ymax, ii] = 255
+
+        # Calculate slope of central portion of each aponeurosis & use this to
+        # compute muscle thickness
+        Alist = list(set(upp_x).intersection(low_x))
+        Alist = sorted(Alist)
+        Alen = len(
+            list(set(upp_x).intersection(low_x))
+        )  # How many values overlap between x-axes
+        A1 = int(Alist[0] + (0.33 * Alen))
+        A2 = int(Alist[0] + (0.66 * Alen))
+        mid = int((A2 - A1) / 2 + A1)
+        mindist = 10000
+        upp_ind = np.where(upp_x == mid)
+
+        if upp_ind == len(upp_x):
+
+            upp_ind -= 1
+
+        for val in range(A1, A2):
+            if val >= len(low_x):
+                continue
+            else:
+                dist = math.dist(
+                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val], low_y_new[val])
+                )
+                if dist < mindist:
+                    mindist = dist
+
+        # Compute functions to approximate the shape of the aponeuroses
+        zUA = np.polyfit(upp_x, upp_y_new, 2)
+        g = np.poly1d(zUA)
+        zLA = np.polyfit(low_x, low_y_new, 2)
+        h = np.poly1d(zLA)
+
+        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
+        x1 = np.linspace(-200, 800, 5000)
+        # x1 = np.linspace(
+        # low_x[0] - 700, low_x[-1] + 700, 10000
+        # )  # Extrapolate polynomial fits to either side of the mid-point
+        y_UA = g(x1)
+        y_LA = h(x1)
+
+        mid = width / 2
+        new_X_UA = np.linspace(
+            mid - width, mid + width, 5000
+        )  # Extrapolate x,y data using f function
+        # new_X_UA = np.linspace(-200, 800, 5000)
+        new_Y_UA = g(new_X_UA)
+        # new_X_LA = np.linspace(-200, 800, 5000)
+        new_X_LA = np.linspace(
+            mid - width, mid + width, 5000
+        )  # Extrapolate x,y data using f function
+        new_Y_LA = h(new_X_LA)
+
+        # calculations for fascicle mask
+        image_rgb = cv2.cvtColor(fas_image, cv2.COLOR_BGR2RGB)
+        image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+
+        # define threshold and find contours around fascicles
+        _, threshF = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY)
+        threshF = threshF.astype("uint8")
+        contoursF, hierarchy = cv2.findContours(
+            threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        # Remove any contours that are very small
+        maskF = np.zeros(threshF.shape, np.uint8)
+        for contour in contoursF:  # Remove any contours that are very small
+            if len(contour) > fasc_cont_thresh:
+                cv2.drawContours(maskF, [contour], 0, 255, -1)
+
+        # Only include fascicles within the region of the 2 aponeuroses
+        mask_Fi = maskF & ex_mask
+        contoursF2, hierarchy = cv2.findContours(
+            mask_Fi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+        )
+
+        contoursF3 = [i for i in contoursF2 if len(i) > fasc_cont_thresh]
+
+        # convert contours into a list
+        contours = list(contoursF3)
+
+        # Convert each contour to a NumPy array, reshape, and sort
+        for i in range(len(contours)):
+            contour_array = np.array(contours[i])  # Convert to NumPy array
+            if contour_array.shape[1] == 1 and contour_array.shape[2] == 2:
+                reshaped_contour = contour_array.reshape(-1, 2)  # Reshape to (58, 2)
+                sorted_contour = sorted(
+                    reshaped_contour, key=lambda k: (k[0], k[1])
+                )  # Sort by x and y
+                contours[i] = sorted_contour  # Update the contour in the list
+            else:
+                print(
+                    f"Contour {i} does not have the expected shape: {contour_array.shape}"
+                )
+
+        # Now, contours are sorted, and we can sort the list of contours based on the first point
+        contours_sorted = sorted(
+            contours,
+            key=lambda k: (
+                (k[0][0], -k[0][1]) if len(k) > 0 else (float("inf"), float("inf"))
+            ),
+        )
+
+        if approach == 1:
+            fascicle_length, pennation_angle, fig = Curved_Approach_1(
+                contours_sorted,
+                new_X_LA,
+                new_Y_LA,
+                new_X_UA,
+                new_Y_UA,
+                original_image,
+                parameters,
+                filter_fasc,
+            )
+        if approach == 2 or approach == 3:
+            fascicle_length, pennation_angle, fig = Curved_Approach_2_3(
+                contours_sorted,
+                new_X_LA,
+                new_Y_LA,
+                new_X_UA,
+                new_Y_UA,
+                original_image,
+                parameters,
+                filter_fasc,
+                approach,
+            )
+        if approach == 4:
+            fascicle_length, pennation_angle, fig = Orientation_map(
+                original_image, fas_image, apo_image, g, h
+            )
+
+        try:
+            midthick = mindist[0]  # Muscle thickness
+        except:
+            midthick = mindist
+
+        if calib_dist:
+            fascicle_length = fascicle_length / (calib_dist / int(spacing))
+            midthick = midthick / (calib_dist / int(spacing))
+
+        return fascicle_length, pennation_angle, midthick, fig
+
+
+fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
+    original_image,
+    fas_image,
+    apo_image,
+    parameters,
+    filter_fasc,
+    calib_dist,
+    spacing,
+    approach,
 )
+
+print(fascicle_length)
+print(pennation_angle)
+print(midthick)

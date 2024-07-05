@@ -73,6 +73,114 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
     return np.array(x), np.array(y)
 
 
+def contourEdge(edge: str, contour: list) -> np.ndarray:
+    """Function to find only the coordinates representing one edge
+    of a contour.
+
+    Either the upper or lower edge of the detected contours is
+    calculated. From the contour detected lower in the image,
+    the upper edge is searched. From the contour detected
+    higher in the image, the lower edge is searched.
+
+    Parameters
+    ----------
+    edge : {"T", "B"}
+        String variable defining the type of edge that is
+        searched. The variable can be either "T" (top) or
+        "B" (bottom).
+    contour : list
+        List variable containing sorted contours.
+
+    Returns
+    -------
+    x : np.ndarray
+        Array variable containing all x-coordinates from the
+        detected contour.
+    y : np.ndarray
+        Array variable containing all y-coordinated from the
+        detected contour.
+
+    Examples
+    --------
+    >>> contourEdge(edge="T", contour=[[[195 104]] ... [[196 104]]])
+    [196 197 198 199 200 ... 952 953 954 955 956 957],
+    [120 120 120 120 120 ... 125 125 125 125 125 125]
+    """
+    # Turn tuple into list
+    pts = list(contour)
+    # sort conntours
+    ptsT = sorted(pts, key=lambda k: [k[0][0], k[0][1]])
+
+    # Get x and y coordinates from contour
+    allx = []
+    ally = []
+    for a in range(0, len(ptsT)):
+        allx.append(ptsT[a][0, 0])
+        ally.append(ptsT[a][0, 1])
+    # Get rid of doubles
+    un = np.unique(allx)
+
+    # Filter x and y coordinates from cont according to selected edge
+    leng = len(un) - 1
+    x = []
+    y = []
+    for each in range(5, leng - 5):  # Ignore 1st and last 5 points
+        indices = [i for i, x in enumerate(allx) if x == un[each]]
+        if edge == "T":
+            loc = indices[0]
+        else:
+            loc = indices[-1]
+        x.append(ptsT[loc][0, 0])
+        y.append(ptsT[loc][0, 1])
+
+    return np.array(x), np.array(y)
+
+
+def sortContours(cnts: list):
+    """Function to sort detected contours from proximal to distal.
+
+    The input contours belond to the aponeuroses and are sorted
+    based on their coordinates, from smallest to largest.
+    Moreover, for each detected contour a bounding box is built.
+    The bounding boxes are sorted as well. They are however not
+    needed for further analyses.
+
+    Parameters
+    ----------
+    cnts : list
+        List of arrays containing the detected aponeurosis
+        contours.
+
+    Returns
+    -------
+    cnts : tuple
+        Tuple containing arrays of sorted contours.
+    bounding_boxes : tuple
+        Tuple containing tuples with sorted bounding boxes.
+
+    Examples
+    --------
+    >>> sortContours(cnts=[array([[[928, 247]], ... [[929, 247]]],
+    dtype=int32),
+    ((array([[[228,  97]], ... [[229,  97]]], dtype=int32),
+    (array([[[228,  97]], ... [[229,  97]]], dtype=int32),
+    (array([[[928, 247]], ... [[929, 247]]], dtype=int32)),
+    ((201, 97, 747, 29), (201, 247, 750, 96))
+    """
+    try:
+        # initialize the reverse flag and sort index
+        i = 1
+        # construct the list of bounding boxes and sort them from top to bottom
+        bounding_boxes = [cv2.boundingRect(c) for c in cnts]
+        (cnts, bounding_boxes) = zip(
+            *sorted(zip(cnts, bounding_boxes), key=lambda b: b[1][i], reverse=False)
+        )
+    except ValueError:
+        tk.messagebox.showerror("Information", "Aponeurosis length threshold too big.")
+
+    return (cnts, bounding_boxes)
+
+
 def do_curves_intersect(curve1: list, curve2: list) -> bool:
     """Function to detect wheter two curves are intersecting or not.
 
@@ -303,6 +411,106 @@ def find_next_fascicle(
         found_fascicle = -1
 
     return new_x, new_y, found_fascicle
+
+
+def find_complete_fascicle(
+    i,
+    contours_sorted_x,
+    contours_sorted_y,
+    contours_sorted,
+    label,
+    mid,
+    width,
+    tolerance,
+    coeff_limit,
+):
+
+    # get upper edge contour of starting fascicle
+    current_fascicle_x = contours_sorted_x[i]
+    current_fascicle_y = contours_sorted_y[i]
+
+    # set label to true as fascicle is used
+    label[i] = True
+    linear_fit = False
+    inner_number_contours = []
+    inner_number_contours.append(i)
+
+    # calculate second polynomial coefficients
+    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
+
+    # depending on coefficients edge gets extrapolated as first or second order polynomial
+    if 0 < coefficients[0] < coeff_limit:
+        g = np.poly1d(coefficients)
+        ex_current_fascicle_x = np.linspace(
+            mid - width, mid + width, 5000
+        )  # Extrapolate x,y data using f function
+        ex_current_fascicle_y = g(ex_current_fascicle_x)
+        linear_fit = False
+    else:
+        coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+        g = np.poly1d(coefficients)
+        ex_current_fascicle_x = np.linspace(
+            mid - width, mid + width, 5000
+        )  # Extrapolate x,y data using f function
+        ex_current_fascicle_y = g(ex_current_fascicle_x)
+        linear_fit = True
+
+    # compute upper and lower boundary of extrapolation
+    upper_bound = ex_current_fascicle_y - tolerance
+    lower_bound = ex_current_fascicle_y + tolerance
+
+    # find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
+    # if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
+
+    found_fascicle = 0
+
+    while found_fascicle >= 0:
+
+        current_fascicle_x, current_fascicle_y, found_fascicle = find_next_fascicle(
+            contours_sorted,
+            contours_sorted_x,
+            contours_sorted_y,
+            current_fascicle_x,
+            current_fascicle_y,
+            ex_current_fascicle_x,
+            upper_bound,
+            lower_bound,
+            label,
+        )
+
+        if found_fascicle > 0:
+            label[found_fascicle] = True
+            inner_number_contours.append(found_fascicle)
+        else:
+            break
+
+        coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
+
+        if 0 < coefficients[0] < coeff_limit:
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                mid - width, mid + width, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = False
+        else:
+            coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+            g = np.poly1d(coefficients)
+            ex_current_fascicle_x = np.linspace(
+                mid - width, mid + width, 5000
+            )  # Extrapolate x,y data using f function
+            ex_current_fascicle_y = g(ex_current_fascicle_x)
+            linear_fit = True
+
+        upper_bound = ex_current_fascicle_y - tolerance
+        lower_bound = ex_current_fascicle_y + tolerance
+
+    return (
+        ex_current_fascicle_x,
+        ex_current_fascicle_y,
+        linear_fit,
+        inner_number_contours,
+    )
 
 
 def crop(original_image: list, image_fas: list, image_apo: list):
