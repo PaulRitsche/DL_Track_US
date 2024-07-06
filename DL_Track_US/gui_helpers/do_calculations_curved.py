@@ -32,7 +32,7 @@ original_image = cv2.imread(
 
 parameters = dict(
     apo_length_thresh=600,
-    fasc_cont_thresh=40,
+    fasc_cont_thresh=5,
     min_width=60,
     max_pennation=40,
     min_pennation=5,
@@ -42,10 +42,10 @@ parameters = dict(
 )
 
 filter_fasc = True
-calib_dist = None
+calib_dist = False
 spacing = 5
 
-approach = 2
+approach = 3
 
 
 def Curved_Approach_1(
@@ -97,7 +97,6 @@ def Curved_Approach_1(
          Figure including the input ultrasound image, the segmented aponeuroses and
          the found fascicles extrapolated between the two aponeuroses.
     """
-    start_time = time.time()
 
     # Set parameters
     tolerance = int(parameters["tolerance"])
@@ -248,21 +247,16 @@ def Curved_Approach_1(
             ):  # Don't include 'fascicles' beyond a range of PA
                 data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    end_time = time.time()
-    total_time = end_time - start_time
-
     median_length = data["fascicle_length"].median()
-    mean_length = data["fascicle_length"].mean()
     median_angle = data["pennation_angle"].median()
-    mean_angle = data["pennation_angle"].mean()
 
-    print(total_time)
     print(data)
-    print(median_length, mean_length, median_angle, mean_angle)
 
     # plot filtered curves between detected fascicles between the two aponeuroses
-    fig = plt.figure(1)
+    fig = plt.figure()
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
+    xplot = 0
+    yplot = 600
     number_contours = list(data["number_contours"])  # contours after filtering
 
     for i in range(len(all_coordsX)):
@@ -279,7 +273,6 @@ def Curved_Approach_1(
             x_after_b = x[x >= b]
             y_after_b = y[x >= b]
 
-            plt.figure(1)
             plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
             plt.plot(x_after_b, y_after_b, color=color, alpha=0.4)
             plt.plot(
@@ -301,7 +294,6 @@ def Curved_Approach_1(
             x_after_d = x[x >= d]
             y_after_d = y[x >= d]
 
-            plt.figure(1)
             plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
             plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
             plt.plot(x_after_d, y_after_d, color=color, alpha=0.4)
@@ -334,7 +326,6 @@ def Curved_Approach_1(
             x_after_f = x[x >= f]
             y_after_f = y[x >= f]
 
-            plt.figure(1)
             plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
             plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
             plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -378,7 +369,6 @@ def Curved_Approach_1(
             x_after_h = x[x >= h]
             y_after_h = y[x >= h]
 
-            plt.figure(1)
             plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
             plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
             plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -433,7 +423,6 @@ def Curved_Approach_1(
             x_after_n = x[x >= n]
             y_after_n = y[x >= n]
 
-            plt.figure(1)
             plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
             plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
             plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
@@ -474,12 +463,24 @@ def Curved_Approach_1(
         if len(number_contours[i]) > 5:
             print(">=6 contours detected")
 
-    plt.figure(1)
     plt.imshow(original_image)
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-    plt.show()
+    plt.text(
+        xplot,
+        yplot,
+        ("Median fascicle length: " + str("%.2f" % median_length) + " mm"),
+        fontsize=10,
+        color="black",
+    )
+    plt.text(
+        xplot,
+        yplot + 50,
+        ("Median pennation angle: " + str("%.1f" % median_angle) + " deg"),
+        fontsize=10,
+        color="black",
+    )
 
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
@@ -540,7 +541,6 @@ def Curved_Approach_2_3(
         Figure including the input ultrasound image, the segmented aponeuroses and
         the found fascicles extrapolated between the two aponeuroses.
     """
-    start_time = time.time()
 
     # set parameteres
     tolerance = int(parameters["tolerance"])
@@ -824,22 +824,16 @@ def Curved_Approach_2_3(
         ):  # Don't include 'fascicles' beyond a range of PA
             data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    end_time = time.time()
-    total_time = end_time - start_time
-
     median_length = data["fascicle_length"].median()
-    mean_length = data["fascicle_length"].mean()
     median_angle = data["pennation_angle"].median()
-    mean_angle = data["pennation_angle"].mean()
 
-    print(total_time)
     print(data)
-    print(median_length, mean_length, median_angle, mean_angle)
 
-    # fig = plt.figure(1)
+    fig = plt.figure()
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
+    xplot = 0
+    yplot = 600
 
-    plt.figure(1)
     plt.imshow(original_image)
     for i in range(len(all_coordsX)):
         color = colormap(i)
@@ -853,13 +847,25 @@ def Curved_Approach_2_3(
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-    # plt.show()
+    plt.text(
+        xplot,
+        yplot,
+        ("Median fascicle length: " + str("%.2f" % median_length) + " mm"),
+        fontsize=10,
+        color="black",
+    )
+    plt.text(
+        xplot,
+        yplot + 50,
+        ("Median pennation angle: " + str("%.1f" % median_angle) + " deg"),
+        fontsize=10,
+        color="black",
+    )
 
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
 def Orientation_map(
-    original_image: np.ndarray,
     fas_image: np.ndarray,
     apo_image: np.ndarray,
     g: np.poly1d,
@@ -867,7 +873,7 @@ def Orientation_map(
 ):
     """Function to calculate a orientation map based on the fascicle mask
 
-    The function calculates the orientations of fascicles based on the fascicle mask using the OrientationPy package. It then uses linear inter- and extrapolation to determine the orientation of all points in the region between the two aponeuroses using the Rbf package. Finally, the resulting vectors are smoothed with a Gaussian filter. To approximate the median angle, the image is divided into six sections: two horizontally and three vertically. The median angle is then calculated for each of these sections.
+    The function calculates the orientations of fascicles based on the fascicle mask using the OrientationPy package. It then uses linear inter- and extrapolation to determine the orientation of all points in the region between the two aponeuroses using the Rbf package. Finally, the resulting vectors are smoothed with a Gaussian filter. To approximate the median angle, the image is divided into six sections: two horizontally and three vertically. The median angle is then calculated for each of these sections. In the plot only the median for the part in the lower half and middle of the image is displayed.
 
     Parameters
     ----------
@@ -889,7 +895,6 @@ def Orientation_map(
     fig : matplot.figure
         Figure showing the estimated slope at different points in the region between the two aponeuroses as a heat map
     """
-    start_time = time.time()
 
     width = apo_image.shape[1]
 
@@ -1092,42 +1097,12 @@ def Orientation_map(
         split_angle_deg_median = math.degrees(split_angle_rad_median)
         split_angles_deg_median.append(split_angle_deg_median)
 
-    end_time = time.time()
-    total_time = end_time - start_time
-
-    print(total_time)
-    print(f"Mean angle in degrees: {angle_deg_mean}")
-    print(f"Median angle in degrees: {angle_deg_median}")
-    print(f"Mean slope: {slope_mean}")
-    print(f"Median slope: {slope_median}")
-    print(f"Mean angles in degree for 6 parts: {split_angles_deg_mean}")
-    print(f"Median angles in degree for 6 parts: {split_angles_deg_median}")
-
-    # figure 1: plot smoothened inter- and extrapolation vectors only for the region between the two aponeuroses
-    plt.figure(1)
-    plt.imshow(original_image, cmap="Greys_r", vmin=0)
-    plt.plot(ex_x_UA, ex_y_UA, color="white")
-    plt.plot(ex_x_LA, ex_y_LA, color="white")
-    plt.title("smoothened linear interpolation and extrapolation with Rbf")
-    plt.quiver(
-        boxCentres_grid_X,
-        boxCentres_grid_Y,
-        di_x_masked_1,
-        di_y_masked_1,
-        angles="xy",
-        scale=0.2,
-        scale_units="xy",
-        # scale=energyBoxes.ravel(),
-        color="r",
-        headwidth=0,
-        headlength=0,
-        headaxislength=1,
-    )
-
     norm = mcolors.Normalize(vmin=np.min(slope), vmax=np.max(slope))
+    xplot = 75
+    yplot = 400
 
-    # figure 2: plot heat map of slopes for region between the two aponeuroses
-    fig = plt.figure(2)
+    # plot heat map of slopes for region between the two aponeuroses
+    fig = plt.figure()
     plt.imshow(slope, cmap="viridis", norm=norm, interpolation="none")
     plt.plot(ex_x_LA, ex_y_LA, color="white")
     plt.plot(ex_x_UA, ex_y_UA, color="white")
@@ -1135,7 +1110,17 @@ def Orientation_map(
     plt.title("Matrix Heatmap")
     plt.xlabel("Column")
     plt.ylabel("Row")
-    plt.show()
+    plt.text(
+        xplot,
+        yplot,
+        (
+            "Median pennation angle: "
+            + str("%.1f" % split_angles_deg_median[4])
+            + " deg"
+        ),
+        fontsize=10,
+        color="white",
+    )
 
     return None, split_angles_deg_median, fig
 
@@ -1209,7 +1194,9 @@ def doCalculations_curved(
     For more detailed documentation, see the respective functions documentation.
 
     """
-    fig = plt.figure(1)
+
+    start_time = time.time()
+
     parameters = parameters
 
     apo_length_tresh = int(parameters["apo_length_thresh"])
@@ -1460,7 +1447,7 @@ def doCalculations_curved(
             )
         if approach == 4:
             fascicle_length, pennation_angle, fig = Orientation_map(
-                original_image, fas_image, apo_image, g, h
+                fas_image, apo_image, g, h
             )
 
         try:
@@ -1472,31 +1459,27 @@ def doCalculations_curved(
             fascicle_length = fascicle_length / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
 
-        xplot = 125
-        yplot = 700
+        # add thickness to plot
+        if approach == 4:
+            xplot = 75
+            yplot = 325
+            color = "white"
+        else:
+            xplot = 0
+            yplot = 600
+            color = "black"
 
-        plt.figure(1)
-        plt.text(
-            xplot,
-            yplot,
-            ("Fascicle length: " + str("%.2f" % np.median(fascicle_length)) + " mm"),
-            fontsize=15,
-            color="white",
-        )
-        plt.text(
-            xplot,
-            yplot + 50,
-            ("Pennation angle: " + str("%.1f" % np.median(pennation_angle)) + " deg"),
-            fontsize=15,
-            color="white",
-        )
         plt.text(
             xplot,
             yplot + 100,
             ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
-            fontsize=15,
-            color="white",
+            fontsize=10,
+            color=color,
         )
+
+        end_time = time.time()
+        total_time = end_time - start_time
+        print(total_time)
 
         return fascicle_length, pennation_angle, midthick, fig
 
@@ -1514,7 +1497,4 @@ fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
     approach,
 )
 
-print(fascicle_length)
-print(pennation_angle)
-print(midthick)
 plt.show()
