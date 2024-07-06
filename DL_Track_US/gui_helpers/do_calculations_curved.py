@@ -30,9 +30,6 @@ original_image = cv2.imread(
     cv2.IMREAD_UNCHANGED,
 )
 
-# crop all three images in order that they don't have a frame
-original_image, fas_image, apo_image = crop(original_image, fas_image, apo_image)
-
 parameters = dict(
     apo_length_thresh=600,
     fasc_cont_thresh=40,
@@ -48,7 +45,7 @@ filter_fasc = True
 calib_dist = None
 spacing = 5
 
-approach = 1
+approach = 2
 
 
 def Curved_Approach_1(
@@ -839,7 +836,7 @@ def Curved_Approach_2_3(
     print(data)
     print(median_length, mean_length, median_angle, mean_angle)
 
-    fig = plt.figure(1)
+    # fig = plt.figure(1)
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
     plt.figure(1)
@@ -856,15 +853,21 @@ def Curved_Approach_2_3(
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-    plt.show()
+    # plt.show()
 
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
 def Orientation_map(
-    original_image: np.ndarray, fas_image: np.ndarray, apo_image: np.ndarray, g, h
+    original_image: np.ndarray,
+    fas_image: np.ndarray,
+    apo_image: np.ndarray,
+    g: np.poly1d,
+    h: np.poly1d,
 ):
     """Function to calculate a orientation map based on the fascicle mask
+
+    The function calculates the orientations of fascicles based on the fascicle mask using the OrientationPy package. It then uses linear inter- and extrapolation to determine the orientation of all points in the region between the two aponeuroses using the Rbf package. Finally, the resulting vectors are smoothed with a Gaussian filter. To approximate the median angle, the image is divided into six sections: two horizontally and three vertically. The median angle is then calculated for each of these sections.
 
     Parameters
     ----------
@@ -874,24 +877,17 @@ def Orientation_map(
         Mask of fascicles
     apo_image: np.ndarray
         Mask of aponeuroses
-    g : list
-        List containing all x-values of the extrapolated upper aponeurosis
-    h : list
-        List containing all y-values of the extrapolated upper aponeurosis
+    g : np.poly1d
+        Containing coefficients to calculate second order polynomial fit for upper aponeurosis
+    h : np.poly1d
+        Containing coefficients to calculate second order polynomial fit for lower aponeurosis
 
     Returns
     -------
-    fascicle_length : list
-        List variable containing the estimated fascicle lengths
-        based on the segmented fascicle fragments in pixel units
-        as float.
-    pennation_angle : list
-        List variable containing the estimated pennation angles
-        based on the segmented fascicle fragments and aponeuroses
-        as float.
+    split_angles_deg_median : list
+        List variable containing the estimated pennation angles for the six parts of the image
     fig : matplot.figure
-        Figure including the input ultrasound image, the segmented aponeuroses and
-        the found fascicles extrapolated between the two aponeuroses.
+        Figure showing the estimated slope at different points in the region between the two aponeuroses as a heat map
     """
     start_time = time.time()
 
@@ -1145,21 +1141,83 @@ def Orientation_map(
 
 
 def doCalculations_curved(
-    original_image,
-    fas_image,
-    apo_image,
-    parameters,
-    filter_fasc,
-    calib_dist,
-    spacing,
-    approach,
+    original_image: np.ndarray,
+    fas_image: np.ndarray,
+    apo_image: np.ndarray,
+    parameters: dict,
+    filter_fasc: bool,
+    calib_dist: bool,
+    spacing: int,
+    approach: int,
 ):
+    """Function to compute muscle architectural parameters accounted for fascicle curvature
 
+    The aponeuroses edges are computed and the fascicle contours are connected to form complete fascicles. Based on three different approaches the fascicle length and pennation angle get calculated. Furthermore, it is possible to calculate an orientation map showing the slope at different points in the region of interest.
+
+    Returns none when not more than one aponeurosis contour or no fascicle contours are
+    detected in the image.
+
+    Parameters
+    ----------
+    original_image : np.ndarray
+        Ultrasound image to be analysed
+    fas_image : np.ndarray
+        Mask of fascicles
+    apo_image: np.ndarray
+        Mask of aponeuroses
+    parameters : dict
+        Dictionary variable containing analysis parameters.
+        These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo, coeff_limit
+    filter_fasc : bool
+        If True, fascicles will be filtered so that no crossings are included.
+        This may reduce number of totally detected fascicles.
+    calib_dist : int
+        Integer variable containing the distance between the two
+        specified point in pixel units. This value was either computed
+        automatically or manually. Must be non-negative. If "None", the
+        values are outputted in pixel units.
+    spacing : {10, 5, 15, 20}
+        Integer variable containing the known distance in milimeter
+        between the two placed points by the user or the scaling bars
+        present in the image. This can be 5, 10, 15 or 20 milimeter.
+        Must be non-negative and non-zero.
+    approach: int
+        Can either be 1, 2, 3 or 4. 1 calculates the fascicle length and pennation angle according to approach 1 (see documentation of function Curved_Approach_1). 2 and 3 calculates the fascicle length and pennation angle according to approach 2 and 3 (see documentation of function Curved_Approach_2_3). 4 calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function Orientation_map)
+
+    Returns
+    -------
+    fascicle_length : list
+        List variable containing the estimated fascicle lengths
+        based on the segmented fascicle fragments in pixel units
+        as float. If calib_dist is specified, then the length is computed
+        in centimeter.
+    pennation_angle : list
+        List variable containing the estimated pennation angles
+        based on the segmented fascicle fragments and aponeuroses
+        as float.
+    midthick : float
+        Float variable containing the estimated distance
+        between the lower and upper aponeurosis in pixel units.
+        If calib_dist is specified, then the distance is computed
+        in centimeter.
+    fig : matplot.figure
+        Figure including the input ultrasound image, the segmented aponeuroses and
+        the found fascicles extrapolated between the two aponeuroses.
+
+    Notes
+    -----
+    For more detailed documentation, see the respective functions documentation.
+
+    """
+    fig = plt.figure(1)
     parameters = parameters
 
     apo_length_tresh = int(parameters["apo_length_thresh"])
     fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
     min_width = int(parameters["min_width"])
+
+    # crop all three images in order that they don't have a frame
+    original_image, fas_image, apo_image = crop(original_image, fas_image, apo_image)
 
     # calculations for aponeuroses
     apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
@@ -1182,8 +1240,8 @@ def doCalculations_curved(
 
     # Check whether contours are detected
     # If not, break function
-    # if len(contours) < 1:
-    # return None
+    if len(contours) < 1:
+        return None, None, None, None
 
     (contours, _) = sortContours(contours)  # Sort contours from top to bottom
 
@@ -1414,7 +1472,35 @@ def doCalculations_curved(
             fascicle_length = fascicle_length / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
 
+        xplot = 125
+        yplot = 700
+
+        plt.figure(1)
+        plt.text(
+            xplot,
+            yplot,
+            ("Fascicle length: " + str("%.2f" % np.median(fascicle_length)) + " mm"),
+            fontsize=15,
+            color="white",
+        )
+        plt.text(
+            xplot,
+            yplot + 50,
+            ("Pennation angle: " + str("%.1f" % np.median(pennation_angle)) + " deg"),
+            fontsize=15,
+            color="white",
+        )
+        plt.text(
+            xplot,
+            yplot + 100,
+            ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
+            fontsize=15,
+            color="white",
+        )
+
         return fascicle_length, pennation_angle, midthick, fig
+
+    return None, None, None, None
 
 
 fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
@@ -1431,3 +1517,4 @@ fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
 print(fascicle_length)
 print(pennation_angle)
 print(midthick)
+plt.show()
