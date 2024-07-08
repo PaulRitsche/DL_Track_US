@@ -74,7 +74,7 @@ filter_fasc = True
 calib_dist = None
 spacing = 10
 
-approach = 4
+approach = 3
 
 
 def Curved_Approach_1(
