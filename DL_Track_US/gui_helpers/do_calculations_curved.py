@@ -16,17 +16,17 @@ from skimage.morphology import skeletonize
 
 # load fascicle mask
 fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00029.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 # load aponeurosis mask
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00029.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 # load ultrasound image
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00029.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -42,10 +42,10 @@ parameters = dict(
 )
 
 filter_fasc = True
-calib_dist = False
-spacing = 5
+calib_dist = None
+spacing = 10
 
-approach = 3
+approach = 4
 
 
 def Curved_Approach_1(
@@ -247,16 +247,11 @@ def Curved_Approach_1(
             ):  # Don't include 'fascicles' beyond a range of PA
                 data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    median_length = data["fascicle_length"].median()
-    median_angle = data["pennation_angle"].median()
-
     print(data)
 
     # plot filtered curves between detected fascicles between the two aponeuroses
     fig = plt.figure()
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
-    xplot = 0
-    yplot = 600
     number_contours = list(data["number_contours"])  # contours after filtering
 
     for i in range(len(all_coordsX)):
@@ -466,21 +461,6 @@ def Curved_Approach_1(
     plt.imshow(original_image)
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
-
-    plt.text(
-        xplot,
-        yplot,
-        ("Median fascicle length: " + str("%.2f" % median_length) + " mm"),
-        fontsize=10,
-        color="black",
-    )
-    plt.text(
-        xplot,
-        yplot + 50,
-        ("Median pennation angle: " + str("%.1f" % median_angle) + " deg"),
-        fontsize=10,
-        color="black",
-    )
 
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
@@ -824,15 +804,10 @@ def Curved_Approach_2_3(
         ):  # Don't include 'fascicles' beyond a range of PA
             data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    median_length = data["fascicle_length"].median()
-    median_angle = data["pennation_angle"].median()
-
     print(data)
 
     fig = plt.figure()
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
-    xplot = 0
-    yplot = 600
 
     plt.imshow(original_image)
     for i in range(len(all_coordsX)):
@@ -846,21 +821,6 @@ def Curved_Approach_2_3(
                 plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
-
-    plt.text(
-        xplot,
-        yplot,
-        ("Median fascicle length: " + str("%.2f" % median_length) + " mm"),
-        fontsize=10,
-        color="black",
-    )
-    plt.text(
-        xplot,
-        yplot + 50,
-        ("Median pennation angle: " + str("%.1f" % median_angle) + " deg"),
-        fontsize=10,
-        color="black",
-    )
 
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
@@ -1455,6 +1415,9 @@ def doCalculations_curved(
         except:
             midthick = mindist
 
+        fascicle_length = np.array(fascicle_length)
+        pennation_angle = np.array(pennation_angle)
+
         if calib_dist:
             fascicle_length = fascicle_length / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
@@ -1468,6 +1431,28 @@ def doCalculations_curved(
             xplot = 0
             yplot = 600
             color = "black"
+            plt.text(
+                xplot,
+                yplot,
+                (
+                    "Median fascicle length: "
+                    + str("%.2f" % np.median(fascicle_length))
+                    + " mm"
+                ),
+                fontsize=10,
+                color="black",
+            )
+            plt.text(
+                xplot,
+                yplot + 50,
+                (
+                    "Median pennation angle: "
+                    + str("%.1f" % np.median(pennation_angle))
+                    + " deg"
+                ),
+                fontsize=10,
+                color="black",
+            )
 
         plt.text(
             xplot,
