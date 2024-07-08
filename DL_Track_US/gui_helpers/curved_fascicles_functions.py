@@ -1,3 +1,34 @@
+"""
+Description
+-----------
+This module contains all additional functions used in the module do_calculations_curved
+
+Functions scope
+---------------
+adapted_contourEdge
+    Function to find only the coordinates representing one edge
+    of a contour.
+contourEdge
+    Function to find only the coordinates representing one edge
+    of a contour.
+sortContours
+    Function to sort detected contours from proximal to distal.
+do_curves_intersect
+    Function to detect wheter two curves are intersecting or not.
+adapted_filter_fascicles
+    Filters out fascicles that intersect with other fascicles.
+is_point_in_range
+    Function to detect wheter a point is between an upper and a lower
+    boundary or not.
+find_next_fascicle
+    Function to find the next fascicle contour.
+find_complete_fascicle
+    Function to find complete fascicles based on connection of single contours.
+crop
+    Function to crop the frame around ultrasound images.
+
+"""
+
 import bisect
 
 import cv2
@@ -13,7 +44,8 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
     Either the upper or lower edge of the detected contours is
     calculated. From the contour detected lower in the image,
     the upper edge is searched. From the contour detected
-    higher in the image, the lower edge is searched.
+    higher in the image, the lower edge is searched. Allows
+    for more points around the end of the contour than contourEdge.
 
     Parameters
     ----------

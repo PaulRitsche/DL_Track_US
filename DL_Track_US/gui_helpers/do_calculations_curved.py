@@ -1,10 +1,40 @@
+"""
+Description
+-----------
+This module contains functions for three different approaches to calculate
+muscle architectural parameters accounted for fascicle curvature. The 
+parameters include muscle thickness, pennation angle and fascicle length.
+All calculations are based on a fascicle mask and aponeurses mask.
+Fascicle fragments are connected and extrapolated and the intersection points
+with the extrapolated aponeuroses are determined. The architectural parameters
+are calculated and the results are plotted. Additionally, it is possible to
+calculate an orientation map of the fascicles based on the fascicle mask.
+This module is specifically designed for single image analysis.
+
+Functions scope
+---------------
+Curved_Approach_1
+    Function to calculate the fascicle length and pennation angle accounted
+    for curvature following approach 1.
+Curved_Approach_2_3
+    Function to calculate the fascicle length and pennation angle accounted
+    for curvature following approach 2 and 3.
+Orientation_map
+    Function to calculate an orientation map based on the fascicle mask.
+doCalculations_curved
+    Function to compute muscle architectural parameters accounted for fascicle curvature.
+
+Notes
+-----
+Additional information can be found at the respective functions documentations.
+"""
+
 import math
 import time
 
 import cv2
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import numpy
 import numpy as np
 import orientationpy
 import pandas as pd
@@ -38,7 +68,6 @@ parameters = dict(
     min_pennation=5,
     tolerance=10,
     tolerance_to_apo=100,
-    coeff_limit=0.000583,
 )
 
 filter_fasc = True
@@ -101,9 +130,9 @@ def Curved_Approach_1(
     # Set parameters
     tolerance = int(parameters["tolerance"])
     tolerance_to_apo = int(parameters["tolerance_to_apo"])
-    coeff_limit = float(parameters["coeff_limit"])
     max_pennation = int(parameters["max_pennation"])
     min_pennation = int(parameters["min_pennation"])
+    coeff_limit = 0.000583
 
     # get upper edge of each contour
     contours_sorted_x = []
@@ -525,9 +554,9 @@ def Curved_Approach_2_3(
     # set parameteres
     tolerance = int(parameters["tolerance"])
     tolerance_to_apo = int(parameters["tolerance_to_apo"])
-    coeff_limit = float(parameters["coeff_limit"])
     max_pennation = int(parameters["max_pennation"])
     min_pennation = int(parameters["min_pennation"])
+    coeff_limit = 0.000583
 
     # get upper edge of each contour
     contours_sorted_x = []
@@ -831,7 +860,7 @@ def Orientation_map(
     g: np.poly1d,
     h: np.poly1d,
 ):
-    """Function to calculate a orientation map based on the fascicle mask
+    """Function to calculate an orientation map based on the fascicle mask
 
     The function calculates the orientations of fascicles based on the fascicle mask using the OrientationPy package. It then uses linear inter- and extrapolation to determine the orientation of all points in the region between the two aponeuroses using the Rbf package. Finally, the resulting vectors are smoothed with a Gaussian filter. To approximate the median angle, the image is divided into six sections: two horizontally and three vertically. The median angle is then calculated for each of these sections. In the plot only the median for the part in the lower half and middle of the image is displayed.
 
@@ -901,11 +930,11 @@ def Orientation_map(
 
     # Compute box centres
     boxCentresY = (
-        numpy.arange(orientationsBoxes["theta"].shape[0]) * boxSizePixels
+        np.arange(orientationsBoxes["theta"].shape[0]) * boxSizePixels
         + boxSizePixels // 2
     )
     boxCentresX = (
-        numpy.arange(orientationsBoxes["theta"].shape[1]) * boxSizePixels
+        np.arange(orientationsBoxes["theta"].shape[1]) * boxSizePixels
         + boxSizePixels // 2
     )
 
@@ -1124,7 +1153,7 @@ def doCalculations_curved(
     spacing : {10, 5, 15, 20}
         Integer variable containing the known distance in milimeter
         between the two placed points by the user or the scaling bars
-        present in the image. This can be 5, 10, 15 or 20 milimeter.
+        present in the image. This can be 5, 10, 15 or 20 millimeter.
         Must be non-negative and non-zero.
     approach: int
         Can either be 1, 2, 3 or 4. 1 calculates the fascicle length and pennation angle according to approach 1 (see documentation of function Curved_Approach_1). 2 and 3 calculates the fascicle length and pennation angle according to approach 2 and 3 (see documentation of function Curved_Approach_2_3). 4 calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function Orientation_map)
@@ -1422,7 +1451,7 @@ def doCalculations_curved(
             fascicle_length = fascicle_length / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
 
-        # add thickness to plot
+        # add median fascicle length, median pennation angle and muscle thickness to the plot
         if approach == 4:
             xplot = 75
             yplot = 325
