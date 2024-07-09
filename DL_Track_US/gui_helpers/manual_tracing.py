@@ -26,12 +26,18 @@ functions docstrings.
 import math
 import os
 import tkinter as tk
+import customtkinter as ctk
 from tkinter import messagebox, ttk
 
 import numpy as np
 import pandas as pd
 from PIL import Image, ImageGrab, ImageTk
 from scipy.spatial import distance
+
+
+# TODO add option of drag (as is) or points.
+# TODO add register FL and PA butten to respective radio, to allow labelling
+# TODO add linewidth to settings
 
 
 class ManualAnalysis:
@@ -157,6 +163,7 @@ class ManualAnalysis:
     calculateBatchManual
         Instance method creating the GUI for manual image analysis.
     """
+
     def __init__(self, img_list: str, rootpath: str):
         """Instance method to initialize the Manual Analysis class.
 
@@ -228,37 +235,20 @@ class ManualAnalysis:
         # the command prompt
         # self.head = tk.Tk()
 
-        self.head = tk.Toplevel()
+        self.head = ctk.CTkToplevel()
         self.head.title("DL_Track_US - Manual Analysis")
         master_path = os.path.dirname(os.path.abspath(__file__))
-        iconpath = master_path + "/home_im.ico"
-        #self.head.iconbitmap(iconpath)
-
-        # Style
-        style = ttk.Style()
-        style.theme_use("clam")
-        style.configure("TFrame", background="#808080")
-        style.configure(
-            "TRadiobutton",
-            background="#808080",
-            foreground="black",
-            font=("Lucida Sans", 12),
-        )
-        style.configure(
-            "TButton",
-            background="papaya whip",
-            foreground="black",
-            font=("Lucida Sans", 11),
-        )
+        # iconpath = master_path + "/home_im.ico"
+        # self.head.iconbitmap(iconpath)
 
         # Create frame for Buttons
-        toolbar = ttk.Frame(self.head)
+        toolbar = ctk.CTkFrame(self.head)
         toolbar.pack(fill="x")
 
         # Create different analysis types
         self.mode = tk.StringVar(self.head, "thick")
 
-        scaling = ttk.Radiobutton(
+        scaling = ctk.CTkRadioButton(
             toolbar,
             text="Scale Image",
             variable=self.mode,
@@ -268,7 +258,7 @@ class ManualAnalysis:
         scaling.pack(side="left")
 
         scaling.pack(side="left")
-        aponeurosis = ttk.Radiobutton(
+        aponeurosis = ctk.CTkRadioButton(
             toolbar,
             text="Draw Aponeuroses",
             variable=self.mode,
@@ -277,7 +267,7 @@ class ManualAnalysis:
         )
         aponeurosis.pack(side="left")
 
-        thickness = ttk.Radiobutton(
+        thickness = ctk.CTkRadioButton(
             toolbar,
             text="Muscle Thickness",
             variable=self.mode,
@@ -286,7 +276,7 @@ class ManualAnalysis:
         )
         thickness.pack(side="left")
 
-        fascicle = ttk.Radiobutton(
+        fascicle = ctk.CTkRadioButton(
             toolbar,
             text="Muscle Fascicles",
             variable=self.mode,
@@ -295,7 +285,7 @@ class ManualAnalysis:
         )
         fascicle.pack(side="left")
 
-        pennation = ttk.Radiobutton(
+        pennation = ctk.CTkRadioButton(
             toolbar,
             text="Pennation Angle",
             variable=self.mode,
@@ -305,21 +295,15 @@ class ManualAnalysis:
         pennation.pack(side="left")
 
         # Define Button fot break
-        stop = ttk.Button(
-            toolbar, text="Break Analysis", command=self.stopAnalysis
-        )
+        stop = ctk.CTkButton(toolbar, text="Break Analysis", command=self.stopAnalysis)
         stop.pack(side="right")
 
         # Define Button for next image
-        next_img = ttk.Button(
-            toolbar, text="Next Image", command=self.updateImage
-        )
+        next_img = ctk.CTkButton(toolbar, text="Next Image", command=self.updateImage)
         next_img.pack(side="right")
 
         # Define Button for save image
-        save = ttk.Button(
-            toolbar, text="Save Results", command=self.saveResults
-        )
+        save = ctk.CTkButton(toolbar, text="Save Results", command=self.saveResults)
         save.pack(side="right")
 
         # Define Canvas for image
@@ -336,9 +320,7 @@ class ManualAnalysis:
             resized_img,
             master=self.canvas,
         )
-        my_image = self.canvas.create_image(
-            750, 500, anchor="center", image=self.img
-        )
+        my_image = self.canvas.create_image(750, 500, anchor="center", image=self.img)
 
         # Bind mouse events to canvas
         self.canvas.bind("<ButtonPress-1>", self.click)
@@ -555,9 +537,7 @@ class ManualAnalysis:
 
         # Check number of input images and counter
         if len(self.scale_coords) >= 1:
-            self.dist = np.abs(
-                self.scale_coords[0][1] - self.scale_coords[1][1]
-            )
+            self.dist = np.abs(self.scale_coords[0][1] - self.scale_coords[1][1])
 
             # Save Results with scaling
             dataframe2 = pd.DataFrame(
@@ -588,12 +568,8 @@ class ManualAnalysis:
 
         # Save the drawing on the canvas to an image
         # Define coordinates for cropping
-        x = (
-            self.head.winfo_rootx() + self.head.winfo_x()
-        )  # Top x of root + head
-        y = (
-            self.head.winfo_rooty() + self.head.winfo_y()
-        )  # Top y of root + head
+        x = self.head.winfo_rootx() + self.head.winfo_x()  # Top x of root + head
+        y = self.head.winfo_rooty() + self.head.winfo_y()  # Top y of root + head
         x1 = x + 2 * self.head.winfo_width()  # include twice the width
         y1 = y + 2 * self.head.winfo_height()  # include twice the height
         # Save the screenshot to root location
@@ -653,9 +629,7 @@ class ManualAnalysis:
         # Save results
         self.compileSaveResults()
         # Terminate analysis
-        messagebox.askyesno(
-            "Attention", "Would you like to stop the Analysis?"
-        )
+        messagebox.askyesno("Attention", "Would you like to stop the Analysis?")
         self.closeWindow()
 
     # --------------------------------------------------------------------------------------------------------------------
@@ -697,8 +671,7 @@ class ManualAnalysis:
         25.6
         """
         ang = math.degrees(
-            math.atan2(c[1] - b[1], c[0] - b[0])
-            - math.atan2(a[1] - b[1], a[0] - b[0])
+            math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0])
         )
 
         if ang < 0:
@@ -811,9 +784,7 @@ class ManualAnalysis:
 
                 # calculate the distance between two points belonging to one
                 # segment
-                dist = distance.euclidean(
-                    fasc_list[count], fasc_list[count + 1]
-                )
+                dist = distance.euclidean(fasc_list[count], fasc_list[count + 1])
                 fascicle.append(dist)
                 # increase count to jump to next segment
                 count += 2
