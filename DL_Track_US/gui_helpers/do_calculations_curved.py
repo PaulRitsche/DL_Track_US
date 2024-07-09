@@ -46,17 +46,17 @@ from skimage.morphology import skeletonize
 
 # load fascicle mask
 fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 # load aponeurosis mask
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00006.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 # load ultrasound image
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00006.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -74,7 +74,7 @@ filter_fasc = True
 calib_dist = None
 spacing = 10
 
-approach = 3
+approach = 1
 
 
 def Curved_Approach_1(
