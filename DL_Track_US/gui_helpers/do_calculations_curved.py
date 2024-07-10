@@ -46,17 +46,17 @@ from skimage.morphology import skeletonize
 
 # load fascicle mask
 fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00060.tif",
     cv2.IMREAD_UNCHANGED,
 )
 # load aponeurosis mask
 apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00001.jpg",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00060.jpg",
     cv2.IMREAD_UNCHANGED,
 )
 # load ultrasound image
 original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00060.tif",
     cv2.IMREAD_UNCHANGED,
 )
 
@@ -288,204 +288,63 @@ def Curved_Approach_1(
         color = colormap(i)
         x = all_coordsX[i]
         y = all_coordsY[i]
+        points = np.zeros(2 * len(number_contours[i]))
+        points_arrays = [[] for _ in range(2 * len(number_contours[i]) + 2)]
+
+        for j in range(len(number_contours[i])):
+            points[2 * j] = contours_sorted_x[number_contours[i][j]][0]
+            points[2 * j + 1] = contours_sorted_x[number_contours[i][j]][-1]
 
         if len(number_contours[i]) == 1:
-            a = contours_sorted_x[number_contours[i][0]][0]
-            b = contours_sorted_x[number_contours[i][0]][-1]
-            x_before_a = x[x <= a]
-            y_before_a = y[x <= a]
-            x_after_b = x[x >= b]
-            y_after_b = y[x >= b]
-
-            plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
-            plt.plot(x_after_b, y_after_b, color=color, alpha=0.4)
+            points_arrays[0] = x[x <= points[0]]
+            points_arrays[1] = y[x <= points[0]]
+            plt.plot(points_arrays[0], points_arrays[1], color=color, alpha=0.4)
+            points_arrays[-2] = x[x >= points[-1]]
+            points_arrays[-1] = y[x >= points[-1]]
+            plt.plot(points_arrays[-2], points_arrays[-1], color=color, alpha=0.4)
             plt.plot(
                 contours_sorted_x[number_contours[i][0]],
                 contours_sorted_y[number_contours[i][0]],
                 color="gold",
                 alpha=0.6,
             )
+        else:
+            for j in range(len(number_contours[i])):
+                if j == 0:
+                    points_arrays[0] = x[x <= points[0]]
+                    points_arrays[1] = y[x <= points[0]]
+                    plt.plot(points_arrays[0], points_arrays[1], color=color, alpha=0.4)
+                elif j == len(number_contours[i]) - 1:
+                    points_arrays[-4] = x[(x >= points[-3]) & (x <= points[-2])]
+                    points_arrays[-3] = y[(x >= points[-3]) & (x <= points[-2])]
+                    plt.plot(
+                        points_arrays[-4], points_arrays[-3], color=color, alpha=0.4
+                    )
+                    points_arrays[-2] = x[x >= points[-1]]
+                    points_arrays[-1] = y[x >= points[-1]]
+                    plt.plot(
+                        points_arrays[-2], points_arrays[-1], color=color, alpha=0.4
+                    )
+                else:
+                    points_arrays[2 * j] = x[
+                        (x >= points[2 * j - 1]) & (x <= points[2 * j])
+                    ]
+                    points_arrays[2 * j + 1] = y[
+                        (x >= points[2 * j - 1]) & (x <= points[2 * j])
+                    ]
+                    plt.plot(
+                        points_arrays[2 * j],
+                        points_arrays[2 * j + 1],
+                        color=color,
+                        alpha=0.4,
+                    )
 
-        if len(number_contours[i]) == 2:
-            a = contours_sorted_x[number_contours[i][0]][0]
-            b = contours_sorted_x[number_contours[i][0]][-1]
-            c = contours_sorted_x[number_contours[i][1]][0]
-            d = contours_sorted_x[number_contours[i][1]][-1]
-            x_before_a = x[x <= a]
-            y_before_a = y[x <= a]
-            x_b_to_c = x[(x >= b) & (x <= c)]
-            y_b_to_c = y[(x >= b) & (x <= c)]
-            x_after_d = x[x >= d]
-            y_after_d = y[x >= d]
-
-            plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
-            plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
-            plt.plot(x_after_d, y_after_d, color=color, alpha=0.4)
-            plt.plot(
-                contours_sorted_x[number_contours[i][0]],
-                contours_sorted_y[number_contours[i][0]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][1]],
-                contours_sorted_y[number_contours[i][1]],
-                color="gold",
-                alpha=0.6,
-            )
-
-        if len(number_contours[i]) == 3:
-            a = contours_sorted_x[number_contours[i][0]][0]
-            b = contours_sorted_x[number_contours[i][0]][-1]
-            c = contours_sorted_x[number_contours[i][1]][0]
-            d = contours_sorted_x[number_contours[i][1]][-1]
-            e = contours_sorted_x[number_contours[i][2]][0]
-            f = contours_sorted_x[number_contours[i][2]][-1]
-            x_before_a = x[x <= a]
-            y_before_a = y[x <= a]
-            x_b_to_c = x[(x >= b) & (x <= c)]
-            y_b_to_c = y[(x >= b) & (x <= c)]
-            x_d_to_e = x[(x >= d) & (x <= e)]
-            y_d_to_e = y[(x >= d) & (x <= e)]
-            x_after_f = x[x >= f]
-            y_after_f = y[x >= f]
-
-            plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
-            plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
-            plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
-            plt.plot(x_after_f, y_after_f, color=color, alpha=0.4)
-            plt.plot(
-                contours_sorted_x[number_contours[i][0]],
-                contours_sorted_y[number_contours[i][0]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][1]],
-                contours_sorted_y[number_contours[i][1]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][2]],
-                contours_sorted_y[number_contours[i][2]],
-                color="gold",
-                alpha=0.6,
-            )
-
-        if len(number_contours[i]) == 4:
-            a = contours_sorted_x[number_contours[i][0]][0]
-            b = contours_sorted_x[number_contours[i][0]][-1]
-            c = contours_sorted_x[number_contours[i][1]][0]
-            d = contours_sorted_x[number_contours[i][1]][-1]
-            e = contours_sorted_x[number_contours[i][2]][0]
-            f = contours_sorted_x[number_contours[i][2]][-1]
-            g = contours_sorted_x[number_contours[i][3]][0]
-            h = contours_sorted_x[number_contours[i][3]][-1]
-            x_before_a = x[x <= a]
-            y_before_a = y[x <= a]
-            x_b_to_c = x[(x >= b) & (x <= c)]
-            y_b_to_c = y[(x >= b) & (x <= c)]
-            x_d_to_e = x[(x >= d) & (x <= e)]
-            y_d_to_e = y[(x >= d) & (x <= e)]
-            x_f_to_g = x[(x >= f) & (x <= g)]
-            y_f_to_g = y[(x >= f) & (x <= g)]
-            x_after_h = x[x >= h]
-            y_after_h = y[x >= h]
-
-            plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
-            plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
-            plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
-            plt.plot(x_f_to_g, y_f_to_g, color=color, alpha=0.4)
-            plt.plot(x_after_h, y_after_h, color=color, alpha=0.4)
-            plt.plot(
-                contours_sorted_x[number_contours[i][0]],
-                contours_sorted_y[number_contours[i][0]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][1]],
-                contours_sorted_y[number_contours[i][1]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][2]],
-                contours_sorted_y[number_contours[i][2]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][3]],
-                contours_sorted_y[number_contours[i][3]],
-                color="gold",
-                alpha=0.6,
-            )
-
-        if len(number_contours[i]) == 5:
-            a = contours_sorted_x[number_contours[i][0]][0]
-            b = contours_sorted_x[number_contours[i][0]][-1]
-            c = contours_sorted_x[number_contours[i][1]][0]
-            d = contours_sorted_x[number_contours[i][1]][-1]
-            e = contours_sorted_x[number_contours[i][2]][0]
-            f = contours_sorted_x[number_contours[i][2]][-1]
-            g = contours_sorted_x[number_contours[i][3]][0]
-            h = contours_sorted_x[number_contours[i][3]][-1]
-            m = contours_sorted_x[number_contours[i][3]][0]
-            n = contours_sorted_x[number_contours[i][3]][-1]
-            x_before_a = x[x <= a]
-            y_before_a = y[x <= a]
-            x_b_to_c = x[(x >= b) & (x <= c)]
-            y_b_to_c = y[(x >= b) & (x <= c)]
-            x_d_to_e = x[(x >= d) & (x <= e)]
-            y_d_to_e = y[(x >= d) & (x <= e)]
-            x_f_to_g = x[(x >= f) & (x <= g)]
-            y_f_to_g = y[(x >= f) & (x <= g)]
-            x_h_to_m = x[(x >= h) & (x <= m)]
-            y_h_to_m = y[(x >= h) & (x <= m)]
-            x_after_n = x[x >= n]
-            y_after_n = y[x >= n]
-
-            plt.plot(x_before_a, y_before_a, color=color, alpha=0.4)
-            plt.plot(x_b_to_c, y_b_to_c, color=color, alpha=0.4)
-            plt.plot(x_d_to_e, y_d_to_e, color=color, alpha=0.4)
-            plt.plot(x_f_to_g, y_f_to_g, color=color, alpha=0.4)
-            plt.plot(x_h_to_m, y_h_to_m, color=color, alpha=0.4)
-            plt.plot(x_after_n, y_after_n, color=color, alpha=0.4)
-            plt.plot(
-                contours_sorted_x[number_contours[i][0]],
-                contours_sorted_y[number_contours[i][0]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][1]],
-                contours_sorted_y[number_contours[i][1]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][2]],
-                contours_sorted_y[number_contours[i][2]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][3]],
-                contours_sorted_y[number_contours[i][3]],
-                color="gold",
-                alpha=0.6,
-            )
-            plt.plot(
-                contours_sorted_x[number_contours[i][4]],
-                contours_sorted_y[number_contours[i][4]],
-                color="gold",
-                alpha=0.6,
-            )
-
-        if len(number_contours[i]) > 5:
-            print(">=6 contours detected")
+                plt.plot(
+                    contours_sorted_x[number_contours[i][j]],
+                    contours_sorted_y[number_contours[i][j]],
+                    color="gold",
+                    alpha=0.6,
+                )
 
     plt.imshow(original_image)
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
