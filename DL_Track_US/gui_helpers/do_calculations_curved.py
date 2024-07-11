@@ -13,13 +13,13 @@ This module is specifically designed for single image analysis.
 
 Functions scope
 ---------------
-Curved_Approach_1
+curve_polyfitting
     Function to calculate the fascicle length and pennation angle accounted
-    for curvature following approach 1.
-Curved_Approach_2_3
+    for curvature following a second order polynomial fitting approach.
+curve_connect
     Function to calculate the fascicle length and pennation angle accounted
-    for curvature following approach 2 and 3.
-Orientation_map
+    for curvature following a approach of connecting fascicles.
+orientation_map
     Function to calculate an orientation map based on the fascicle mask.
 doCalculations_curved
     Function to compute muscle architectural parameters accounted for fascicle curvature.
@@ -74,10 +74,10 @@ filter_fasc = True
 calib_dist = None
 spacing = 10
 
-approach = 1
+approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
 
 
-def Curved_Approach_1(
+def curve_polyfitting(
     contours_sorted: list,
     ex_x_LA: list,
     ex_y_LA: list,
@@ -87,7 +87,7 @@ def Curved_Approach_1(
     parameters: dict,
     filter_fasc: bool,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following approach 1
+    """Function to calculate the fascicle length and pennation angle accounted for curvature following a second order polynomial fitting approach
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. By knowing the positions of the aponeuroses, the intersection points between the fascicles and the lower and upper aponeuroses can be determined. Using these intersection points, the fascicle length and pennation angle are calculated.
 
@@ -125,6 +125,10 @@ def Curved_Approach_1(
      fig : matplot.figure
          Figure including the input ultrasound image, the segmented aponeuroses and
          the found fascicles extrapolated between the two aponeuroses.
+
+    Example
+    -------
+    >>> curve_polyfitting(contours_sorted=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36], dtype=int32), array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32), ...], ex_x_LA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, -254.9757951590318, ...], ex_y_LA=[203.6459743268554, 203.64809836232556, 203.65022013210233, 203.6523396361857, ...], ex_x_UA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, ...], ex_y_UA=[45.83649948451378, 45.829729965913046, 45.82296488688939, 45.81620424744281, 45.80944804757331, ...], original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True)
     """
 
     # Set parameters
@@ -353,7 +357,7 @@ def Curved_Approach_1(
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
-def Curved_Approach_2_3(
+def curve_connect(
     contours_sorted: list,
     ex_x_LA: list,
     ex_y_LA: list,
@@ -362,13 +366,13 @@ def Curved_Approach_2_3(
     original_image: np.ndarray,
     parameters: dict,
     filter_fasc: bool,
-    approach: int,
+    approach: str,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following approach 2 and 3
+    """Function to calculate the fascicle length and pennation angle accounted for curvature following linear connection between fascicles
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. This fit is solely for detecting the contours.
-    Approach 2: The first contour of the fascicle is extrapolated to determine its intersection point with the lower aponeurosis.
-    Approach 3: The lower aponeurosis and the first contour are connected using a second-order polynomial fit based on all detected contours.
+    curve_connect_linear: The first contour of the fascicle is extrapolated to determine its intersection point with the lower aponeurosis.
+    curve_connect_poly: The lower aponeurosis and the first contour are connected using a second-order polynomial fit based on all detected contours.
     Following common path for both approaches: After the initial extrapolation, the first contour is added. A linear connection is made from the last point of the current contour to the first point of the next contour, and this next contour is added. This process continues until the final contour is reached. The final contour is then used for a linear extrapolation to determine the intersection point with the upper aponeurosis.
     Adding all these parts together, the function calculates the fascicle length and pennation angle.
 
@@ -392,8 +396,8 @@ def Curved_Approach_2_3(
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
-    approach: int
-        Can either be 2 or 3. If approach 2 is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used. If approach 3 is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
+    approach: str
+        Can either be curve_connect_linear or curve_connect_poly. If curve_connect_linear is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used. If curve_connect_poly is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
 
     Returns
     -------
@@ -408,6 +412,10 @@ def Curved_Approach_2_3(
     fig : matplot.figure
         Figure including the input ultrasound image, the segmented aponeuroses and
         the found fascicles extrapolated between the two aponeuroses.
+
+    Example
+    ------
+    >>> curve_connect(contours_sorted=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36], dtype=int32), array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32), ...], ex_x_LA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, -254.9757951590318, ...], ex_y_LA=[203.6459743268554, 203.64809836232556, 203.65022013210233, 203.6523396361857, ...], ex_x_UA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, ...], ex_y_UA=[45.83649948451378, 45.829729965913046, 45.82296488688939, 45.81620424744281, 45.80944804757331, ...], original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, approach="curve_connect_linear")
     """
 
     # set parameteres
@@ -501,7 +509,7 @@ def Curved_Approach_2_3(
 
     for i in range(len(number_contours)):
 
-        if approach == 2:
+        if approach == "curve_connect_linear":
             # calculate linear fit through first contour of fascicle, extrapolate over the complete image and compute intersection point with lower aponeurosis
             coefficients = np.polyfit(
                 contours_sorted_x[number_contours[i][0]],
@@ -528,7 +536,7 @@ def Curved_Approach_2_3(
             ex_current_fascicle_x = ex_current_fascicle_x[int(locL) : index_first_item]
             ex_current_fascicle_y = ex_current_fascicle_y[int(locL) : index_first_item]
 
-        if approach == 3:
+        if approach == "curve_connect_poly":
             # calculate line from lower aponeurosis to first fascicle according to computed fit from before
             fas_LA_curve = list(zip(all_fascicles_x[i], all_fascicles_y[i]))
             fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
@@ -713,7 +721,7 @@ def Curved_Approach_2_3(
     return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
 
 
-def Orientation_map(
+def orientation_map(
     fas_image: np.ndarray,
     apo_image: np.ndarray,
     g: np.poly1d,
@@ -742,6 +750,10 @@ def Orientation_map(
         List variable containing the estimated pennation angles for the six parts of the image
     fig : matplot.figure
         Figure showing the estimated slope at different points in the region between the two aponeuroses as a heat map
+
+    Example
+    ------
+    >>> orientation_map(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), g=poly1d([ 0.   , -0.006, 40.841]), h=poly1d([ -0.   ,  -0.003, 204.533]))
     """
 
     width = apo_image.shape[1]
@@ -981,7 +993,7 @@ def doCalculations_curved(
     filter_fasc: bool,
     calib_dist: bool,
     spacing: int,
-    approach: int,
+    approach: str,
 ):
     """Function to compute muscle architectural parameters accounted for fascicle curvature
 
@@ -1000,7 +1012,7 @@ def doCalculations_curved(
         Mask of aponeuroses
     parameters : dict
         Dictionary variable containing analysis parameters.
-        These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo, coeff_limit
+        These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
@@ -1014,8 +1026,8 @@ def doCalculations_curved(
         between the two placed points by the user or the scaling bars
         present in the image. This can be 5, 10, 15 or 20 millimeter.
         Must be non-negative and non-zero.
-    approach: int
-        Can either be 1, 2, 3 or 4. 1 calculates the fascicle length and pennation angle according to approach 1 (see documentation of function Curved_Approach_1). 2 and 3 calculates the fascicle length and pennation angle according to approach 2 and 3 (see documentation of function Curved_Approach_2_3). 4 calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function Orientation_map)
+    approach: str
+        Can either be curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map. curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting). curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect). orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
 
     Returns
     -------
@@ -1041,6 +1053,9 @@ def doCalculations_curved(
     -----
     For more detailed documentation, see the respective functions documentation.
 
+    Example
+    ------
+    >>> doCalculations_curved(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, calib_dist = None, spacing = 10, approach = "curve_polyfitting")
     """
 
     start_time = time.time()
@@ -1270,8 +1285,8 @@ def doCalculations_curved(
         )
 
         # calculations depending on chosen approach
-        if approach == 1:
-            fascicle_length, pennation_angle, fig = Curved_Approach_1(
+        if approach == "curve_polyfitting":
+            fascicle_length, pennation_angle, fig = curve_polyfitting(
                 contours_sorted,
                 new_X_LA,
                 new_Y_LA,
@@ -1281,8 +1296,8 @@ def doCalculations_curved(
                 parameters,
                 filter_fasc,
             )
-        if approach == 2 or approach == 3:
-            fascicle_length, pennation_angle, fig = Curved_Approach_2_3(
+        if approach == "curve_connect_linear" or approach == "curve_connect_poly":
+            fascicle_length, pennation_angle, fig = curve_connect(
                 contours_sorted,
                 new_X_LA,
                 new_Y_LA,
@@ -1293,8 +1308,8 @@ def doCalculations_curved(
                 filter_fasc,
                 approach,
             )
-        if approach == 4:
-            fascicle_length, pennation_angle, fig = Orientation_map(
+        if approach == "orientation_map":
+            fascicle_length, pennation_angle, fig = orientation_map(
                 fas_image, apo_image, g, h
             )
 
@@ -1311,7 +1326,7 @@ def doCalculations_curved(
             midthick = midthick / (calib_dist / int(spacing))
 
         # add median fascicle length, median pennation angle and muscle thickness to the plot
-        if approach == 4:
+        if approach == "orientation_map":
             xplot = 75
             yplot = 325
             color = "white"

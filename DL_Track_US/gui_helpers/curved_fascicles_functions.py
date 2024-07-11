@@ -26,7 +26,6 @@ find_complete_fascicle
     Function to find complete fascicles based on connection of single contours.
 crop
     Function to crop the frame around ultrasound images.
-
 """
 
 import bisect
@@ -65,12 +64,13 @@ def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
         Array variable containing all y-coordinated from the
         detected contour.
 
-    Examples
+    Example
     --------
-    #>>> contourEdge(edge="T", contour=[[[195 104]] ... [[196 104]]])
+    >>> contourEdge(edge="T", contour=[[[195 104]] ... [[196 104]]])
     [196 197 198 199 200 ... 952 953 954 955 956 957],
     [120 120 120 120 120 ... 125 125 125 125 125 125]
     """
+
     # Turn tuple into list
     pts = list(contour)
     # sort conntours
@@ -131,12 +131,13 @@ def contourEdge(edge: str, contour: list) -> np.ndarray:
         Array variable containing all y-coordinated from the
         detected contour.
 
-    Examples
+    Example
     --------
     >>> contourEdge(edge="T", contour=[[[195 104]] ... [[196 104]]])
     [196 197 198 199 200 ... 952 953 954 955 956 957],
     [120 120 120 120 120 ... 125 125 125 125 125 125]
     """
+
     # Turn tuple into list
     pts = list(contour)
     # sort conntours
@@ -189,7 +190,7 @@ def sortContours(cnts: list):
     bounding_boxes : tuple
         Tuple containing tuples with sorted bounding boxes.
 
-    Examples
+    Example
     --------
     >>> sortContours(cnts=[array([[[928, 247]], ... [[929, 247]]],
     dtype=int32),
@@ -198,6 +199,7 @@ def sortContours(cnts: list):
     (array([[[928, 247]], ... [[929, 247]]], dtype=int32)),
     ((201, 97, 747, 29), (201, 247, 750, 96))
     """
+
     try:
         # initialize the reverse flag and sort index
         i = 1
@@ -228,7 +230,7 @@ def do_curves_intersect(curve1: list, curve2: list) -> bool:
         'True' if the curves have an intersection point
         'False' if the curves don't have an intersection point
 
-    Examples
+    Example
     --------
     >>> do_curves_intersect(curve1=[(98.06, 263.24), (98.26, 263.19), ...],
     curve2=[(63.45, 258.82), (63.65, 258.76), ...])
@@ -336,7 +338,7 @@ def is_point_in_range(
         'True' if point is within both boundaries
         'False' if point is outside the boundaries
 
-    Examples
+    Example
     --------
     >>> is_point_in_range(x_point=250, y_point=227,
     x_poly=([-200, ..., 800]), lb=([303.165, ..., 130.044]),
@@ -407,7 +409,11 @@ def find_next_fascicle(
     found_fascicle : int
         Integer value of the found fascicle contour, -1 if no contour was found
 
+    Example
+    ------
+    >>> find_next_fascicle(all_contours = , contours_sorted_x=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],dtype=int32),...,array([481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493,494, 495, 496, 497],dtype=int32)]), contours_sorted_y=[array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32),...,array([76, 76, 76, 76, 75, 75, 75, 74, 74, 74, 74, 73, 73, 73, 72, 72, 72],dtype=int32)], x_current_fascicle=array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],dtype=int32), y_current_fascicle=array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32), x_range=array([-256.   , -255.795, -255.59 , ...,  767.59 ,  767.795,  768.   ]), upper_bound=array([243.137, 243.069, 243.001, ..., -97.372, -97.44 , -97.508]), lower_bound=array([263.137, 263.069, 263.001, ..., -77.372, -77.44 , -77.508]), label={0: True, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False})
     """
+
     found_fascicle = 0
 
     for i in range(len(all_contours)):
@@ -493,7 +499,11 @@ def find_complete_fascicle(
     inner_number_contours: list
         List containing the indices of each contour that constitute each fascicle
 
+    Example
+    ------
+    >>> find_complete_fascicle(i=0, contours_sorted_x=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],dtype=int32),...,array([481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497],dtype=int32)]), contours_sorted_y=[array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156],dtype=int32),...,array([76, 76, 76, 76, 75, 75, 75, 74, 74, 74, 74, 73, 73, 73, 72, 72, 72],dtype=int32)], contours_sorted=[[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],dtype=int32),array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32),...]], label={0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False}, mid=256.0, width=512, tolerance=10, coeff_limit=0.000583)
     """
+
     # get upper edge contour of starting fascicle
     current_fascicle_x = contours_sorted_x[i]
     current_fascicle_y = contours_sorted_y[i]
@@ -604,6 +614,10 @@ def crop(original_image: list, image_fas: list, image_apo: list):
         Cropped binary image of fascicles within the original image
     cropped_apo : list
         Cropped binary image of the aponeuroses within the original image
+
+    Example
+    ------
+    >>> crop(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), image_fas = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), image_apo = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8))
     """
 
     # define mask, pixel value has to be higher than 10
