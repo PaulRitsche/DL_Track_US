@@ -111,7 +111,7 @@ def conv_block(inputs, num_filters: int):
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
     # Define second Conv2D layer witch Batchnor and Activation relu
-    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)  # TODO
+    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)  # TODO (x)
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
 
