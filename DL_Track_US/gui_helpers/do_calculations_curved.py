@@ -44,38 +44,6 @@ from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 
-# load fascicle mask
-fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00060.tif",
-    cv2.IMREAD_UNCHANGED,
-)
-# load aponeurosis mask
-apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00060.jpg",
-    cv2.IMREAD_UNCHANGED,
-)
-# load ultrasound image
-original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00060.tif",
-    cv2.IMREAD_UNCHANGED,
-)
-
-parameters = dict(
-    apo_length_thresh=600,
-    fasc_cont_thresh=5,
-    min_width=60,
-    max_pennation=40,
-    min_pennation=5,
-    tolerance=10,
-    tolerance_to_apo=100,
-)
-
-filter_fasc = True
-calib_dist = None
-spacing = 10
-
-approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
-
 
 def curve_polyfitting(
     contours_sorted: list,
@@ -87,7 +55,8 @@ def curve_polyfitting(
     parameters: dict,
     filter_fasc: bool,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following a second order polynomial fitting approach
+    """
+    Function to calculate the fascicle length and pennation angle accounted for curvature following a second order polynomial fitting approach
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. By knowing the positions of the aponeuroses, the intersection points between the fascicles and the lower and upper aponeuroses can be determined. Using these intersection points, the fascicle length and pennation angle are calculated.
 
@@ -368,7 +337,8 @@ def curve_connect(
     filter_fasc: bool,
     approach: str,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following linear connection between fascicles
+    """
+    Function to calculate the fascicle length and pennation angle accounted for curvature following linear connection between fascicles
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. This fit is solely for detecting the contours.
     curve_connect_linear: The first contour of the fascicle is extrapolated to determine its intersection point with the lower aponeurosis.
@@ -985,7 +955,7 @@ def orientation_map(
     return None, split_angles_deg_median, fig
 
 
-def doCalculations_curved(
+def doCalculations_curved(  # TODO rename to snake case
     original_image: np.ndarray,
     fas_image: np.ndarray,
     apo_image: np.ndarray,
@@ -1369,20 +1339,62 @@ def doCalculations_curved(
         total_time = end_time - start_time
         print(total_time)
 
-        return fascicle_length, pennation_angle, midthick, fig
+        return (
+            fascicle_length,
+            pennation_angle,
+            midthick,
+            fig,
+        )  # TODO what about x_low and x_high? Why aren't they returned?
 
     return None, None, None, None
 
 
-fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
-    original_image,
-    fas_image,
-    apo_image,
-    parameters,
-    filter_fasc,
-    calib_dist,
-    spacing,
-    approach,
-)
+def fascicle_calculation():
+    # load fascicle mask
+    fas_image = cv2.imread(
+        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00060.tif",
+        cv2.IMREAD_UNCHANGED,
+    )
+    # load aponeurosis mask
+    apo_image = cv2.imread(
+        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00060.jpg",
+        cv2.IMREAD_UNCHANGED,
+    )
+    # load ultrasound image
+    original_image = cv2.imread(
+        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00060.tif",
+        cv2.IMREAD_UNCHANGED,
+    )
 
-plt.show()
+    parameters = dict(
+        apo_length_thresh=600,
+        fasc_cont_thresh=5,
+        min_width=60,
+        max_pennation=40,
+        min_pennation=5,
+        tolerance=10,
+        tolerance_to_apo=100,
+    )
+
+    filter_fasc = True
+    calib_dist = None
+    spacing = 10
+
+    approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
+
+    fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
+        original_image,
+        fas_image,
+        apo_image,
+        parameters,
+        filter_fasc,
+        calib_dist,
+        spacing,
+        approach,
+    )
+
+    plt.show()
+
+
+if __name__ == "__main__":
+    fascicle_calculation()
