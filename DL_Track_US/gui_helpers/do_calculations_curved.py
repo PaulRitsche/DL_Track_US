@@ -38,43 +38,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import orientationpy
 import pandas as pd
+import tensorflow as tf
 from curved_fascicles_functions import *
+from keras.models import load_model
 from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
-
-# load fascicle mask
-fas_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\fascicle_masks\img_00070.tif",
-    cv2.IMREAD_UNCHANGED,
-)
-# load aponeurosis mask
-apo_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\aponeurosis_masks\img_00070.jpg",
-    cv2.IMREAD_UNCHANGED,
-)
-# load ultrasound image
-original_image = cv2.imread(
-    r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00070.tif",
-    cv2.IMREAD_UNCHANGED,
-)
-
-parameters = dict(
-    apo_length_thresh=600,
-    fasc_cont_thresh=5,
-    min_width=60,
-    max_pennation=40,
-    min_pennation=5,
-    tolerance=10,
-    tolerance_to_apo=100,
-)
-
-filter_fasc = True
-calib_dist = None
-spacing = 10
-
-approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
+from skimage.transform import resize
 
 
 def curve_polyfitting(
@@ -87,7 +58,8 @@ def curve_polyfitting(
     parameters: dict,
     filter_fasc: bool,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following a second order polynomial fitting approach
+    """
+    Function to calculate the fascicle length and pennation angle accounted for curvature following a second order polynomial fitting approach
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. By knowing the positions of the aponeuroses, the intersection points between the fascicles and the lower and upper aponeuroses can be determined. Using these intersection points, the fascicle length and pennation angle are calculated.
 
@@ -368,7 +340,8 @@ def curve_connect(
     filter_fasc: bool,
     approach: str,
 ):
-    """Function to calculate the fascicle length and pennation angle accounted for curvature following linear connection between fascicles
+    """
+    Function to calculate the fascicle length and pennation angle accounted for curvature following linear connection between fascicles
 
     This function identifies individual fascicle contours and connects them if they are likely part of the same fascicle. A second-order polynomial curve is fitted through these contours; if the curvature exceeds a specified range, a linear fit is used instead. This fit is solely for detecting the contours.
     curve_connect_linear: The first contour of the fascicle is extrapolated to determine its intersection point with the lower aponeurosis.
@@ -985,10 +958,13 @@ def orientation_map(
     return None, split_angles_deg_median, fig
 
 
-def doCalculations_curved(
+def doCalculations_curved(  # TODO rename to snake case
     original_image: np.ndarray,
-    fas_image: np.ndarray,
-    apo_image: np.ndarray,
+    img_copy: np.ndarray,
+    h: int,
+    w: int,
+    model_apo,
+    model_fasc,
     parameters: dict,
     filter_fasc: bool,
     calib_dist: bool,
@@ -1006,10 +982,16 @@ def doCalculations_curved(
     ----------
     original_image : np.ndarray
         Ultrasound image to be analysed
-    fas_image : np.ndarray
-        Mask of fascicles
-    apo_image: np.ndarray
-        Mask of aponeuroses
+    img_copy : np.ndarray
+        A copy of the input image.
+    h : int
+        Integer variable containing the height of the input image (original image).
+    w : int
+        Integer variable containing the width of the input image (original image).
+    model_apo :
+        Contains keras model for prediction of aponeuroses
+    model_fasc :
+        Contains keras model for prediction of fascicles
     parameters : dict
         Dictionary variable containing analysis parameters.
         These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo
@@ -1065,18 +1047,43 @@ def doCalculations_curved(
     apo_length_tresh = int(parameters["apo_length_thresh"])
     fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
     min_width = int(parameters["min_width"])
+    apo_threshold = float(parameters["apo_threshold"])
+    fasc_threshold = float(parameters["fasc_threshold"])
+
+    pred_apo = model_apo.predict(original_image)
+    pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
+    # SET APO THS
+    pred_apo = resize(
+        pred_apo, (1, h, w, 1)
+    )  # resize and reshape without threshold, necessary?
+    pred_apo = np.reshape(pred_apo, (h, w))
+    apo_image = resize(
+        pred_apo_t, (1, h, w, 1)
+    )  # resize and reshape with threshold, used in code
+    apo_image = np.reshape(pred_apo_t, (h, w))
+    tf.keras.backend.clear_session()
+
+    # load the fascicle model
+    pred_fasc = model_fasc.predict(original_image)
+    pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THS
+    pred_fasc = resize(pred_fasc, (1, h, w, 1))
+    pred_fasc = np.reshape(pred_fasc, (h, w))
+    fas_image = resize(pred_fasc_t, (1, h, w, 1))
+    fas_image = np.reshape(pred_fasc_t, (h, w))
+    tf.keras.backend.clear_session()
+
+    img_copy = cv2.resize(img_copy, (512, 512))
 
     # crop all three images in order that they don't have a frame
-    original_image, fas_image, apo_image = crop(original_image, fas_image, apo_image)
+    original_image, fas_image, apo_image = crop(img_copy, fas_image, apo_image)
 
     # calculations for aponeuroses
-    apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
-    apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
+    # apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
+    # apo_image_gray = cv2.cvtColor(apo_image_rgb, cv2.COLOR_RGB2GRAY)
+
     width = fas_image.shape[1]
 
-    _, thresh = cv2.threshold(
-        apo_image_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
+    _, thresh = cv2.threshold(apo_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     thresh = thresh.astype("uint8")
     contours, hierarchy = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
@@ -1235,11 +1242,11 @@ def doCalculations_curved(
         new_Y_LA = h(new_X_LA)
 
         # calculations for fascicle mask
-        image_rgb = cv2.cvtColor(fas_image, cv2.COLOR_BGR2RGB)
-        image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+        # image_rgb = cv2.cvtColor(fas_image, cv2.COLOR_BGR2RGB)
+        # image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
 
         # define threshold and find contours around fascicles
-        _, threshF = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY)
+        _, threshF = cv2.threshold(fas_image, 0, 255, cv2.THRESH_BINARY)
         threshF = threshF.astype("uint8")
         contoursF, hierarchy = cv2.findContours(
             threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -1369,20 +1376,81 @@ def doCalculations_curved(
         total_time = end_time - start_time
         print(total_time)
 
-        return fascicle_length, pennation_angle, midthick, fig
+        return (
+            fascicle_length,
+            pennation_angle,
+            midthick,
+            fig,
+        )  # TODO what about x_low and x_high? Why aren't they returned?
 
     return None, None, None, None
 
 
-fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
-    original_image,
-    fas_image,
-    apo_image,
-    parameters,
-    filter_fasc,
-    calib_dist,
-    spacing,
-    approach,
-)
+def fascicle_calculation():
 
-plt.show()
+    parameters = dict(
+        apo_threshold=0.2,
+        fasc_threshold=0.05,
+        apo_length_thresh=400,
+        fasc_cont_thresh=5,
+        min_width=60,
+        max_pennation=40,
+        min_pennation=5,
+        tolerance=10,
+        tolerance_to_apo=100,
+    )
+
+    height = 512
+    width = 512
+
+    apo_modelpath = (
+        "C:/Users/carla/Documents/Master_Thesis/Models/model-apo-VGG16-BCE-512.h5"
+    )
+    fasc_modelpath = (
+        "C:/Users/carla/Documents/Master_Thesis/Models/model-fasc-VGG16-BCE-512.h5"
+    )
+
+    model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+    model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
+
+    # load ultrasound image
+    original_image = cv2.imread(
+        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00016.tif",
+        cv2.IMREAD_UNCHANGED,
+    )
+
+    img_copy = original_image
+
+    original_image = np.reshape(
+        original_image, [-1, original_image.shape[0], original_image.shape[1], 3]
+    )
+    original_image = resize(
+        original_image, (1, 512, 512, 3), mode="constant", preserve_range=True
+    )
+    original_image = original_image / 255.0
+
+    filter_fasc = True
+    calib_dist = None
+    spacing = 10
+
+    approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
+
+    fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
+        original_image,
+        img_copy,
+        height,
+        width,
+        model_apo,
+        model_fasc,
+        parameters,
+        filter_fasc,
+        calib_dist,
+        spacing,
+        approach,
+    )
+
+    plt.show()
+
+
+if __name__ == "__main__":
+    fascicle_calculation()

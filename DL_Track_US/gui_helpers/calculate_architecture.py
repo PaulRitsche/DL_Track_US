@@ -66,6 +66,7 @@ from DL_Track_US.gui_helpers.calibrate import (
 )
 from DL_Track_US.gui_helpers.do_calculations import doCalculations
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
@@ -659,19 +660,21 @@ def calculateBatch(
                         scale_statement = ""
 
                     # Continue with analysis and predict apos and fasicles
-                    fasc_l, pennation, x_low, x_high, midthick, fig = doCalculations(
-                        img=img,
-                        img_copy=img_copy,
-                        h=height,
-                        w=width,
-                        calib_dist=calib_dist,
-                        spacing=spacing,
-                        filename=filename,
-                        model_apo=model_apo,
-                        model_fasc=model_fasc,
-                        scale_statement=scale_statement,
-                        dictionary=dic,
-                        filter_fasc=filter_fasc,
+                    fasc_l, pennation, x_low, x_high, midthick, fig = (
+                        doCalculations(  # TODO increase pocessing speed using the TF API more efficiently
+                            img=img,
+                            img_copy=img_copy,
+                            h=height,
+                            w=width,
+                            calib_dist=calib_dist,
+                            spacing=spacing,
+                            filename=filename,
+                            model_apo=model_apo,
+                            model_fasc=model_fasc,
+                            scale_statement=scale_statement,
+                            dictionary=dic,
+                            filter_fasc=filter_fasc,
+                        )
                     )
 
                     # Append warning to failes files when no aponeurosis was

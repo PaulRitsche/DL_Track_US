@@ -40,6 +40,8 @@ from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 
+# TODO determine how to put it together with doCalculations_curved
+
 
 def sortContours(cnts: list):
     """Function to sort detected contours from proximal to distal.
