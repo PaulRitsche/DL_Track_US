@@ -94,6 +94,10 @@ def curve_polyfitting(
          List variable containing the estimated pennation angles
          based on the segmented fascicle fragments and aponeuroses
          as float.
+    x_low : list
+        List variable containing the intersection points between the fascicles and the lower aponeurosis
+    x_high : list
+        List variable containing the intersection points between the fascicles and the upper aponeurosis
      fig : matplot.figure
          Figure including the input ultrasound image, the segmented aponeuroses and
          the found fascicles extrapolated between the two aponeuroses.
@@ -132,7 +136,10 @@ def curve_polyfitting(
 
     fascicle_data = pd.DataFrame(
         columns=[
-            "number_contours",
+            "x_low",
+            "x_high",
+            "y_low",
+            "y_high" "number_contours",
             "linear_fit",
             "coordsX",
             "coordsY",
@@ -194,6 +201,10 @@ def curve_polyfitting(
 
                 fascicle_data_temp = pd.DataFrame(
                     {
+                        "x_low": [coordsX[0].astype("int32")],
+                        "x_high": [coordsX[-1].astype("int32")],
+                        "y_low": [coordsY[0].astype("int32")],
+                        "y_high": [coordsY[-1].astype("int32")],
                         "number_contours": [inner_number_contours],
                         "linear_fit": linear_fit,
                         "coordsX": [coordsX],
@@ -326,7 +337,13 @@ def curve_polyfitting(
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-    return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
+    return (
+        data["fascicle_length"].tolist(),
+        data["pennation_angle"].tolist(),
+        data["x_low"].tolist(),
+        data["x_high"].tolist(),
+        fig,
+    )
 
 
 def curve_connect(
@@ -382,6 +399,10 @@ def curve_connect(
         List variable containing the estimated pennation angles
         based on the segmented fascicle fragments and aponeuroses
         as float.
+    x_low : list
+        List variable containing the intersection points between the fascicles and the lower aponeurosis
+    x_high : list
+        List variable containing the intersection points between the fascicles and the upper aponeurosis
     fig : matplot.figure
         Figure including the input ultrasound image, the segmented aponeuroses and
         the found fascicles extrapolated between the two aponeuroses.
@@ -421,6 +442,10 @@ def curve_connect(
 
     fascicle_data = pd.DataFrame(
         columns=[
+            "x_low",
+            "x_high",
+            "y_low",
+            "y_high",
             "number_contours",
             "linear_fit",
             "coordsX",
@@ -462,6 +487,10 @@ def curve_connect(
 
             fascicle_data_temp = pd.DataFrame(
                 {
+                    "x_low": None,
+                    "x_high": None,
+                    "y_low": None,
+                    "y_high": None,
                     "number_contours": [inner_number_contours],
                     "linear_fit": linear_fit,
                     "coordsX": None,
@@ -586,6 +615,10 @@ def curve_connect(
 
         coordsXY = list(zip(coordsX_combined, coordsY_combined))
 
+        fascicle_data.at[i, "x_low"] = coordsX_combined[0]
+        fascicle_data.at[i, "x_high"] = coordsX_combined[-1]
+        fascicle_data.at[i, "y_low"] = coordsY_combined[0]
+        fascicle_data.at[i, "y_high"] = coordsY_combined[-1]
         fascicle_data.at[i, "coordsX"] = (
             coordsX  # x-coordinates of all sections as list in list
         )
@@ -691,7 +724,13 @@ def curve_connect(
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-    return data["fascicle_length"].tolist(), data["pennation_angle"].tolist(), fig
+    return (
+        data["fascicle_length"].tolist(),
+        data["pennation_angle"].tolist(),
+        data["x_low"].tolist(),
+        data["x_high"].tolist(),
+        fig,
+    )
 
 
 def orientation_map(
@@ -955,7 +994,7 @@ def orientation_map(
         color="white",
     )
 
-    return None, split_angles_deg_median, fig
+    return None, split_angles_deg_median, None, None, fig
 
 
 def doCalculations_curved(
@@ -1030,6 +1069,10 @@ def doCalculations_curved(
         between the lower and upper aponeurosis in pixel units.
         If calib_dist is specified, then the distance is computed
         in centimeter.
+    x_low : list
+        List variable containing the intersection points between the fascicles and the lower aponeurosis
+    x_high : list
+        List variable containing the intersection points between the fascicles and the upper aponeurosis
     fig : matplot.figure
         Figure including the input ultrasound image, the segmented aponeuroses and
         the found fascicles extrapolated between the two aponeuroses.
@@ -1288,7 +1331,7 @@ def doCalculations_curved(
 
         # calculations depending on chosen approach
         if approach == "curve_polyfitting":
-            fascicle_length, pennation_angle, fig = curve_polyfitting(
+            fascicle_length, pennation_angle, x_low, x_high, fig = curve_polyfitting(
                 contours_sorted,
                 new_X_LA,
                 new_Y_LA,
@@ -1299,7 +1342,7 @@ def doCalculations_curved(
                 filter_fasc,
             )
         if approach == "curve_connect_linear" or approach == "curve_connect_poly":
-            fascicle_length, pennation_angle, fig = curve_connect(
+            fascicle_length, pennation_angle, x_low, x_high, fig = curve_connect(
                 contours_sorted,
                 new_X_LA,
                 new_Y_LA,
@@ -1311,7 +1354,7 @@ def doCalculations_curved(
                 approach,
             )
         if approach == "orientation_map":
-            fascicle_length, pennation_angle, fig = orientation_map(
+            fascicle_length, pennation_angle, x_low, x_high, fig = orientation_map(
                 fas_image, apo_image, g, h
             )
 
@@ -1375,14 +1418,15 @@ def doCalculations_curved(
             fascicle_length,
             pennation_angle,
             midthick,
+            x_low,
+            x_high,
             fig,
         )  # TODO what about x_low and x_high? Why aren't they returned?
 
-    return None, None, None, None
+    return None, None, None, None, None, None
 
 
 def fascicle_calculation():
-
     parameters = dict(
         apo_threshold=0.2,
         fasc_threshold=0.05,
@@ -1410,7 +1454,7 @@ def fascicle_calculation():
 
     # load ultrasound image
     original_image = cv2.imread(
-        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00016.tif",
+        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
         cv2.IMREAD_UNCHANGED,
     )
 
@@ -1430,18 +1474,20 @@ def fascicle_calculation():
 
     approach = "curve_polyfitting"  # curve_polyfitting, curve_connect_linear, curve_connect_poly, orientation_map
 
-    fascicle_length, pennation_angle, midthick, fig = doCalculations_curved(
-        original_image,
-        img_copy,
-        height,
-        width,
-        model_apo,
-        model_fasc,
-        parameters,
-        filter_fasc,
-        calib_dist,
-        spacing,
-        approach,
+    fascicle_length, pennation_angle, midthick, x_low, x_high, fig = (
+        doCalculations_curved(
+            original_image,
+            img_copy,
+            height,
+            width,
+            model_apo,
+            model_fasc,
+            parameters,
+            filter_fasc,
+            calib_dist,
+            spacing,
+            approach,
+        )
     )
 
     plt.show()
