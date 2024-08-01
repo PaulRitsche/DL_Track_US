@@ -1428,7 +1428,7 @@ def doCalculations_curved(  # TODO rename to snake case
             fig,
         )  # TODO what about x_low and x_high? Why aren't they returned?
 
-    return None, None, None, None
+    return None, None, None, None, None, None
 
 
 def fascicle_calculation():
