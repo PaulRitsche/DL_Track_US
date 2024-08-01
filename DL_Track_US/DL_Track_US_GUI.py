@@ -289,7 +289,7 @@ class DLTrack(ctk.CTk):
         # Configure resizing of user interface
         for row in range(21):
             self.main.rowconfigure(row, weight=1)
-        for column in range(4):
+        for column in range(3):
             self.main.rowconfigure(column, weight=1)
 
         self.rowconfigure(0, weight=1)
@@ -432,8 +432,6 @@ class DLTrack(ctk.CTk):
         self.filter_no.grid(column=2, row=16, sticky=(W, E))
         self.filter_fasc.set(False)
 
-        ctk.CTkSwitch(self.main).grid(column=3, row=13)
-
         # Image Flipping
         self.flip_label = ctk.CTkLabel(self.main, text="Flip File Path")
         self.flip_label.grid(column=0, row=17)
@@ -517,6 +515,14 @@ class DLTrack(ctk.CTk):
         # Make frame for results
         self.results = ctk.CTkFrame(self)
         self.results.grid(column=1, row=0,  sticky=(N, S, W, E))
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=4)
+        self.results.rowconfigure(0, weight=1)
+        self.results.columnconfigure(0, weight=1)
+
+        # Configure rows with a loop
+        for row in range(5):
+            self.results.rowconfigure(row, weight=1)
 
         # Create logo canvas figure
         self.logo_canvas = Canvas(
@@ -860,6 +866,21 @@ class DLTrack(ctk.CTk):
             self.is_running = False
             self.do_break()
             return
+        
+
+        # Define dictionary containing settings
+        settings = {
+            "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
+            "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
+            "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
+            "fascicle_length_threshold": self.settings.fascicle_length_threshold,
+            "minimal_muscle_width": self.settings.minimal_muscle_width,
+            "minimal_pennation_angle": self.settings.minimal_pennation_angle,
+            "maximal_pennation_angle": self.settings.maximal_pennation_angle,
+            "fascicle_calculation_method": self.settings.fascicle_calculation_method,
+            "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
+            "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
+        }
 
         # Start thread depending on Analysis type
         if self.analysis_type.get() == "image":
@@ -874,20 +895,17 @@ class DLTrack(ctk.CTk):
                 self.do_break()
                 return
 
+            # Get relevant UI parameters
             selected_flipflag_path = self.flipflag_dir
             selected_apo_model_path = self.apo_model
             selected_fasc_model_path = self.fasc_model
             selected_scaling = self.scaling.get()
             selected_spacing = self.spacing.get()
-            selected_apo_threshold = self.settings.aponeurosis_detection_threshold
-            selected_apo_length_threshold = self.settings.aponeurosis_length_threshold
-            selected_fasc_threshold = self.settings.fascicle_detection_threshold
-            selected_fasc_cont_threshold = self.settings.fascicle_length_threshold
             selected_min_width = self.settings.minimal_muscle_width
             selected_min_pennation = self.settings.minimal_pennation_angle
             selected_max_pennation = self.settings.maximal_pennation_angle
             selected_filter_fasc = self.filter_fasc.get()
-            selected_fasc_calculation_method = self.settings.fascicle_calculation_method
+
             thread = Thread(
                 target=gui_helpers.calculateBatch,
                 args=(
@@ -899,14 +917,7 @@ class DLTrack(ctk.CTk):
                     selected_scaling,
                     int(selected_spacing),
                     int(selected_filter_fasc),
-                    str(selected_fasc_calculation_method),
-                    float(selected_apo_threshold),
-                    int(selected_apo_length_threshold),
-                    float(selected_fasc_threshold),
-                    int(selected_fasc_cont_threshold),
-                    int(selected_min_width),
-                    int(selected_min_pennation),
-                    int(selected_max_pennation),
+                    settings, 
                     self,
                 ),
             )

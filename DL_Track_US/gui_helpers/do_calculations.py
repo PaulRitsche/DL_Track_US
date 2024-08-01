@@ -32,6 +32,8 @@ import tkinter as tk
 
 import cv2
 import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -40,6 +42,7 @@ from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 from DL_Track_US.gui_helpers.curved_fascicles_functions import crop
+
 
 # TODO determine how to put it together with doCalculations_curved
 # TODO ask Neil about relevance of Xlow Xhigh
@@ -334,13 +337,13 @@ def doCalculations(  # TODO adapt docstring
     dic = dictionary
 
     # Get variables from dictionary
-    fasc_cont_thresh = int(dic["fasc_cont_thresh"])
-    min_width = int(dic["min_width"])
-    max_pennation = int(dic["max_pennation"])
-    min_pennation = int(dic["min_pennation"])
-    apo_threshold = float(dic["apo_threshold"])
-    fasc_threshold = float(dic["fasc_threshold"])
-    apo_length_tresh = int(dic["apo_length_thresh"])
+    fasc_cont_thresh = int(dic["fascicle_length_threshold"])
+    min_width = int(dic["minimal_muscle_width"])
+    max_pennation = int(dic["maximal_pennation_angle"])
+    min_pennation = int(dic["minimal_pennation_angle"])
+    apo_threshold = float(dic["aponeurosis_detection_threshold"])
+    fasc_threshold = float(dic["fascicle_detection_threshold"])
+    apo_length_tresh = int(dic["aponeurosis_length_threshold"])
 
     pred_apo = model_apo.predict(original_image)
     pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)

@@ -474,14 +474,7 @@ def calculateBatch(
     scaling: str,
     spacing: int,
     filter_fasc: bool,
-    fasc_calculation_approach: str,
-    apo_treshold: float,
-    apo_length_tresh: int,
-    fasc_threshold: float,
-    fasc_cont_thresh: int,
-    min_width: int,
-    min_pennation: int,
-    max_pennation: int,
+    settings: dict,
     gui,
 ) -> None:
     """Function to calculate muscle architecture in longitudinal
@@ -530,52 +523,8 @@ def calculateBatch(
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
-    fasc_calculation_approach: str
-        Can either be curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
-        curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting).
-        curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect).
-        orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
-    apo_threshold : float
-        Float variable containing the threshold applied to predicted
-        aponeurosis pixels by our neural networks. By varying this
-        threshold, different structures will be classified as
-        aponeurosis as the threshold for classifying
-        a pixel as aponeurosis is changed. Must be non-zero and
-        non-negative.
-    apo_length_tresh : int
-        Integer variable containing the threshold applied to predicted
-        aponeurosis length in pixels. By varying this
-        threshold, different structures will be classified as
-        aponeurosis depending on their length. Must be non-zero and
-        non-negative.
-    fasc_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for
-        classifying a pixel as fascicle is changed.
-    fasc_cont_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer
-        fascicle segments will be considered, by lowering shorter segments.
-        Must be non-zero and non-negative.
-    min_width : int
-        Integer variable containing the minimal distance between aponeuroses
-        to be detected. The aponeuroses must be at least this distance apart
-        to be detected. The distance is specified in pixels.
-        Must be non-zero and non-negative.
-    min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles
-        with lower pennation angles will be excluded.
-        The pennation angle is calculated as the amgle of insertion between
-        extrapolated fascicle and detected aponeurosis. Must be non-negative.
-    max_pennation : int
-        Integer variable containing the maximal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles
-        with higher pennation angles will be excluded.
-        The pennation angle is calculated as the amgle of insertion between
-        extrapolated fascicle and detected aponeurosis. Must be non-negative.
+    settings : dict
+        Dictionary containing the analysis settings of the GUI.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -603,9 +552,7 @@ def calculateBatch(
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
                        filetype="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
-                       apo_threshold=0.1, apo_length_tresh=600,
-                       fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
-                       min_pennation=10, max_pennation=35,
+                       settings=settings,
                        gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     """
     # Get list of files
@@ -635,29 +582,22 @@ def calculateBatch(
         gui.do_break()
         return
 
-    # Create dictionary with aponeurosis/fascicle analysis values
-    dic = {
-        "apo_threshold": apo_treshold,
-        "apo_length_thresh": apo_length_tresh,
-        "fasc_threshold": fasc_threshold,
-        "fasc_cont_thresh": fasc_cont_thresh,
-        "min_width": min_width,
-        "min_pennation": min_pennation,
-        "max_pennation": max_pennation,
-    }  # TODO make dictionary input from UI
-
     # Check if analysis parameters are postive
-    for _, value in dic.items():
+    # TODO check if settings file is correct.
+    # for _, value in settings.items():
 
-        if float(value) <= 0:
-            tk.messagebox.showerror(
-                "Information",
-                "Analysis paremters must be non-zero" + " and non-negative",
-            )
-            gui.should_stop = False
-            gui.is_running = False
-            gui.do_break()
-            return
+    #     if float(value) <= 0:
+    #         tk.messagebox.showerror(
+    #             "Information",
+    #             "Analysis paremters must be non-zero" + " and non-negative",
+    #         )
+    #         gui.should_stop = False
+    #         gui.is_running = False
+    #         gui.do_break()
+    #         return
+
+    # Get fascicle calcilation approach
+    fasc_calculation_approach = settings["fascicle_calculation_method"]
 
     # Define list for failed files
     failed_files = []
@@ -747,77 +687,77 @@ def calculateBatch(
                                 model_apo=image_processor.model_apo,
                                 model_fasc=image_processor.model_fasc,
                                 scale_statement=scale_statement,
-                                dictionary=dic,
+                                dictionary=settings,
                                 filter_fasc=filter_fasc,
                             )
                         )
-                        x_low = None
-                        x_high = None
 
                     elif fasc_calculation_approach == "curve_polyfitting":
-                        fasc_l, pennation, midthick, fig = doCalculations_curved(
-                            original_image=img,
-                            img_copy=img_copy,
-                            h=height,
-                            w=width,
-                            model_apo=image_processor.model_apo,
-                            model_fasc=image_processor.model_fasc,
-                            parameters=dic,
-                            filter_fasc=filter_fasc,
-                            calib_dist=calib_dist,
-                            spacing=spacing,
-                            approach="curve_polyfitting",
+                        fasc_l, pennation, midthick, x_low, x_high, fig = (
+                            doCalculations_curved(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                dic=settings,
+                                filter_fasc=filter_fasc,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                approach="curve_polyfitting",
+                            )
                         )
-                        x_low = None
-                        x_high = None
 
                     elif fasc_calculation_approach == "curve_connect_linear":
-                        fasc_l, pennation, midthick, fig = doCalculations_curved(
-                            original_image=img,
-                            img_copy=img_copy,
-                            h=height,
-                            w=width,
-                            model_apo=image_processor.model_apo,
-                            model_fasc=image_processor.model_fasc,
-                            parameters=dic,
-                            filter_fasc=filter_fasc,
-                            calib_dist=calib_dist,
-                            spacing=spacing,
-                            approach="curve_connect_linear",
+                        fasc_l, pennation, midthick, x_low, x_high, fig = (
+                            doCalculations_curved(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                dic=settings,
+                                filter_fasc=filter_fasc,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                approach="curve_connect_linear",
+                            )
                         )
-                        x_low = None
-                        x_high = None
 
                     elif fasc_calculation_approach == "curve_connect_poly":
-                        fasc_l, pennation, midthick, fig = doCalculations_curved(
-                            original_image=img,
-                            img_copy=img_copy,
-                            h=height,
-                            w=width,
-                            model_apo=image_processor.model_apo,
-                            model_fasc=image_processor.model_fasc,
-                            parameters=dic,
-                            filter_fasc=filter_fasc,
-                            calib_dist=calib_dist,
-                            spacing=spacing,
-                            approach="curve_connect_poly",
+                        fasc_l, pennation, midthick, x_low, x_high, fig = (
+                            doCalculations_curved(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                dic=settings,
+                                filter_fasc=filter_fasc,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                approach="curve_connect_poly",
+                            )
                         )
-                        x_low = None
-                        x_high = None
 
                     elif fasc_calculation_approach == "orientation_map":
-                        fasc_l, pennation, midthick, fig = doCalculations_curved(
-                            original_image=img,
-                            img_copy=img_copy,
-                            h=height,
-                            w=width,
-                            model_apo=image_processor.model_apo,
-                            model_fasc=image_processor.model_fasc,
-                            parameters=dic,
-                            filter_fasc=filter_fasc,
-                            calib_dist=calib_dist,
-                            spacing=spacing,
-                            approach="orientation_map",
+                        fasc_l, pennation, midthick, x_low, x_high, fig = (
+                            doCalculations_curved(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                dic=settings,
+                                filter_fasc=filter_fasc,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                approach="orientation_map",
+                            )
                         )
                         x_low = None
                         x_high = None
@@ -841,7 +781,7 @@ def calculateBatch(
                     )
 
                     # Sorting the DataFrame according to X_low
-                    # df_sorted = df.sort_values(by="X_low")
+                    df_sorted = df.sort_values(by="X_low")
 
                     # Append parameters to overall list
                     fascicles_all.append(df_sorted["Fascicles"].tolist())

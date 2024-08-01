@@ -33,6 +33,9 @@ import math
 import time
 
 import cv2
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,10 +111,10 @@ def curve_polyfitting(
     """
 
     # Set parameters
-    tolerance = int(parameters["tolerance"])
-    tolerance_to_apo = int(parameters["tolerance_to_apo"])
-    max_pennation = int(parameters["max_pennation"])
-    min_pennation = int(parameters["min_pennation"])
+    tolerance = int(parameters["fascicle_contour_tolerance"])
+    tolerance_to_apo = int(parameters["aponeurosis_distance_tolerance"])
+    max_pennation = int(parameters["maximal_pennation_angle"])
+    min_pennation = int(parameters["minimal_pennation_angle"])
     coeff_limit = 0.000583
 
     # get upper edge of each contour
@@ -413,10 +416,10 @@ def curve_connect(
     """
 
     # set parameteres
-    tolerance = int(parameters["tolerance"])
-    tolerance_to_apo = int(parameters["tolerance_to_apo"])
-    max_pennation = int(parameters["max_pennation"])
-    min_pennation = int(parameters["min_pennation"])
+    tolerance = int(parameters["fascicle_contour_tolerance"])
+    tolerance_to_apo = int(parameters["aponeurosis_distance_tolerance"])
+    max_pennation = int(parameters["maximal_pennation_angle"])
+    min_pennation = int(parameters["minimal_pennation_angle"])
     coeff_limit = 0.000583
 
     # get upper edge of each contour
@@ -706,12 +709,10 @@ def curve_connect(
         ):  # Don't include 'fascicles' beyond a range of PA
             data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    print(data)
-
-    fig = plt.figure()
+    fig = plt.figure(figsize=(25, 25))
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
-    plt.imshow(original_image)
+    plt.imshow(original_image, cmap="gray")  # TODO
     for i in range(len(all_coordsX)):
         color = colormap(i)
         for j in range(len(all_coordsX[i])):
@@ -1004,7 +1005,7 @@ def doCalculations_curved(
     w: int,
     model_apo,
     model_fasc,
-    parameters: dict,
+    dic: dict,
     filter_fasc: bool,
     calib_dist: bool,
     spacing: int,
@@ -1031,7 +1032,7 @@ def doCalculations_curved(
         Contains keras model for prediction of aponeuroses
     model_fasc :
         Contains keras model for prediction of fascicles
-    parameters : dict
+    dic : dict
         Dictionary variable containing analysis parameters.
         These include apo_length_threshold, apo_length_thresh, fasc_cont_thresh, min_width, max_pennation,min_pennation, tolerance, tolerance_to_apo
     filter_fasc : bool
@@ -1083,20 +1084,17 @@ def doCalculations_curved(
 
     Example
     ------
-    >>> doCalculations_curved(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, calib_dist = None, spacing = 10, approach = "curve_polyfitting")
+    >>> doCalculations_curved(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), dic={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, calib_dist = None, spacing = 10, approach = "curve_polyfitting")
     """
 
     start_time = time.time()
 
-    parameters = parameters
-
-    apo_length_tresh = int(parameters["apo_length_thresh"])
-    fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
-    min_width = int(parameters["min_width"])
-    apo_threshold = float(parameters["apo_threshold"])
-    fasc_threshold = float(
-        parameters["fasc_threshold"]
-    )  # TODO why are there no pennation thresholds?
+    # Get variables from dictionary
+    fasc_cont_thresh = int(dic["fascicle_length_threshold"])
+    min_width = int(dic["minimal_muscle_width"])
+    apo_threshold = float(dic["aponeurosis_detection_threshold"])
+    fasc_threshold = float(dic["fascicle_detection_threshold"])
+    apo_length_tresh = int(dic["aponeurosis_length_threshold"])
 
     pred_apo = model_apo.predict(original_image)
     pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
@@ -1337,8 +1335,8 @@ def doCalculations_curved(
                 new_Y_LA,
                 new_X_UA,
                 new_Y_UA,
-                original_image,
-                parameters,
+                img_copy,
+                dic,
                 filter_fasc,
             )
         if approach == "curve_connect_linear" or approach == "curve_connect_poly":
@@ -1348,8 +1346,8 @@ def doCalculations_curved(
                 new_Y_LA,
                 new_X_UA,
                 new_Y_UA,
-                original_image,
-                parameters,
+                img_copy,
+                dic,
                 filter_fasc,
                 approach,
             )
@@ -1421,7 +1419,7 @@ def doCalculations_curved(
             x_low,
             x_high,
             fig,
-        )  # TODO what about x_low and x_high? Why aren't they returned?
+        )
 
     return None, None, None, None, None, None
 
