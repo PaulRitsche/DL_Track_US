@@ -887,6 +887,7 @@ class DLTrack(ctk.CTk):
             selected_min_pennation = self.settings.minimal_pennation_angle
             selected_max_pennation = self.settings.maximal_pennation_angle
             selected_filter_fasc = self.filter_fasc.get()
+            selected_fasc_calculation_method = self.settings.fascicle_calculation_method
             thread = Thread(
                 target=gui_helpers.calculateBatch,
                 args=(
@@ -898,7 +899,7 @@ class DLTrack(ctk.CTk):
                     selected_scaling,
                     int(selected_spacing),
                     int(selected_filter_fasc),
-
+                    str(selected_fasc_calculation_method),
                     float(selected_apo_threshold),
                     int(selected_apo_length_threshold),
                     float(selected_fasc_threshold),

@@ -39,8 +39,13 @@ import tensorflow as tf
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
+from DL_Track_US.gui_helpers.curved_fascicles_functions import crop
 
 # TODO determine how to put it together with doCalculations_curved
+# TODO ask Neil about relevance of Xlow Xhigh
+# TODO ask Neil about the model, especially concerning the labelled input
+# TODO ask Neil about comparison models
+# TODO ask Neil about labelled data
 
 
 def sortContours(cnts: list):
@@ -194,8 +199,8 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     return df[df["keep"]].drop(columns=["keep"])
 
 
-def doCalculations(
-    img: np.ndarray,
+def doCalculations(  # TODO adapt docstring
+    original_image: np.ndarray,
     img_copy: np.ndarray,
     h: int,
     w: int,
@@ -222,7 +227,7 @@ def doCalculations(
 
     Parameters
     ----------
-    img : np.ndarray
+    original_image : np.ndarray
             Normalized, reshaped and rescaled rayscale image to be
             analysed as a numpy array. The image must
             be loaded prior to model inputting, specifying a path
@@ -246,12 +251,10 @@ def doCalculations(
     filename : str
         String value containing the name of the input image, not the
         entire path.
-    apo_modelpath : str
-        String variable containing the absolute path to the aponeurosis
-        neural network.
-    fasc_modelpath : str
-        String variable containing the absolute path to the fascicle
-        neural network.
+    model_apo :
+        Contains keras model for prediction of aponeuroses
+    model_fasc :
+        Contains keras model for prediction of fascicles
     scale_statement : str
         String variable containing a statement how many milimeter
         correspond to how many pixels. If calib_dist is "None", scale statement
@@ -335,27 +338,24 @@ def doCalculations(
     min_width = int(dic["min_width"])
     max_pennation = int(dic["max_pennation"])
     min_pennation = int(dic["min_pennation"])
-    apo_threshold = float(dic["apo_treshold"])
+    apo_threshold = float(dic["apo_threshold"])
     fasc_threshold = float(dic["fasc_threshold"])
-    apo_length_tresh = int(dic["apo_length_tresh"])
+    apo_length_tresh = int(dic["apo_length_thresh"])
 
-    pred_apo = model_apo.predict(img)
+    pred_apo = model_apo.predict(original_image)
     pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
-    # SET APO THS
-    pred_apo = resize(pred_apo, (1, h, w, 1))
-    pred_apo = np.reshape(pred_apo, (h, w))
     pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
-    pred_apo_t = np.reshape(pred_apo_t, (h, w))
-    tf.keras.backend.clear_session()
+    apo_image = np.reshape(pred_apo_t, (h, w))
 
     # load the fascicle model
-    pred_fasc = model_fasc.predict(img)
+    pred_fasc = model_fasc.predict(original_image)
     pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THS
-    pred_fasc = resize(pred_fasc, (1, h, w, 1))
-    pred_fasc = np.reshape(pred_fasc, (h, w))
     pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
-    pred_fasc_t = np.reshape(pred_fasc_t, (h, w))
+    fas_image = np.reshape(pred_fasc_t, (h, w))
     tf.keras.backend.clear_session()
+
+    # crop all three images in order that they don't have a frame
+    # original_image, fas_image, apo_image = crop(img_copy, fas_image, apo_image)
 
     fasc_l = []
     pennation = []
@@ -363,7 +363,7 @@ def doCalculations(
     x_high = []
 
     # Compute contours to identify the aponeuroses
-    _, thresh = cv2.threshold(pred_apo_t, 0, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(apo_image, 0, 255, cv2.THRESH_BINARY)
     thresh = thresh.astype("uint8")
     contours, hierarchy = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
@@ -519,7 +519,7 @@ def doCalculations(
         new_Y_LA = h(new_X_LA)
 
         # Compute contours to identify fascicles/fascicle orientation
-        _, threshF = cv2.threshold(pred_fasc_t, 0, 255, cv2.THRESH_BINARY)
+        _, threshF = cv2.threshold(fas_image, 0, 255, cv2.THRESH_BINARY)
         threshF = threshF.astype("uint8")
         contoursF, hierarchy = cv2.findContours(
             threshF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE

@@ -39,7 +39,7 @@ import numpy as np
 import orientationpy
 import pandas as pd
 import tensorflow as tf
-from curved_fascicles_functions import *
+from DL_Track_US.gui_helpers.curved_fascicles_functions import *
 from keras.models import load_model
 from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d
@@ -958,7 +958,7 @@ def orientation_map(
     return None, split_angles_deg_median, fig
 
 
-def doCalculations_curved(  # TODO rename to snake case
+def doCalculations_curved(
     original_image: np.ndarray,
     img_copy: np.ndarray,
     h: int,
@@ -1009,7 +1009,10 @@ def doCalculations_curved(  # TODO rename to snake case
         present in the image. This can be 5, 10, 15 or 20 millimeter.
         Must be non-negative and non-zero.
     approach: str
-        Can either be curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map. curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting). curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect). orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
+        Can either be curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
+        curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting).
+        curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect).
+        orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
 
     Returns
     -------
@@ -1048,34 +1051,24 @@ def doCalculations_curved(  # TODO rename to snake case
     fasc_cont_thresh = int(parameters["fasc_cont_thresh"])
     min_width = int(parameters["min_width"])
     apo_threshold = float(parameters["apo_threshold"])
-    fasc_threshold = float(parameters["fasc_threshold"])
+    fasc_threshold = float(
+        parameters["fasc_threshold"]
+    )  # TODO why are there no pennation thresholds?
 
     pred_apo = model_apo.predict(original_image)
     pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
-    # SET APO THS
-    pred_apo = resize(
-        pred_apo, (1, h, w, 1)
-    )  # resize and reshape without threshold, necessary?
-    pred_apo = np.reshape(pred_apo, (h, w))
-    apo_image = resize(
-        pred_apo_t, (1, h, w, 1)
-    )  # resize and reshape with threshold, used in code
+    pred_apo_t = resize(pred_apo_t, (1, h, w, 1))
     apo_image = np.reshape(pred_apo_t, (h, w))
-    tf.keras.backend.clear_session()
 
     # load the fascicle model
     pred_fasc = model_fasc.predict(original_image)
     pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)  # SET FASC THS
-    pred_fasc = resize(pred_fasc, (1, h, w, 1))
-    pred_fasc = np.reshape(pred_fasc, (h, w))
-    fas_image = resize(pred_fasc_t, (1, h, w, 1))
+    pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
     fas_image = np.reshape(pred_fasc_t, (h, w))
     tf.keras.backend.clear_session()
 
-    img_copy = cv2.resize(img_copy, (512, 512))
-
     # crop all three images in order that they don't have a frame
-    original_image, fas_image, apo_image = crop(img_copy, fas_image, apo_image)
+    # original_image, fas_image, apo_image = crop(img_copy, fas_image, apo_image) #TODO first image is always misplaced
 
     # calculations for aponeuroses
     # apo_image_rgb = cv2.cvtColor(apo_image, cv2.COLOR_BGR2RGB)
@@ -1083,7 +1076,9 @@ def doCalculations_curved(  # TODO rename to snake case
 
     width = fas_image.shape[1]
 
-    _, thresh = cv2.threshold(apo_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    _, thresh = cv2.threshold(
+        apo_image, 0, 255, cv2.THRESH_BINARY  # + cv2.THRESH_OTSU
+    )  # TODO Why an additional OTSU? This is not done in the original code
     thresh = thresh.astype("uint8")
     contours, hierarchy = cv2.findContours(
         thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE

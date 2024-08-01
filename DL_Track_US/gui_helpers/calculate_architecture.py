@@ -54,6 +54,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from keras import backend as K
 from keras.models import load_model
 from matplotlib.backends.backend_pdf import PdfPages
@@ -70,6 +71,69 @@ from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
+
+# Ensure eager execution is enabled
+tf.config.run_functions_eagerly(True)
+tf.data.experimental.enable_debug_mode()
+
+
+class ImageProcessor:
+    def __init__(
+        self, model_apo_path, model_fasc_path, preprocess_function, batch_size=1
+    ):
+        self.preprocess_function = preprocess_function
+        self.batch_size = batch_size
+        self.model_apo = tf.keras.models.load_model(
+            model_apo_path, custom_objects={"IoU": self.get_iou}
+        )
+        self.model_fasc = tf.keras.models.load_model(
+            model_fasc_path, custom_objects={"IoU": self.get_iou}
+        )
+
+    def get_iou(self, y_true, y_pred, smooth: int = 1):
+        # Calculate Intersection
+        intersect = K.sum(K.abs(y_true * y_pred), axis=-1)
+        # Calculate Union
+        union = K.sum(y_true, -1) + K.sum(y_pred, -1) - intersect
+        # Caclulate iou
+        iou = (intersect + smooth) / (union + smooth)
+
+        return iou
+
+    # TODO do all the predictions here and then import the do_calculation functions directly.
+    # Maybe even loop trough the images then.
+    # So far, this function is unused.
+    def process_images(self, image_list):
+        preprocessed_images = [self.preprocess_function(image) for image in image_list]
+        preprocessed_images = np.stack(preprocessed_images, axis=0)
+
+        results_apo = []
+        results_fasc = []
+        for i in range(0, len(preprocessed_images), self.batch_size):
+            batch = preprocessed_images[i : i + self.batch_size]
+            output_apo = self.model_apo.predict(batch)
+            output_fasc = self.model_fasc.predict(batch)
+            results_apo.extend(output_apo)
+            results_fasc.extend(output_fasc)
+
+        return results_apo, results_fasc
+
+
+# TODO include all image pre-processing in this function
+def preprocess_function(image):
+    """Function to preprocess an image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Image to be preprocessed.
+
+    Returns
+    -------
+    np.ndarray
+        Preprocessed image.
+    """
+    return image / 255
 
 
 def importAndReshapeImage(path_to_image: str, flip: int):
@@ -135,7 +199,7 @@ def importAndReshapeImage(path_to_image: str, flip: int):
     width = img.shape[1]
     img = np.reshape(img, [-1, img.shape[0], img.shape[1], 3])
     img = resize(img, (1, 512, 512, 3), mode="constant", preserve_range=True)
-    img = img / 255.0
+    img = img / 255.0  # Now used in preprocess image
 
     return img, img_copy, non_flipped_img, height, width, filename
 
@@ -410,6 +474,7 @@ def calculateBatch(
     scaling: str,
     spacing: int,
     filter_fasc: bool,
+    fasc_calculation_approach: str,
     apo_treshold: float,
     apo_length_tresh: int,
     fasc_threshold: float,
@@ -465,6 +530,11 @@ def calculateBatch(
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
+    fasc_calculation_approach: str
+        Can either be curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
+        curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting).
+        curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect).
+        orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
     apo_threshold : float
         Float variable containing the threshold applied to predicted
         aponeurosis pixels by our neural networks. By varying this
@@ -541,16 +611,16 @@ def calculateBatch(
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)
 
-    try:
-        # Load models
-        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-        model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
-    except OSError:
-        tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
-        return
+    # try:
+    #     # Load models
+    #     model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+    #     model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
+    # except OSError:
+    #     tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
+    #     gui.should_stop = False
+    #     gui.is_running = False
+    #     gui.do_break()
+    #     return
 
     # Check validity of flipflag path and rais execption
     try:
@@ -567,14 +637,14 @@ def calculateBatch(
 
     # Create dictionary with aponeurosis/fascicle analysis values
     dic = {
-        "apo_treshold": apo_treshold,
-        "apo_length_tresh": apo_length_tresh,
+        "apo_threshold": apo_treshold,
+        "apo_length_thresh": apo_length_tresh,
         "fasc_threshold": fasc_threshold,
         "fasc_cont_thresh": fasc_cont_thresh,
         "min_width": min_width,
         "min_pennation": min_pennation,
         "max_pennation": max_pennation,
-    }
+    }  # TODO make dictionary input from UI
 
     # Check if analysis parameters are postive
     for _, value in dic.items():
@@ -608,6 +678,9 @@ def calculateBatch(
         # Only continue with equal amount of images/flip flags
         if len(list_of_files) == len(flip_flags):
 
+            image_processor = ImageProcessor(
+                apo_modelpath, fasc_modelpath, preprocess_function
+            )
             # Exceptions raised during the analysis process.
             try:
                 start_time = time.time()
@@ -659,23 +732,95 @@ def calculateBatch(
                         calib_dist = None
                         scale_statement = ""
 
-                    # Continue with analysis and predict apos and fasicles
-                    fasc_l, pennation, x_low, x_high, midthick, fig = (
-                        doCalculations(  # TODO increase pocessing speed using the TF API more efficiently
-                            img=img,
+                    if fasc_calculation_approach == "linear_extrapolation":
+
+                        # Continue with analysis and predict apos and fasicles
+                        fasc_l, pennation, x_low, x_high, midthick, fig = (
+                            doCalculations(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                filename=filename,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                scale_statement=scale_statement,
+                                dictionary=dic,
+                                filter_fasc=filter_fasc,
+                            )
+                        )
+                        x_low = None
+                        x_high = None
+
+                    elif fasc_calculation_approach == "curve_polyfitting":
+                        fasc_l, pennation, midthick, fig = doCalculations_curved(
+                            original_image=img,
                             img_copy=img_copy,
                             h=height,
                             w=width,
+                            model_apo=image_processor.model_apo,
+                            model_fasc=image_processor.model_fasc,
+                            parameters=dic,
+                            filter_fasc=filter_fasc,
                             calib_dist=calib_dist,
                             spacing=spacing,
-                            filename=filename,
-                            model_apo=model_apo,
-                            model_fasc=model_fasc,
-                            scale_statement=scale_statement,
-                            dictionary=dic,
-                            filter_fasc=filter_fasc,
+                            approach="curve_polyfitting",
                         )
-                    )
+                        x_low = None
+                        x_high = None
+
+                    elif fasc_calculation_approach == "curve_connect_linear":
+                        fasc_l, pennation, midthick, fig = doCalculations_curved(
+                            original_image=img,
+                            img_copy=img_copy,
+                            h=height,
+                            w=width,
+                            model_apo=image_processor.model_apo,
+                            model_fasc=image_processor.model_fasc,
+                            parameters=dic,
+                            filter_fasc=filter_fasc,
+                            calib_dist=calib_dist,
+                            spacing=spacing,
+                            approach="curve_connect_linear",
+                        )
+                        x_low = None
+                        x_high = None
+
+                    elif fasc_calculation_approach == "curve_connect_poly":
+                        fasc_l, pennation, midthick, fig = doCalculations_curved(
+                            original_image=img,
+                            img_copy=img_copy,
+                            h=height,
+                            w=width,
+                            model_apo=image_processor.model_apo,
+                            model_fasc=image_processor.model_fasc,
+                            parameters=dic,
+                            filter_fasc=filter_fasc,
+                            calib_dist=calib_dist,
+                            spacing=spacing,
+                            approach="curve_connect_poly",
+                        )
+                        x_low = None
+                        x_high = None
+
+                    elif fasc_calculation_approach == "orientation_map":
+                        fasc_l, pennation, midthick, fig = doCalculations_curved(
+                            original_image=img,
+                            img_copy=img_copy,
+                            h=height,
+                            w=width,
+                            model_apo=image_processor.model_apo,
+                            model_fasc=image_processor.model_fasc,
+                            parameters=dic,
+                            filter_fasc=filter_fasc,
+                            calib_dist=calib_dist,
+                            spacing=spacing,
+                            approach="orientation_map",
+                        )
+                        x_low = None
+                        x_high = None
 
                     # Append warning to failes files when no aponeurosis was
                     # found and continue analysis
@@ -696,7 +841,7 @@ def calculateBatch(
                     )
 
                     # Sorting the DataFrame according to X_low
-                    df_sorted = df.sort_values(by="X_low")
+                    # df_sorted = df.sort_values(by="X_low")
 
                     # Append parameters to overall list
                     fascicles_all.append(df_sorted["Fascicles"].tolist())

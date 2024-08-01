@@ -66,14 +66,22 @@ occuring in the analyzed image/video. Fascicles with lower pennation
 angles will be excluded. The pennation angle is calculated as the angle
 of insertion between extrapolated fascicle and detected aponeurosis.
 Integer, must be non-negative.
+- Fasc_calculation_approach: 
+The user must enter an approach by which the fascicle length is calculated.
+Can either be linear_extrapolation, curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
+linear_extrapolation calculates the fascicle length and pennation angle according to a linear extrapolation of the each detechted fascicle fragment.
+curve_polyfitting calculates the fascicle length and pennation angle according to a second order polynomial fitting (see documentation of function curve_polyfitting).
+curve_connect_linear and curve_connect_poly calculate the fascicle length and pennation angle according to a linear connection between the fascicles fascicles (see documentation of function curve_connect).
+orientation_map calculates an orientation map and gives an estimate for the median angle of the image (see documentation of function orientation_map)
 
-The parameters are set upon pressing the "set parameters" button.
+The parameters are set automatically at each run.
 """
 
 aponeurosis_detection_threshold = 0.2
-aponeurosis_length_threshold = 600
-fascicle_detection_threshold = 0.05 #0.05
+aponeurosis_length_threshold = 400
+fascicle_detection_threshold = 0.05  # 0.05
 fascicle_length_threshold = 40
 minimal_muscle_width = 60
 minimal_pennation_angle = 1
 maximal_pennation_angle = 100
+fascicle_calculation_method = "curve_connect_poly"
