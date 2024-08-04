@@ -36,23 +36,27 @@ References
 [3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
 
+import importlib
 import os
 import subprocess
 import sys
+import tkinter as tk
+from threading import Lock, Thread
+from tkinter import Canvas, E, N, S, StringVar, Tk, W, filedialog, ttk
+
+import customtkinter as ctk
 import matplotlib
 import matplotlib.pyplot as plt
+import settings
+from gui_modules import AdvancedAnalysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import importlib
 from PIL import Image
 
-import tkinter as tk
-import customtkinter as ctk
-from threading import Lock, Thread
-from tkinter import E, N, S, StringVar, Tk, W, filedialog, ttk, Canvas
-
 from DL_Track_US import gui_helpers
-from DL_Track_US import settings
-from DL_Track_US.gui_modules import AdvancedAnalysis
+
+# from DL_Track_US import settings
+# from DL_Track_US.gui_modules import AdvancedAnalysis
+
 
 matplotlib.use("TkAgg")
 
@@ -285,7 +289,7 @@ class DLTrack(ctk.CTk):
 
         self.main = ctk.CTkFrame(self)
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
-        
+
         # Configure resizing of user interface
         for row in range(21):
             self.main.rowconfigure(row, weight=1)
@@ -312,7 +316,7 @@ class DLTrack(ctk.CTk):
         apo_model_button = ctk.CTkButton(
             self.main, text="Apo Model", command=self.get_apo_model_path
         )
-        apo_model_button.grid(column=1, row=4, sticky=(W,E))
+        apo_model_button.grid(column=1, row=4, sticky=(W, E))
 
         # Fasc model path
         fasc_model_button = ctk.CTkButton(
@@ -332,7 +336,7 @@ class DLTrack(ctk.CTk):
             column=0, row=8, sticky=(W, E)
         )
 
-        ctk.CTkLabel(self.main, text="Select:").grid(column=0, row=9, sticky=(W,E))
+        ctk.CTkLabel(self.main, text="Select:").grid(column=0, row=9, sticky=(W, E))
 
         self.analysis_type = StringVar()
         analysis_values = ["image", "video", "image_manual", "video_manual"]
@@ -343,7 +347,7 @@ class DLTrack(ctk.CTk):
             values=analysis_values,
             state="readonly",
         )
-        analysis_entry.grid(column=1, row=9, sticky=(W,E))
+        analysis_entry.grid(column=1, row=9, sticky=(W, E))
         self.analysis_type.trace_add("write", self.change_analysis_type)
         self.analysis_type.set("...")
 
@@ -453,7 +457,7 @@ class DLTrack(ctk.CTk):
             values=["flip", "no_flip"],
             state="disabled",
         )
-        self.flip_entry.grid(column=1, row=17, sticky=(W,E))
+        self.flip_entry.grid(column=1, row=17, sticky=(W, E))
 
         # Stepsize label for Videos
         self.steps_label = ctk.CTkLabel(self.main, text="Step Size")
@@ -481,8 +485,13 @@ class DLTrack(ctk.CTk):
         run_button.grid(column=1, row=20, sticky=(W, E))
 
         advanced_button = ctk.CTkButton(
-            self.main, text="Advanced Methods", command=lambda: (AdvancedAnalysis(self),),
-            fg_color="#000000", text_color="#FFFFFF", border_color="yellow3")
+            self.main,
+            text="Advanced Methods",
+            command=lambda: (AdvancedAnalysis(self),),
+            fg_color="#000000",
+            text_color="#FFFFFF",
+            border_color="yellow3",
+        )
         advanced_button.grid(column=2, row=20, sticky=E)
 
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
@@ -514,7 +523,7 @@ class DLTrack(ctk.CTk):
 
         # Make frame for results
         self.results = ctk.CTkFrame(self)
-        self.results.grid(column=1, row=0,  sticky=(N, S, W, E))
+        self.results.grid(column=1, row=0, sticky=(N, S, W, E))
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=4)
         self.results.rowconfigure(0, weight=1)
@@ -532,7 +541,11 @@ class DLTrack(ctk.CTk):
             bg="white",
         )
         self.logo_canvas.grid(
-            row=0, column=0, rowspan=6, sticky=(N, S, E, W), pady=(5, 0),
+            row=0,
+            column=0,
+            rowspan=6,
+            sticky=(N, S, E, W),
+            pady=(5, 0),
         )
 
         # Load the logo as a resizable matplotlib figure
@@ -540,13 +553,16 @@ class DLTrack(ctk.CTk):
         logo = plt.imread(logo_path)
         logo_fig, ax = plt.subplots()
         ax.imshow(logo)
-        ax.axis('off')  # Turn off axis
+        ax.axis("off")  # Turn off axis
         logo_fig.tight_layout()  # Adjust layout padding
 
         # Plot the figure in the in_gui_plotting canvas
         self.canvas = FigureCanvasTkAgg(logo_fig, master=self.logo_canvas)
         self.canvas.get_tk_widget().pack(
-            expand=True, fill="both", padx=5, pady=5,
+            expand=True,
+            fill="both",
+            padx=5,
+            pady=5,
         )
         plt.close()
         # This solution is more flexible and memory efficient than previously.
@@ -592,8 +608,9 @@ class DLTrack(ctk.CTk):
         """
         self.input_dir = filedialog.askdirectory()
         ctk.CTkLabel(
-            self.main, text=f"Folder: {os.path.basename(self.input_dir)}",
-            font=("Segue UI", 8, "bold")
+            self.main,
+            text=f"Folder: {os.path.basename(self.input_dir)}",
+            font=("Segue UI", 8, "bold"),
         ).grid(column=0, row=5)
 
     # Get path of aponeurosis model
@@ -605,7 +622,7 @@ class DLTrack(ctk.CTk):
         ctk.CTkLabel(
             self.main,
             text=f"{os.path.splitext(os.path.basename(self.apo_model))[0]}",
-            font=("Segue UI", 8, "bold")
+            font=("Segue UI", 8, "bold"),
         ).grid(column=1, row=5)
 
     # Get path of fascicle model
@@ -617,7 +634,7 @@ class DLTrack(ctk.CTk):
         ctk.CTkLabel(
             self.main,
             text=f"{os.path.splitext(os.path.basename(self.fasc_model))[0]}",
-            font=("Segue UI", 8, "bold")
+            font=("Segue UI", 8, "bold"),
         ).grid(column=2, row=5)
 
     def change_analysis_type(self, *args):
@@ -660,10 +677,10 @@ class DLTrack(ctk.CTk):
 
         elif self.analysis_type.get() == "video":
             """
-            The filetype widget gets changed to match the 
-            video file types. The scaling does not have the 
+            The filetype widget gets changed to match the
+            video file types. The scaling does not have the
             option bar anymore. The Flip Flag button is disabled and the Flip Option dropdown enabled.
-            Moreover, the Step Size dropdown is enabled. 
+            Moreover, the Step Size dropdown is enabled.
             """
             self.image_type_label.configure(text="Video Type")
             self.filetype_entry.configure(state="normal", values=["/*.avi", "/*.mp4"])
@@ -679,7 +696,7 @@ class DLTrack(ctk.CTk):
 
         elif self.analysis_type.get() == "image_manual":
             """
-            All widgets are disable except for the 
+            All widgets are disable except for the
             Image Type dropdown to select the filetype
             for the single images.
             """
@@ -705,8 +722,8 @@ class DLTrack(ctk.CTk):
 
         elif self.analysis_type.get() == "video_manual":
             """
-            All widgets are disable except for the 
-            Video Path button (otherwise Flip Flags) to 
+            All widgets are disable except for the
+            Video Path button (otherwise Flip Flags) to
             select the single video for analysis
             """
             self.filetype_entry.configure(state="disabled")
@@ -743,7 +760,7 @@ class DLTrack(ctk.CTk):
 
     # ---------------------------------------------------------------------------------------------------
     # Open new toplevel instance for analysis parameter specification------------------------------------------------------------------------------------------
-    
+
     # ---------------------------------------------------------------------------------------------------
     # Methods and properties required for threading
 
@@ -847,7 +864,7 @@ class DLTrack(ctk.CTk):
             file or training parameters correctly. A tk.messagebox
             is openend containing hints how to solve the issue.
         """
-        #try:
+        # try:
         if self.is_running:
             # don't run again if it is already running
             return
@@ -866,7 +883,6 @@ class DLTrack(ctk.CTk):
             self.is_running = False
             self.do_break()
             return
-        
 
         # Define dictionary containing settings
         settings = {
@@ -917,7 +933,7 @@ class DLTrack(ctk.CTk):
                     selected_scaling,
                     int(selected_spacing),
                     int(selected_filter_fasc),
-                    settings, 
+                    settings,
                     self,
                 ),
             )
@@ -1003,9 +1019,7 @@ class DLTrack(ctk.CTk):
 
             # Make sure some kind of input directory is specified.
             if len(selected_video_path) < 3:
-                tk.messagebox.showerror(
-                    "Information", "Input directory is incorrect."
-                )
+                tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
