@@ -42,7 +42,11 @@ import numpy as np
 import orientationpy
 import pandas as pd
 import tensorflow as tf
-from DL_Track_US.gui_helpers.curved_fascicles_functions import *
+
+# original import
+# from DL_Track_US.gui_helpers.curved_fascicles_functions import *
+# Carla import
+from gui_helpers.curved_fascicles_functions import *
 from keras.models import load_model
 from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d

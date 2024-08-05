@@ -49,25 +49,34 @@ import os
 import time
 import tkinter as tk
 import warnings
-from pandas import ExcelWriter
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+
+# Carla imports
+from gui_helpers.calibrate import calibrateDistanceManually, calibrateDistanceStatic
+from gui_helpers.do_calculations import doCalculations
+from gui_helpers.do_calculations_curved import doCalculations_curved
+from gui_helpers.manual_tracing import ManualAnalysis
 from keras import backend as K
 from keras.models import load_model
 from matplotlib.backends.backend_pdf import PdfPages
+from pandas import ExcelWriter
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 
-from DL_Track_US.gui_helpers.calibrate import (
-    calibrateDistanceManually,
-    calibrateDistanceStatic,
-)
-from DL_Track_US.gui_helpers.do_calculations import doCalculations
-from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
-from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
+# original imports
+# from DL_Track_US.gui_helpers.calibrate import (
+# calibrateDistanceManually,
+# calibrateDistanceStatic,
+# )
+# from DL_Track_US.gui_helpers.do_calculations import doCalculations
+# from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
+# from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
+
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")

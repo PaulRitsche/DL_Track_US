@@ -38,11 +38,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+
+# original import
+# from DL_Track_US.gui_helpers.curved_fascicles_functions import crop
+# Carla import
+from gui_helpers.curved_fascicles_functions import crop
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
-from DL_Track_US.gui_helpers.curved_fascicles_functions import crop
-
 
 # TODO determine how to put it together with doCalculations_curved
 # TODO ask Neil about relevance of Xlow Xhigh
