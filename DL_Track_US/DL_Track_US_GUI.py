@@ -45,6 +45,8 @@ from threading import Lock, Thread
 from tkinter import Canvas, E, N, S, StringVar, Tk, W, filedialog, ttk
 
 import customtkinter as ctk
+
+# Carla imports
 import gui_helpers
 import matplotlib
 import matplotlib.pyplot as plt
@@ -53,14 +55,11 @@ from gui_modules import AdvancedAnalysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from PIL import Image
 
+# original imports
 # from DL_Track_US import gui_helpers
-
-
 # from DL_Track_US import settings
 # from DL_Track_US.gui_modules import AdvancedAnalysis
 
-print("---")
-print(sys.path)
 
 matplotlib.use("TkAgg")
 

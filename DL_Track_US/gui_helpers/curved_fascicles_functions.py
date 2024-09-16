@@ -519,7 +519,7 @@ def find_complete_fascicle(
     coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
     # depending on coefficients edge gets extrapolated as first or second order polynomial
-    if 0 < coefficients[0] < coeff_limit:
+    if (-coeff_limit) < coefficients[0] < coeff_limit:
         g = np.poly1d(coefficients)
         ex_current_fascicle_x = np.linspace(
             mid - width, mid + width, 5000
@@ -566,7 +566,7 @@ def find_complete_fascicle(
 
         coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 2)
 
-        if 0 < coefficients[0] < coeff_limit:
+        if (-coeff_limit) < coefficients[0] < coeff_limit:
             g = np.poly1d(coefficients)
             ex_current_fascicle_x = np.linspace(
                 mid - width, mid + width, 5000
@@ -581,6 +581,85 @@ def find_complete_fascicle(
             )  # Extrapolate x,y data using f function
             ex_current_fascicle_y = g(ex_current_fascicle_x)
             linear_fit = True
+
+        upper_bound = ex_current_fascicle_y - tolerance
+        lower_bound = ex_current_fascicle_y + tolerance
+
+    return (
+        ex_current_fascicle_x,
+        ex_current_fascicle_y,
+        linear_fit,
+        inner_number_contours,
+    )
+
+
+def find_complete_fascicle_linear(
+    i: int,
+    contours_sorted_x: list,
+    contours_sorted_y: list,
+    contours_sorted: list,
+    label: dict,
+    mid: int,
+    width: int,
+    tolerance: int,
+    coeff_limit: float,
+):
+
+    # get upper edge contour of starting fascicle
+    current_fascicle_x = contours_sorted_x[i]
+    current_fascicle_y = contours_sorted_y[i]
+
+    # set label to true as fascicle is used
+    label[i] = True
+    linear_fit = False
+    inner_number_contours = []
+    inner_number_contours.append(i)
+
+    # calculate linear coefficients
+    coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+    g = np.poly1d(coefficients)
+    ex_current_fascicle_x = np.linspace(
+        mid - width, mid + width, 5000
+    )  # Extrapolate x,y data using f function
+    ex_current_fascicle_y = g(ex_current_fascicle_x)
+    linear_fit = True
+
+    # compute upper and lower boundary of extrapolation
+    upper_bound = ex_current_fascicle_y - tolerance
+    lower_bound = ex_current_fascicle_y + tolerance
+
+    # find next fascicle edge within the tolerance, loops as long as a new fascicle edge is found
+    # if no new fascicle is found, found_fascicle is set to -1 within function and loop terminates
+
+    found_fascicle = 0
+
+    while found_fascicle >= 0:
+
+        current_fascicle_x, current_fascicle_y, found_fascicle = find_next_fascicle(
+            contours_sorted,
+            contours_sorted_x,
+            contours_sorted_y,
+            current_fascicle_x,
+            current_fascicle_y,
+            ex_current_fascicle_x,
+            upper_bound,
+            lower_bound,
+            label,
+        )
+
+        if found_fascicle > 0:
+            label[found_fascicle] = True
+            inner_number_contours.append(found_fascicle)
+        else:
+            break
+
+        coefficients = np.polyfit(current_fascicle_x, current_fascicle_y, 1)
+        g = np.poly1d(coefficients)
+        ex_current_fascicle_x = np.linspace(
+            mid - width, mid + width, 5000
+        )  # Extrapolate x,y data using f function
+        ex_current_fascicle_y = g(ex_current_fascicle_x)
+        linear_fit = True
 
         upper_bound = ex_current_fascicle_y - tolerance
         lower_bound = ex_current_fascicle_y + tolerance

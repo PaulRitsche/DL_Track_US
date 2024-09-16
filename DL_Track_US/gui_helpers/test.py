@@ -35,7 +35,7 @@ import time
 import cv2
 import matplotlib
 
-matplotlib.use("Agg")
+# matplotlib.use("Agg")
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,11 +46,12 @@ import tensorflow as tf
 # original import
 # from DL_Track_US.gui_helpers.curved_fascicles_functions import *
 # Carla import
-from gui_helpers.curved_fascicles_functions import *
+from curved_fascicles_functions import *
 from keras.models import load_model
 from scipy.interpolate import Rbf
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import savgol_filter
+from scipy.stats import circmean, circstd
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 
@@ -119,7 +120,7 @@ def curve_polyfitting(
     tolerance_to_apo = int(parameters["aponeurosis_distance_tolerance"])
     max_pennation = int(parameters["maximal_pennation_angle"])
     min_pennation = int(parameters["minimal_pennation_angle"])
-    coeff_limit = 0.0004  # 0.000583
+    coeff_limit = 0.000583
 
     # get upper edge of each contour
     contours_sorted_x = []
@@ -146,7 +147,8 @@ def curve_polyfitting(
             "x_low",
             "x_high",
             "y_low",
-            "y_high" "number_contours",
+            "y_high",
+            "number_contours",
             "linear_fit",
             "coordsX",
             "coordsY",
@@ -180,72 +182,51 @@ def curve_polyfitting(
 
             # Find intersection between fascicle and aponeuroses
             diffU = ex_current_fascicle_y - ex_y_UA
-            pot_intersection_U = np.where(np.diff(np.sign(diffU)))[0]
-            if len(pot_intersection_U) > 0:
-                locU_first = pot_intersection_U[0]
-                locU_second = pot_intersection_U[-1]
-            else:
-                print("No upper intersection found")
-                locU_first = 0
-                locU_second = locU_first
-            # diffU_short = diffU[0:4000]
-            # locU = np.where(diffU == min(diffU_short, key=abs))[0]
-            # if locU == 3999:
-            # locU = np.where(diffU == min(diffU, key=abs))[0]
+            diffU_short = diffU[0:4000]
+            locU = np.where(diffU == min(diffU_short, key=abs))[0]
+            if locU == 3999:
+                locU = np.where(diffU == min(diffU, key=abs))[0]
 
             diffL = ex_current_fascicle_y - ex_y_LA
-            # locL = np.where(diffL == min(diffL, key=abs))[0]
-            pot_intersection_L = np.where(np.diff(np.sign(diffL)))[0]
-
-            if len(pot_intersection_L) > 0:
-                locL_first = pot_intersection_L[0]
-                locL_second = pot_intersection_L[-1]
-            else:
-                print("No lower intersection found")
-                locL_first = 0
-                locL_second = locL_first
-
-            locU = locU_first
-            locL = locL_second
+            locL = np.where(diffL == min(diffL, key=abs))[0]
 
             # Get coordinates of fascicle between the two aponeuroses
             coordsX = ex_current_fascicle_x[int(locL) : int(locU)]
             coordsY = ex_current_fascicle_y[int(locL) : int(locU)]
             coordsXY = list(zip(coordsX, coordsY))
 
-            if len(coordsX) > 0:
-                # only include fascicles that have intersection points with both aponeuroses
-                fas_curve = list(zip(ex_current_fascicle_x, ex_current_fascicle_y))
+            # only include fascicles that have intersection points with both aponeuroses
+            fas_curve = list(zip(ex_current_fascicle_x, ex_current_fascicle_y))
 
-                if do_curves_intersect(fas_curve, LA_curve) and do_curves_intersect(
-                    fas_curve, UA_curve
-                ):
+            if do_curves_intersect(fas_curve, LA_curve) and do_curves_intersect(
+                fas_curve, UA_curve
+            ):
 
-                    all_fascicles_x.append(
-                        ex_current_fascicle_x
-                    )  # store all points of fascicle, beyond apos
-                    all_fascicles_y.append(ex_current_fascicle_y)
-                    number_contours.append(inner_number_contours)
+                all_fascicles_x.append(
+                    ex_current_fascicle_x
+                )  # store all points of fascicle, beyond apos
+                all_fascicles_y.append(ex_current_fascicle_y)
+                number_contours.append(inner_number_contours)
 
-                    fascicle_data_temp = pd.DataFrame(
-                        {
-                            "x_low": [coordsX[0].astype("int32")],
-                            "x_high": [coordsX[-1].astype("int32")],
-                            "y_low": [coordsY[0].astype("int32")],
-                            "y_high": [coordsY[-1].astype("int32")],
-                            "number_contours": [inner_number_contours],
-                            "linear_fit": linear_fit,
-                            "coordsX": [coordsX],
-                            "coordsY": [coordsY],
-                            "coordsXY": [coordsXY],
-                            "locU": [locU],
-                            "locL": [locL],
-                        }
-                    )
+                fascicle_data_temp = pd.DataFrame(
+                    {
+                        "x_low": [coordsX[0].astype("int32")],
+                        "x_high": [coordsX[-1].astype("int32")],
+                        "y_low": [coordsY[0].astype("int32")],
+                        "y_high": [coordsY[-1].astype("int32")],
+                        "number_contours": [inner_number_contours],
+                        "linear_fit": linear_fit,
+                        "coordsX": [coordsX],
+                        "coordsY": [coordsY],
+                        "coordsXY": [coordsXY],
+                        "locU": [locU],
+                        "locL": [locL],
+                    }
+                )
 
-                    fascicle_data = pd.concat(
-                        [fascicle_data, fascicle_data_temp], ignore_index=True
-                    )
+                fascicle_data = pd.concat(
+                    [fascicle_data, fascicle_data_temp], ignore_index=True
+                )
 
     # filter overlapping fascicles
     if filter_fasc == 1:
@@ -262,10 +243,7 @@ def curve_polyfitting(
 
     for i in range(len(all_coordsX)):
 
-        if (
-            len(all_coordsX[i]) > 0
-            and data.iloc[i, data.columns.get_loc("linear_fit")] is False
-        ):
+        if len(all_coordsX[i]) > 0:
             # calculate length of fascicle
             x = all_coordsX[i]
             y = all_coordsY[i]
@@ -296,103 +274,85 @@ def curve_polyfitting(
 
     print(data)
 
-    if len(number_contours) > 0:
-        # plot filtered curves between detected fascicles between the two aponeuroses
-        fig = plt.figure()
-        colormap = plt.get_cmap("rainbow", len(all_coordsX))
-        number_contours = list(data["number_contours"])  # contours after filtering
+    # plot filtered curves between detected fascicles between the two aponeuroses
+    fig = plt.figure()
+    colormap = plt.get_cmap("rainbow", len(all_coordsX))
+    number_contours = list(data["number_contours"])  # contours after filtering
 
-        for i in range(len(all_coordsX)):
+    for i in range(len(all_coordsX)):
 
-            if data.iloc[i, data.columns.get_loc("linear_fit")] is False:
+        color = colormap(i)
+        x = all_coordsX[i]
+        y = all_coordsY[i]
+        points = np.zeros(2 * len(number_contours[i]))
+        points_arrays = [[] for _ in range(2 * len(number_contours[i]) + 2)]
 
-                color = colormap(i)
-                x = all_coordsX[i]
-                y = all_coordsY[i]
-                points = np.zeros(2 * len(number_contours[i]))
-                points_arrays = [[] for _ in range(2 * len(number_contours[i]) + 2)]
+        for j in range(len(number_contours[i])):
+            points[2 * j] = contours_sorted_x[number_contours[i][j]][0]
+            points[2 * j + 1] = contours_sorted_x[number_contours[i][j]][-1]
 
-                for j in range(len(number_contours[i])):
-                    points[2 * j] = contours_sorted_x[number_contours[i][j]][0]
-                    points[2 * j + 1] = contours_sorted_x[number_contours[i][j]][-1]
-
-                if len(number_contours[i]) == 1:
+        if len(number_contours[i]) == 1:
+            points_arrays[0] = x[x <= points[0]]
+            points_arrays[1] = y[x <= points[0]]
+            plt.plot(points_arrays[0], points_arrays[1], color=color, alpha=0.4)
+            points_arrays[-2] = x[x >= points[-1]]
+            points_arrays[-1] = y[x >= points[-1]]
+            plt.plot(points_arrays[-2], points_arrays[-1], color=color, alpha=0.4)
+            plt.plot(
+                contours_sorted_x[number_contours[i][0]],
+                contours_sorted_y[number_contours[i][0]],
+                color="gold",
+                alpha=0.6,
+            )
+        else:
+            for j in range(len(number_contours[i])):
+                if j == 0:
                     points_arrays[0] = x[x <= points[0]]
                     points_arrays[1] = y[x <= points[0]]
                     plt.plot(points_arrays[0], points_arrays[1], color=color, alpha=0.4)
+                elif j == len(number_contours[i]) - 1:
+                    points_arrays[-4] = x[(x >= points[-3]) & (x <= points[-2])]
+                    points_arrays[-3] = y[(x >= points[-3]) & (x <= points[-2])]
+                    plt.plot(
+                        points_arrays[-4], points_arrays[-3], color=color, alpha=0.4
+                    )
                     points_arrays[-2] = x[x >= points[-1]]
                     points_arrays[-1] = y[x >= points[-1]]
                     plt.plot(
                         points_arrays[-2], points_arrays[-1], color=color, alpha=0.4
                     )
-                    plt.plot(
-                        contours_sorted_x[number_contours[i][0]],
-                        contours_sorted_y[number_contours[i][0]],
-                        color="gold",
-                        alpha=0.6,
-                    )
                 else:
-                    for j in range(len(number_contours[i])):
-                        if j == 0:
-                            points_arrays[0] = x[x <= points[0]]
-                            points_arrays[1] = y[x <= points[0]]
-                            plt.plot(
-                                points_arrays[0],
-                                points_arrays[1],
-                                color=color,
-                                alpha=0.4,
-                            )
-                        elif j == len(number_contours[i]) - 1:
-                            points_arrays[-4] = x[(x >= points[-3]) & (x <= points[-2])]
-                            points_arrays[-3] = y[(x >= points[-3]) & (x <= points[-2])]
-                            plt.plot(
-                                points_arrays[-4],
-                                points_arrays[-3],
-                                color=color,
-                                alpha=0.4,
-                            )
-                            points_arrays[-2] = x[x >= points[-1]]
-                            points_arrays[-1] = y[x >= points[-1]]
-                            plt.plot(
-                                points_arrays[-2],
-                                points_arrays[-1],
-                                color=color,
-                                alpha=0.4,
-                            )
-                        else:
-                            points_arrays[2 * j] = x[
-                                (x >= points[2 * j - 1]) & (x <= points[2 * j])
-                            ]
-                            points_arrays[2 * j + 1] = y[
-                                (x >= points[2 * j - 1]) & (x <= points[2 * j])
-                            ]
-                            plt.plot(
-                                points_arrays[2 * j],
-                                points_arrays[2 * j + 1],
-                                color=color,
-                                alpha=0.4,
-                            )
+                    points_arrays[2 * j] = x[
+                        (x >= points[2 * j - 1]) & (x <= points[2 * j])
+                    ]
+                    points_arrays[2 * j + 1] = y[
+                        (x >= points[2 * j - 1]) & (x <= points[2 * j])
+                    ]
+                    plt.plot(
+                        points_arrays[2 * j],
+                        points_arrays[2 * j + 1],
+                        color=color,
+                        alpha=0.4,
+                    )
 
-                        plt.plot(
-                            contours_sorted_x[number_contours[i][j]],
-                            contours_sorted_y[number_contours[i][j]],
-                            color="gold",
-                            alpha=0.6,
-                        )
+                plt.plot(
+                    contours_sorted_x[number_contours[i][j]],
+                    contours_sorted_y[number_contours[i][j]],
+                    color="gold",
+                    alpha=0.6,
+                )
 
-        plt.imshow(original_image)
-        plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
-        plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
+    plt.imshow(original_image)
+    plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
+    plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
-        return (
-            data["fascicle_length"].tolist(),
-            data["pennation_angle"].tolist(),
-            data["x_low"].tolist(),
-            data["x_high"].tolist(),
-            fig,
-        )
-    else:
-        return (None, None, None, None, None)
+    return (
+        data["fascicle_length"].tolist(),
+        data["pennation_angle"].tolist(),
+        data["x_low"].tolist(),
+        data["x_high"].tolist(),
+        fig,
+    )
 
 
 def curve_connect(
@@ -466,7 +426,7 @@ def curve_connect(
     tolerance_to_apo = int(parameters["aponeurosis_distance_tolerance"])
     max_pennation = int(parameters["maximal_pennation_angle"])
     min_pennation = int(parameters["minimal_pennation_angle"])
-    coeff_limit = 0.0004  # 0.000583
+    coeff_limit = 0.000583
 
     # get upper edge of each contour
     contours_sorted_x = []
@@ -710,71 +670,64 @@ def curve_connect(
     data["pennation_angle"] = np.nan
 
     for i in range(len(all_coordsX)):
-        if data.iloc[i, data.columns.get_loc("linear_fit")] == False:
-            # calculate length of fascicle
-            curve_length_total = 0
 
-            for j in range(len(all_coordsX[i])):
+        # calculate length of fascicle
+        curve_length_total = 0
 
-                x = all_coordsX[i][j]
-                y = all_coordsY[i][j]
+        for j in range(len(all_coordsX[i])):
 
-                dx = np.diff(x)
-                dy = np.diff(y)
+            x = all_coordsX[i][j]
+            y = all_coordsY[i][j]
 
-                segment_lengths = np.sqrt(dx**2 + dy**2)
-                curve_length = np.sum(segment_lengths)
-                curve_length_total += curve_length
+            dx = np.diff(x)
+            dy = np.diff(y)
 
-            # calculate pennation angle
-            if len(all_coordsX[i][0]) > 1:
-                apoangle = np.arctan(
-                    (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-                    / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-                ) * (180 / np.pi)
-                fasangle = np.arctan(
-                    (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
-                    / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
-                ) * (180 / np.pi)
-                penangle = fasangle - apoangle
-            else:
-                apoangle = np.arctan(
-                    (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-                    / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-                ) * (180 / np.pi)
-                fasangle = np.arctan(
-                    (all_coordsY[i][1][0] - all_coordsY[i][1][-1])
-                    / (all_coordsX[i][1][-1] - all_coordsX[i][1][0])
-                ) * (180 / np.pi)
-                penangle = fasangle - apoangle
+            segment_lengths = np.sqrt(dx**2 + dy**2)
+            curve_length = np.sum(segment_lengths)
+            curve_length_total += curve_length
 
-            data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length_total
+        # calculate pennation angle
+        if len(all_coordsX[i][0]) > 1:
+            apoangle = np.arctan(
+                (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+                / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+            ) * (180 / np.pi)
+            fasangle = np.arctan(
+                (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
+                / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
+            ) * (180 / np.pi)
+            penangle = fasangle - apoangle
+        else:
+            apoangle = np.arctan(
+                (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+                / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+            ) * (180 / np.pi)
+            fasangle = np.arctan(
+                (all_coordsY[i][1][0] - all_coordsY[i][1][-1])
+                / (all_coordsX[i][1][-1] - all_coordsX[i][1][0])
+            ) * (180 / np.pi)
+            penangle = fasangle - apoangle
 
-            if (
-                penangle <= max_pennation and penangle >= min_pennation
-            ):  # Don't include 'fascicles' beyond a range of PA
-                data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
+        data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length_total
+
+        if (
+            penangle <= max_pennation and penangle >= min_pennation
+        ):  # Don't include 'fascicles' beyond a range of PA
+            data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
     fig = plt.figure(figsize=(25, 25))
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
 
     plt.imshow(original_image, cmap="gray")  # TODO
     for i in range(len(all_coordsX)):
-        if data.iloc[i, data.columns.get_loc("linear_fit")] == False:
-            color = colormap(i)
-            for j in range(len(all_coordsX[i])):
-                if j == 0:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4
-                    )
-                if j % 2 == 1:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6
-                    )
-                else:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4
-                    )
+        color = colormap(i)
+        for j in range(len(all_coordsX[i])):
+            if j == 0:
+                plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
+            if j % 2 == 1:
+                plt.plot(all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6)
+            else:
+                plt.plot(all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4)
     plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
     plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
 
@@ -832,7 +785,7 @@ def orientation_map(
     ex_y_LA = h(ex_x_LA)
 
     # image_rgb = cv2.cvtColor(fas_image, cv2.COLOR_BGR2RGB)
-    # image_gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+    # image_gray = cv2.cvtColor(fas_image, cv2.COLOR_RGB2GRAY)
 
     for n, mode in enumerate(["finite_difference", "gaussian", "splines"]):
         Gy, Gx = orientationpy.computeGradient(fas_image, mode=mode)
@@ -967,13 +920,25 @@ def orientation_map(
 
     # initialize variables to store slope
     slope = np.zeros_like(di_x)
+    angles = np.zeros_like(di_x)
     slope_without_zeros = []
+    angles_without_zeros = []
 
     # calculate slope for the vectors in the region between the aponeuroses
     for i in range(len(di_x)):
         if di_x_masked_1[i] != 0 and di_y_masked_1[i] != 0:
             slope[i] = (-1) * di_y_masked_1[i] / di_x_masked_1[i]
+            angles[i] = np.arctan(slope[i])
             slope_without_zeros.append(slope[i])
+            angles_without_zeros.append(angles[i])
+
+    mean_angle = circmean(angles_without_zeros, high=2 * np.pi, low=0)
+    angle_std = circstd(angles_without_zeros, high=2 * np.pi, low=0, normalize=True)
+
+    print(mean_angle)
+    print(angle_std)
+    plt.hist(angles_without_zeros, bins=20, edgecolor="black")
+    plt.show()
 
     slope = np.array(slope).reshape(size_x, size_y)
 
@@ -1305,9 +1270,9 @@ def doCalculations_curved(
                     mindist = dist
 
         # Compute functions to approximate the shape of the aponeuroses
-        zUA = np.polyfit(upp_x, upp_y_new, 1)
+        zUA = np.polyfit(upp_x, upp_y_new, 2)
         g = np.poly1d(zUA)
-        zLA = np.polyfit(low_x, low_y_new, 1)
+        zLA = np.polyfit(low_x, low_y_new, 2)
         h = np.poly1d(zLA)
 
         mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
@@ -1414,7 +1379,6 @@ def doCalculations_curved(
         except:
             midthick = mindist
 
-        # if fascicle_length is not None:
         fascicle_length = np.array(fascicle_length)
         pennation_angle = np.array(pennation_angle)
 
@@ -1474,23 +1438,21 @@ def doCalculations_curved(
             x_high,
             fig,
         )
-        # else:
-        # return None, None, None, None, None, None
 
     return None, None, None, None, None, None
 
 
 def fascicle_calculation():
     parameters = dict(
-        apo_threshold=0.2,
-        fasc_threshold=0.05,
-        apo_length_thresh=400,
-        fasc_cont_thresh=5,
-        min_width=60,
-        max_pennation=40,
-        min_pennation=5,
-        tolerance=10,
-        tolerance_to_apo=100,
+        aponeurosis_detection_threshold=0.2,
+        fascicle_detection_threshold=0.05,
+        aponeurosis_length_threshold=400,
+        fascicle_length_threshold=5,
+        minimal_muscle_width=60,
+        maximal_pennation_angle=40,
+        minimal_pennation_angle=5,
+        fascicle_contour_tolerance=10,
+        aponeurosis_distance_tolerance=100,
     )
 
     height = 512
@@ -1508,7 +1470,7 @@ def fascicle_calculation():
 
     # load ultrasound image
     original_image = cv2.imread(
-        r"C:\Users\carla\Documents\Master_Thesis\Example_Images\FALLMUD\NeilCronin\images\img_00001.tif",
+        r"C:/Users/carla/Documents/Master_Thesis/Example_Images/Paul_35_images/Paul_35_images/im_04_re.tif",
         cv2.IMREAD_UNCHANGED,
     )
 
