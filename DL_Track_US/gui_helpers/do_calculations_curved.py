@@ -178,30 +178,32 @@ def curve_polyfitting(
                 coeff_limit,
             )
 
-            # Find intersection between fascicle and aponeuroses
+            # Find intersection between fascicle and upper aponeuroses
             diffU = ex_current_fascicle_y - ex_y_UA
+
+            # find indices where the difference changes sign -> potential intersection
             pot_intersection_U = np.where(np.diff(np.sign(diffU)))[0]
+
             if len(pot_intersection_U) > 0:
+                # for upper aponeurosis, first found intersection point is the one to use
                 locU_first = pot_intersection_U[0]
                 locU_second = pot_intersection_U[-1]
             else:
-                print("No upper intersection found")
+                # no intersection point found
                 locU_first = 0
                 locU_second = locU_first
-            # diffU_short = diffU[0:4000]
-            # locU = np.where(diffU == min(diffU_short, key=abs))[0]
-            # if locU == 3999:
-            # locU = np.where(diffU == min(diffU, key=abs))[0]
 
+            # calculate difference between lower aponeurosis and fascicle
             diffL = ex_current_fascicle_y - ex_y_LA
-            # locL = np.where(diffL == min(diffL, key=abs))[0]
+
+            # find potential intersection points
             pot_intersection_L = np.where(np.diff(np.sign(diffL)))[0]
 
             if len(pot_intersection_L) > 0:
                 locL_first = pot_intersection_L[0]
                 locL_second = pot_intersection_L[-1]
             else:
-                print("No lower intersection found")
+                # no intersection point found
                 locL_first = 0
                 locL_second = locL_first
 
@@ -575,8 +577,24 @@ def curve_connect(
             fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
 
             # calculate intersection point with lower aponeurosis
+            # diffL = ex_current_fascicle_y - ex_y_LA
+            # locL = np.where(diffL == min(diffL, key=abs))[0]
+
+            # calculate difference between lower aponeurosis and fascicle
             diffL = ex_current_fascicle_y - ex_y_LA
-            locL = np.where(diffL == min(diffL, key=abs))[0]
+
+            # find potential intersection points
+            pot_intersection_L = np.where(np.diff(np.sign(diffL)))[0]
+
+            if len(pot_intersection_L) > 0:
+                locL_first = pot_intersection_L[0]
+                locL_second = pot_intersection_L[-1]
+            else:
+                # no intersection point found
+                locL_first = 0
+                locL_second = locL_first
+
+            locL = locL_second
 
             # find index of first item of first contour
             first_item = contours_sorted_x[number_contours[i][0]][0]
@@ -593,8 +611,24 @@ def curve_connect(
             fas_LA_intersection = do_curves_intersect(LA_curve, fas_LA_curve)
 
             # calculate intersection point with lower aponeurosis
+            # diffL = all_fascicles_y[i] - ex_y_LA
+            # locL = np.where(diffL == min(diffL, key=abs))[0]
+
+            # calculate difference between lower aponeurosis and fascicle
             diffL = all_fascicles_y[i] - ex_y_LA
-            locL = np.where(diffL == min(diffL, key=abs))[0]
+
+            # find potential intersection points
+            pot_intersection_L = np.where(np.diff(np.sign(diffL)))[0]
+
+            if len(pot_intersection_L) > 0:
+                locL_first = pot_intersection_L[0]
+                locL_second = pot_intersection_L[-1]
+            else:
+                # no intersection point found
+                locL_first = 0
+                locL_second = locL_first
+
+            locL = locL_second
 
             # find index of first item of first contour
             first_item = contours_sorted_x[number_contours[i][0]][0]
@@ -727,33 +761,38 @@ def curve_connect(
                 curve_length_total += curve_length
 
             # calculate pennation angle
-            if len(all_coordsX[i][0]) > 1:
-                apoangle = np.arctan(
-                    (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-                    / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-                ) * (180 / np.pi)
-                fasangle = np.arctan(
-                    (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
-                    / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
-                ) * (180 / np.pi)
-                penangle = fasangle - apoangle
+            if len(all_coordsX[i][0]) == 0:
+                penangle = 0
             else:
-                apoangle = np.arctan(
-                    (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
-                    / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
-                ) * (180 / np.pi)
-                fasangle = np.arctan(
-                    (all_coordsY[i][1][0] - all_coordsY[i][1][-1])
-                    / (all_coordsX[i][1][-1] - all_coordsX[i][1][0])
-                ) * (180 / np.pi)
-                penangle = fasangle - apoangle
+                if len(all_coordsX[i][0]) > 1:
+                    apoangle = np.arctan(
+                        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+                        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+                    ) * (180 / np.pi)
+                    fasangle = np.arctan(
+                        (all_coordsY[i][0][0] - all_coordsY[i][0][-1])
+                        / (all_coordsX[i][0][-1] - all_coordsX[i][0][0])
+                    ) * (180 / np.pi)
+                    penangle = fasangle - apoangle
+                else:
+                    apoangle = np.arctan(
+                        (ex_y_LA[all_locL[i]] - ex_y_LA[all_locL[i] + 50])
+                        / (ex_x_LA[all_locL[i] + 50] - ex_x_LA[all_locL[i]])
+                    ) * (180 / np.pi)
+                    fasangle = np.arctan(
+                        (all_coordsY[i][1][0] - all_coordsY[i][1][-1])
+                        / (all_coordsX[i][1][-1] - all_coordsX[i][1][0])
+                    ) * (180 / np.pi)
+                    penangle = fasangle - apoangle
 
-            data.iloc[i, data.columns.get_loc("fascicle_length")] = curve_length_total
+                data.iloc[i, data.columns.get_loc("fascicle_length")] = (
+                    curve_length_total
+                )
 
-            if (
-                penangle <= max_pennation and penangle >= min_pennation
-            ):  # Don't include 'fascicles' beyond a range of PA
-                data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
+                if (
+                    penangle <= max_pennation and penangle >= min_pennation
+                ):  # Don't include 'fascicles' beyond a range of PA
+                    data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
     fig = plt.figure(figsize=(25, 25))
     colormap = plt.get_cmap("rainbow", len(all_coordsX))
@@ -1036,18 +1075,18 @@ def orientation_map(
     plt.title("Matrix Heatmap")
     plt.xlabel("Column")
     plt.ylabel("Row")
-    plt.text(
-        xplot,
-        yplot,
-        (
-            "Median pennation angle: "
-            + str("%.1f" % split_angles_deg_median[4])
-            + " deg"
-        ),
-        fontsize=10,
-        color="white",
-    )
-
+    # plt.text(
+    # xplot,
+    # yplot,
+    # (
+    # "Median pennation angle: "
+    # + str("%.1f" % split_angles_deg_median[4])
+    # + " deg"
+    # ),
+    # fontsize=10,
+    # color="white",
+    # )
+    plt.show()
     return None, split_angles_deg_median, None, None, fig
 
 

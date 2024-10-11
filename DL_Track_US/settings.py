@@ -92,7 +92,7 @@ The parameters are set automatically at each run.
 # ------------------------------------------------------------------------------
 # Prediction Parameters
 aponeurosis_detection_threshold = 0.2  # 0.2
-aponeurosis_length_threshold = 850  # 400
+aponeurosis_length_threshold = 400  # 400
 fascicle_detection_threshold = 0.05  # 0.05
 fascicle_length_threshold = 40  # 40
 minimal_muscle_width = 150  # 60
@@ -102,6 +102,6 @@ minimal_muscle_width = 150  # 60
 # Muscle Architecture Calculation Parameters
 minimal_pennation_angle = 10
 maximal_pennation_angle = 40
-fascicle_calculation_method = "curve_polyfitting"
+fascicle_calculation_method = "linear_extrapolation"
 fascicle_contour_tolerance = 10  # 10
 aponeurosis_distance_tolerance = 100
