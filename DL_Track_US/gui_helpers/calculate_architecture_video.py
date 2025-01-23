@@ -181,6 +181,7 @@ def calculateArchitectureVideo(
     min_pennation: int,
     max_pennation: int,
     gui,
+    display_frame,
 ):
     """Function to calculate muscle architecture in longitudinal
     ultrasonography videos of human lower limb muscles. The values
@@ -384,6 +385,7 @@ def calculateArchitectureVideo(
                 step,
                 filter_fasc,
                 gui,
+                display_frame,
             )
 
             duration = time.time() - start_time

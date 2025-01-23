@@ -7,6 +7,8 @@ import customtkinter as ctk
 from tkinter import ttk, W, E, N, S, StringVar, BooleanVar, filedialog
 from DL_Track_US import gui_helpers
 import tkinter as tk
+import cv2
+from PIL import Image, ImageTk
 
 
 class AdvancedAnalysis:
@@ -38,7 +40,7 @@ class AdvancedAnalysis:
 
         # Mask Option
         self.advanced_option = StringVar()
-        advanced_entry = ["Train Model", "Inspect Masks"]
+        advanced_entry = ["Train Model", "Inspect Masks", "Crop Video"]
         advanced_entry = ctk.CTkComboBox(
             self.advanced_window,
             width=20,
@@ -53,6 +55,11 @@ class AdvancedAnalysis:
         # Add padding
         for child in self.advanced_window.winfo_children():
             child.grid_configure(padx=5, pady=5)
+
+        # Initialize video-related attributes
+        self.video_path = None
+        self.processed_frames = []
+        self.current_frame_index = 0
 
     def on_mask_change(self, *args):
         """
@@ -108,13 +115,15 @@ class AdvancedAnalysis:
         The images and masks for the data augmentation are taken from the chosen image directory
         and mask directory. The new images are saved under the same directories.
         """
-        # make new frame
-        self.advanced_window_frame = ctk.CTkFrame(
-            self.advanced_window,
-        )
-        self.advanced_window_frame.grid(column=1, row=2, sticky=(N, S, W, E))
-
         try:
+
+            # Clear the existing frame if it exists
+            if hasattr(self, "advanced_window_frame"):
+                for widget in self.advanced_window_frame.winfo_children():
+                    widget.destroy()
+
+            self.advanced_window_frame = ctk.CTkFrame(self.advanced_window)
+            self.advanced_window_frame.grid(column=1, row=2, sticky=(N, S, W, E))
 
             if self.advanced_option.get() == "Inspect Masks":
 
@@ -367,6 +376,54 @@ class AdvancedAnalysis:
                 )
                 model_button.grid(column=2, row=12, sticky=E)
 
+            elif self.advanced_option.get() == "Crop Video":
+
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Load Video",
+                    command=self.load_video,
+                ).grid(column=0, row=0, columnspan=2, sticky=(W, E))
+
+                ctk.CTkLabel(self.advanced_window_frame, text="Start Frame").grid(
+                    column=0, row=3, sticky=W
+                )
+                self.start_frame_var = StringVar()
+                ctk.CTkEntry(
+                    self.advanced_window_frame, textvariable=self.start_frame_var
+                ).grid(column=1, row=3, sticky=(W, E))
+
+                ctk.CTkLabel(self.advanced_window_frame, text="End Frame").grid(
+                    column=0, row=4, sticky=W
+                )
+                self.end_frame_var = StringVar()
+                ctk.CTkEntry(
+                    self.advanced_window_frame, textvariable=self.end_frame_var
+                ).grid(column=1, row=4, sticky=(W, E))
+
+                ctk.CTkLabel(self.advanced_window_frame, text="Output Path").grid(
+                    column=0, row=5, sticky=W
+                )
+                self.output_path_var = StringVar()
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Browse",
+                    command=lambda: self.output_path_var.set(
+                        filedialog.asksaveasfilename(
+                            defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")]
+                        )
+                    ),
+                ).grid(column=1, row=5, sticky=(W, E))
+
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Crop Video",
+                    command=self.crop_video,
+                ).grid(column=0, row=6, columnspan=2, sticky=(W, E))
+
+                # Add padding
+                for child in self.advanced_window_frame.winfo_children():
+                    child.grid_configure(padx=5, pady=5)
+
         except FileNotFoundError:
             tk.messagebox.showerror("Information", "Enter the correct folder path!")
 
@@ -374,7 +431,131 @@ class AdvancedAnalysis:
         for child in self.advanced_window_frame.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
+    def load_video(self):
+        """
+        Loads a video and displays the first frame in the cropping interface.
+        """
+        self.video_path = filedialog.askopenfilename(
+            title="Open Video File", filetypes=[("Video Files", "*.mp4;*.avi;*.mov")]
+        )
+
+        if not self.video_path:
+            return
+
+        cap = cv2.VideoCapture(self.video_path)
+        if not cap.isOpened():
+            tk.messagebox.showerror("Error", "Unable to open video.")
+            return
+
+        self.processed_frames = []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            self.processed_frames.append(frame)
+        cap.release()
+
+        if self.processed_frames:
+            # Display the first frame
+            self.display_frame(0)
+            self.update_slider_range()
+        else:
+            tk.messagebox.showerror("Error", "No frames found in video.")
+
+    def display_frame(self, frame_index):
+        """
+        Displays a specific frame on the canvas.
+        """
+        frame = self.processed_frames[frame_index]
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_image = Image.fromarray(frame_rgb)
+        frame_tk = ImageTk.PhotoImage(image=frame_image)
+
+        if not hasattr(self, "video_canvas"):
+            self.video_canvas = ctk.CTkLabel(self.advanced_window_frame, text="")
+            self.video_canvas.grid(column=0, row=1, columnspan=2, sticky=(W, E))
+
+        self.video_canvas.imgtk = frame_tk
+        self.video_canvas.configure(image=frame_tk)
+
+    def update_slider_range(self):
+        """
+        Updates the slider to match the number of frames in the video.
+        """
+        if hasattr(self, "frame_slider"):
+            self.frame_slider.destroy()
+
+        self.frame_slider = tk.Scale(
+            self.advanced_window_frame,
+            from_=0,
+            to=len(self.processed_frames) - 1,
+            orient=tk.HORIZONTAL,
+            label=f"Frame: {self.current_frame_index}",  # Initial label
+            command=self.on_slider_change,  # Update frame dynamically
+            bg="#2A484E",  # Dark background matching DL_Track
+            fg="#FFFFFF",  # White text for contrast
+            highlightbackground="#2A484E",  # Matches the main background
+            troughcolor="#C49102",  # Trough color for consistency
+            activebackground="#4A6A6E",  # Border color
+            length=400,  # Adjust length of the slider
+        )
+        self.frame_slider.grid(column=0, row=2, columnspan=2, sticky=(W, E))
+
+    def on_slider_change(self, value):
+        """
+        Triggered when the slider is moved. Displays the corresponding frame.
+        """
+        self.current_frame_index = int(value)
+        self.display_frame(self.current_frame_index)
+        self.frame_slider.config(label=f"Frame: {self.current_frame_index}")
+
     # Methods used for model training
+    def crop_video(self):
+        """
+        Crops the loaded video based on the selected start and end frames.
+        """
+        try:
+            start_frame = int(self.start_frame_var.get())
+            end_frame = int(self.end_frame_var.get())
+            output_path = self.output_path_var.get()
+
+            if not self.video_path or not output_path:
+                tk.messagebox.showerror("Error", "Invalid video or output path.")
+                return
+
+            cap = cv2.VideoCapture(self.video_path)
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+            frame_count = 0
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                if start_frame <= frame_count <= end_frame:
+                    out.write(frame)
+
+                frame_count += 1
+                if frame_count > end_frame:
+                    break
+
+            cap.release()
+            out.release()
+            tk.messagebox.showinfo(
+                "Success", f"Video cropped and saved to {output_path}"
+            )
+
+        except ValueError:
+            tk.messagebox.showerror(
+                "Error", "Invalid frame values. Please enter integers."
+            )
+        except Exception as e:
+            tk.messagebox.showerror("Error", f"An error occurred: {e}")
 
     def get_train_dir(self):
         """

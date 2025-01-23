@@ -1102,6 +1102,7 @@ def doCalculations_curved(
     calib_dist: bool,
     spacing: int,
     approach: str,
+    image_callback=None,  # TODO
 ):
     """Function to compute muscle architectural parameters accounted for fascicle curvature
 
@@ -1500,6 +1501,9 @@ def doCalculations_curved(
             fontsize=10,
             color=color,
         )
+
+        if image_callback:
+            image_callback(fig)
 
         end_time = time.time()
         total_time = end_time - start_time

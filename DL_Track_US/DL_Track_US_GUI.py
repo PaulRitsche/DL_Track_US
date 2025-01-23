@@ -53,12 +53,16 @@ import matplotlib.pyplot as plt
 import settings
 from gui_modules import AdvancedAnalysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from PIL import Image
+from PIL import Image, ImageTk
+import cv2
+import numpy as np
 
 # original imports
 # from DL_Track_US import gui_helpers
 # from DL_Track_US import settings
 # from DL_Track_US.gui_modules import AdvancedAnalysis
+
+# TODO Crop function in the videos and the GUI
 
 
 matplotlib.use("TkAgg")
@@ -529,7 +533,7 @@ class DLTrack(ctk.CTk):
         self.results.grid(column=1, row=0, sticky=(N, S, W, E))
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=4)
-        self.results.rowconfigure(0, weight=1)
+        self.results.rowconfigure(0, weight=2)
         self.results.columnconfigure(0, weight=1)
 
         # Configure rows with a loop
@@ -537,38 +541,127 @@ class DLTrack(ctk.CTk):
             self.results.rowconfigure(row, weight=1)
 
         # Create logo canvas figure
-        self.logo_canvas = Canvas(
-            self.results,
-            width=800,
-            height=600,
-            bg="white",
-        )
+        self.logo_canvas = tk.Label(self.results, bg="black", width=800, height=600)
         self.logo_canvas.grid(
-            row=0,
+            row=0, column=0, rowspan=9, sticky=(N, S, E, W), pady=(5, 0)
+        )
+
+        self.video_canvas = tk.Label(
+            self.logo_canvas,
+            bg="black",
+        )
+        self.video_canvas.grid(
             column=0,
-            rowspan=6,
-            sticky=(N, S, E, W),
-            pady=(5, 0),
+            row=1,
+            columnspan=6,
+            rowspan=8,
+            sticky=(N, S, W, E),
         )
 
-        # Load the logo as a resizable matplotlib figure
-        logo_path = master_path + "/gui_helpers/gui_files/Gear.png"
-        logo = plt.imread(logo_path)
-        logo_fig, ax = plt.subplots()
-        ax.imshow(logo)
-        ax.axis("off")  # Turn off axis
-        logo_fig.tight_layout()  # Adjust layout padding
-
-        # Plot the figure in the in_gui_plotting canvas
-        self.canvas = FigureCanvasTkAgg(logo_fig, master=self.logo_canvas)
-        self.canvas.get_tk_widget().pack(
-            expand=True,
-            fill="both",
-            padx=5,
-            pady=5,
+        # Add a slider for frame navigation
+        self.frame_slider = tk.Scale(
+            self.results,
+            from_=0,
+            to=1,
+            bg="#2A484E",  # Dark background matching DL_Track
+            fg="#FFFFFF",  # White text for contrast
+            highlightbackground="#2A484E",  # Matches the main background
+            troughcolor="#C49102",  # Trough color for consistency
+            activebackground="#4A6A6E",  # Active slider color slightly darker
+            sliderrelief=tk.FLAT,  # Flat slider knob
+            orient=tk.HORIZONTAL,
+            command=self.update_frame_by_slider,
         )
-        plt.close()
-        # This solution is more flexible and memory efficient than previously.
+        self.frame_slider.grid(column=0, row=10, columnspan=6, sticky=(W, E, S))
+
+        self.processed_frames = []
+        self.current_frame_index = 0
+
+    def on_processing_complete(self):
+        """
+        Callback to execute after processing completes.
+        Updates the slider range based on the processed frames or figures.
+        """
+        num_items = len(self.processed_frames)
+        if num_items > 0:
+            self.frame_slider.config(
+                from_=0,
+                to=num_items - 1,  # Set the maximum value to the last index
+            )
+            print(f"Slider updated to range 0-{num_items - 1}.")
+
+    def display_frame(self, item):
+        """
+        Display the current frame or figure on the GUI canvas.
+        """
+
+        if item is None:
+            print("No frame or figure to display.")
+            return
+
+        # Check if the item is an OpenCV frame (NumPy array)
+        if isinstance(item, np.ndarray):
+            # Process and display the OpenCV frame
+            frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
+            frame_image = Image.fromarray(frame_rgb)
+            frame_tk = ImageTk.PhotoImage(image=frame_image)
+
+            # Ensure the video canvas exists
+            if not hasattr(self, "video_canvas"):
+                self.video_canvas = tk.Label(self.video_canvas, bg="white")
+                self.video_canvas.grid(column=0, row=1, columnspan=2, sticky=(W, E))
+
+            self.video_canvas.imgtk = frame_tk
+            self.video_canvas.configure(image=frame_tk, justify="center")
+
+        # Check if the item is a matplotlib figure
+        elif isinstance(item, plt.Figure):
+            # Display the matplotlib figure
+            if hasattr(self, "figure_canvas"):
+                self.figure_canvas.get_tk_widget().destroy()
+
+            self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
+            self.figure_canvas.draw()
+            self.figure_canvas.get_tk_widget().grid(
+                column=0, row=1, columnspan=2, sticky=(W, E)
+            )
+
+        else:
+            print("Unsupported item type for display.")
+
+    def update_frame_by_slider(self, value):
+        """
+        Update the displayed frame based on the slider position.
+        """
+        index = int(value)
+        if 0 <= index < len(self.processed_frames):
+            self.current_frame_index = index
+            self.display_frame(self.processed_frames[index])
+            self.frame_slider.config(label=f"Frame: {self.current_frame_index}")
+
+    def update_slider_range(self):
+        """
+        Updates the slider to match the number of processed frames or figures.
+        """
+        num_items = len(self.processed_frames)
+        if hasattr(self, "frame_slider"):
+            self.frame_slider.destroy()
+
+        self.frame_slider = tk.Scale(
+            self.video_canvas,
+            from_=0,
+            to=num_items - 1,
+            orient=tk.HORIZONTAL,
+            label=f"Item: 0",  # Initial label
+            command=self.update_frame_by_slider,
+            bg="#2A484E",  # Matches the theme
+            fg="#FFFFFF",  # Text color
+            troughcolor="#4A6A6E",  # Trough color
+            activebackground="#1F3A3D",  # Active color
+            highlightbackground="#2A484E",  # Border color
+            length=400,  # Adjust length of the slider
+        )
+        self.frame_slider.grid(column=0, row=2, columnspan=2, sticky=(W, E))
 
     # Methods used in main GUI window when respective buttons are pressed.
     # Define functionalities for buttons used in GUI master window
@@ -904,6 +997,9 @@ class DLTrack(ctk.CTk):
         # Start thread depending on Analysis type
         if self.analysis_type.get() == "image":
 
+            def processing_done_callback():
+                self.on_processing_complete()  # Update slider range here
+
             selected_filetype = self.filetype.get()
 
             # Make sure some kind of filetype is specified.
@@ -938,9 +1034,13 @@ class DLTrack(ctk.CTk):
                     int(selected_filter_fasc),
                     settings,
                     self,
+                    self.display_frame,
                 ),
             )
         elif self.analysis_type.get() == "video":
+
+            def processing_done_callback():
+                self.on_processing_complete()  # Update slider range here
 
             selected_filetype = self.filetype.get()
 
@@ -961,6 +1061,8 @@ class DLTrack(ctk.CTk):
                 self.is_running = False
                 self.do_break()
                 return
+
+            # TODO implement settings for video analysis
 
             selected_flip = self.flip.get()
             selected_apo_model_path = self.apo_model
@@ -995,6 +1097,7 @@ class DLTrack(ctk.CTk):
                     int(selected_min_pennation),
                     int(selected_max_pennation),
                     self,
+                    self.display_frame,
                 ),
             )
         elif self.analysis_type.get() == "image_manual":
@@ -1037,6 +1140,11 @@ class DLTrack(ctk.CTk):
             )
 
         thread.start()
+
+        self.after(
+            100,
+            lambda: self.check_processing_complete(thread, processing_done_callback),
+        )
 
         # # Error handling
         # except AttributeError:
@@ -1092,6 +1200,16 @@ class DLTrack(ctk.CTk):
         """
         if self.is_running:
             self.should_stop = True
+
+    def check_processing_complete(self, thread, callback):
+        """
+        Checks if the processing thread has finished.
+        """
+        if thread.is_alive():
+            self.after(100, lambda: self.check_processing_complete(thread, callback))
+
+        else:
+            callback()
 
 
 # ---------------------------------------------------------------------------------------------------

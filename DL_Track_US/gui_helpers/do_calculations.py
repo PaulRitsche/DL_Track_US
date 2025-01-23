@@ -218,6 +218,7 @@ def doCalculations(  # TODO adapt docstring
     scale_statement: str,
     dictionary: dict,
     filter_fasc: bool,
+    image_callback=None,
 ):
     """Function to compute muscle architectural parameters based on
     convolutional neural network segmentation in images.
@@ -715,6 +716,9 @@ def doCalculations(  # TODO adapt docstring
             color="white",
         )
         plt.grid(False)
+
+        if image_callback:
+            image_callback(fig)
 
         return (
             fasc_l,

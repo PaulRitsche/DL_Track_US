@@ -485,6 +485,7 @@ def calculateBatch(
     filter_fasc: bool,
     settings: dict,
     gui,
+    image_frame=None,
 ) -> None:
     """Function to calculate muscle architecture in longitudinal
     ultrasonography images of human lower limb muscles. The values
@@ -698,6 +699,7 @@ def calculateBatch(
                                 scale_statement=scale_statement,
                                 dictionary=settings,
                                 filter_fasc=filter_fasc,
+                                image_callback=image_frame,
                             )
                         )
 
@@ -715,6 +717,7 @@ def calculateBatch(
                                 calib_dist=calib_dist,
                                 spacing=spacing,
                                 approach="curve_polyfitting",
+                                image_callback=image_frame,
                             )
                         )
 

@@ -64,6 +64,7 @@ def doCalculationsVideo(
     step: int,
     filter_fasc: bool,
     gui,
+    frame_callback=None,  # TODO
 ):
     """
     Function to compute muscle architectural parameters based on
@@ -610,6 +611,7 @@ def doCalculationsVideo(
             img_orig[mask_apoE > 0] = (235, 25, 42)
 
             comb = cv2.addWeighted(img_orig.astype(np.uint8), 1, imgT, 0.8, 0)
+
             vid_out.write(comb)  # Write each image to video file
             cv2.putText(
                 comb,
@@ -672,15 +674,20 @@ def doCalculationsVideo(
                     (249, 249, 249),
                 )
 
+            # Display the processed image
+            # Send frame to UI
+            if frame_callback:
+                frame_callback(comb)
+
             # Check platform for imshow
             # Windows
-            if platform in ("win32", "linux"):
-                cv2.imshow("Analysed image", comb)
-            # MacOS
-            elif platform == "darwin":
-                print("Analysed image cannot be displayed on MacOS.")
+            # if platform in ("win32", "linux"):
+            #     cv2.imshow("Analysed image", comb)
+            # # MacOS
+            # elif platform == "darwin":
+            #     print("Analysed image cannot be displayed on MacOS.")
 
-            # Press 'q' to stop the analysis
+            # # Press 'q' to stop the analysis
             if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
 
