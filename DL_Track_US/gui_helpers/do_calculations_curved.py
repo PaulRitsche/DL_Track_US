@@ -296,8 +296,6 @@ def curve_polyfitting(
             ):  # Don't include 'fascicles' beyond a range of PA
                 data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    print(data)
-
     if len(number_contours) > 0:
         # plot filtered curves between detected fascicles between the two aponeuroses
         fig = plt.figure()
@@ -440,7 +438,7 @@ def curve_connect(
     approach: str
         Can either be curve_connect_linear or curve_connect_poly. If curve_connect_linear is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used. If curve_connect_poly is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
 
-    Returns
+    Returns # TODO
     -------
     fascicle_length : list
         List variable containing the estimated fascicle lengths
@@ -794,36 +792,7 @@ def curve_connect(
                 ):  # Don't include 'fascicles' beyond a range of PA
                     data.iloc[i, data.columns.get_loc("pennation_angle")] = penangle
 
-    fig = plt.figure(figsize=(25, 25))
-    colormap = plt.get_cmap("rainbow", len(all_coordsX))
-
-    plt.imshow(original_image, cmap="gray")  # TODO
-    for i in range(len(all_coordsX)):
-        if data.iloc[i, data.columns.get_loc("linear_fit")] == False:
-            color = colormap(i)
-            for j in range(len(all_coordsX[i])):
-                if j == 0:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4
-                    )
-                if j % 2 == 1:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color="gold", alpha=0.6
-                    )
-                else:
-                    plt.plot(
-                        all_coordsX[i][j], all_coordsY[i][j], color=color, alpha=0.4
-                    )
-    plt.plot(ex_x_LA, ex_y_LA, color="blue", alpha=0.5)
-    plt.plot(ex_x_UA, ex_y_UA, color="blue", alpha=0.5)
-
-    return (
-        data["fascicle_length"].tolist(),
-        data["pennation_angle"].tolist(),
-        data["x_low"].tolist(),
-        data["x_high"].tolist(),
-        fig,
-    )
+    return data
 
 
 def orientation_map(
@@ -1433,7 +1402,7 @@ def doCalculations_curved(
                 filter_fasc,
             )
         if approach == "curve_connect_linear" or approach == "curve_connect_poly":
-            fascicle_length, pennation_angle, x_low, x_high, fig = curve_connect(
+            data = curve_connect(
                 contours_sorted,
                 new_X_LA,
                 new_Y_LA,
@@ -1444,63 +1413,95 @@ def doCalculations_curved(
                 filter_fasc,
                 approach,
             )
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            # Sort data by x_low
+            data = data.sort_values(by="x_low").reset_index(drop=True)
+            colormap = plt.cm.get_cmap("rainbow", len(data["x_low"]))
+
+            # Plot the fascicles
+            plt.imshow(img_copy, cmap="gray")  # TODO
+            handles = []  # For legend
+            labels = []  # For legend
+            for index, row in data.iterrows():
+                color = colormap(index)  # Get a color for this fascicle
+                label_added = (
+                    False  # To ensure the label is only added once per fascicle
+                )
+
+                # Loop through all segments in coordsX and coordsY
+                for segment_x, segment_y in zip(row["coordsX"], row["coordsY"]):
+                    (line,) = plt.plot(
+                        segment_x,  # Current segment's x-coordinates
+                        segment_y,  # Current segment's y-coordinates
+                        color=color,
+                        alpha=0.8,
+                        linewidth=2,
+                        label=(
+                            f"Fascicle {index}" if not label_added else None
+                        ),  # Add label only for the first segment
+                    )
+                    if not label_added:
+                        handles.append(line)
+                        labels.append(f"Fascicle {index}")
+                        label_added = True  # Mark that the label is added
+
+            # Store the results for each frame and normalise using scale factor
+            # (if calibration was done above)
+            try:
+                midthick = mindist[0]  # Muscle thickness
+            except:
+                midthick = mindist
+
+            # get fascicle length & pennation from dataframe
+            fasc_l = list(data["fascicle_length"])
+            pennation = list(data["pennation_angle"])
+
+            # scale data
+            if calib_dist:
+                fasc_l = fasc_l / (calib_dist / int(spacing))
+                midthick = midthick / (calib_dist / int(spacing))
+
+            # Add annotations
+            xplot, yplot = 50, img_copy.shape[0] - 150
+            ax.text(
+                xplot,
+                yplot,
+                f"Median Fascicle Length: {np.median(fasc_l):.2f} mm",
+                fontsize=12,
+                color="white",
+            )
+            ax.text(
+                xplot,
+                yplot + 30,
+                f"Median Pennation Angle: {np.median(pennation):.1f}°",
+                fontsize=12,
+                color="white",
+            )
+            ax.text(
+                xplot,
+                yplot + 60,
+                f"Thickness at Centre: {midthick:.1f} mm",
+                fontsize=12,
+                color="white",
+            )
+
+            # Remove grid and ticks for a cleaner look
+            ax.grid(False)
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+            # Add the legend with sorted handles and labels
+            ax.legend(handles, labels, loc="upper right", fontsize=10)
+            plt.tight_layout()
+
         if approach == "orientation_map":
             fascicle_length, pennation_angle, x_low, x_high, fig = orientation_map(
                 fas_image, apo_image, g, h
             )
 
-        try:
-            midthick = mindist[0]  # Muscle thickness
-        except:
-            midthick = mindist
-
-        # if fascicle_length is not None:
-        fascicle_length = np.array(fascicle_length)
-        pennation_angle = np.array(pennation_angle)
-
-        if calib_dist:
-            fascicle_length = fascicle_length / (calib_dist / int(spacing))
-            midthick = midthick / (calib_dist / int(spacing))
-
-        # add median fascicle length, median pennation angle and muscle thickness to the plot
-        if approach == "orientation_map":
-            xplot = 75
-            yplot = 325
+            xplot, yplot = 50, img_copy.shape[0] - 150
             color = "white"
-        else:
-            xplot = 0
-            yplot = 600
-            color = "black"
-            plt.text(
-                xplot,
-                yplot,
-                (
-                    "Median fascicle length: "
-                    + str("%.2f" % np.median(fascicle_length))
-                    + " mm"
-                ),
-                fontsize=10,
-                color="black",
-            )
-            plt.text(
-                xplot,
-                yplot + 50,
-                (
-                    "Median pennation angle: "
-                    + str("%.1f" % np.median(pennation_angle))
-                    + " deg"
-                ),
-                fontsize=10,
-                color="black",
-            )
-
-        plt.text(
-            xplot,
-            yplot + 100,
-            ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
-            fontsize=10,
-            color=color,
-        )
 
         if image_callback:
             image_callback(fig)
@@ -1510,11 +1511,11 @@ def doCalculations_curved(
         print(total_time)
 
         return (
-            fascicle_length,
-            pennation_angle,
+            fasc_l,
+            pennation,
             midthick,
-            x_low,
-            x_high,
+            data["x_low"].tolist(),
+            data["x_high"].tolist(),
             fig,
         )
         # else:

@@ -47,12 +47,6 @@ from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 
-# TODO determine how to put it together with doCalculations_curved
-# TODO ask Neil about relevance of Xlow Xhigh
-# TODO ask Neil about the model, especially concerning the labelled input
-# TODO ask Neil about comparison models
-# TODO ask Neil about labelled data
-
 
 def sortContours(cnts: list):
     """Function to sort detected contours from proximal to distal.
@@ -545,7 +539,7 @@ def doCalculations(  # TODO adapt docstring
         )
         contoursF3 = [i for i in contoursF2 if len(i) > fasc_cont_thresh]
 
-        fig = plt.figure(figsize=(25, 25))
+        fig, ax = plt.subplots(figsize=(10, 6))  # Adjust figure size for better clarity
 
         fascicle_data = pd.DataFrame(
             columns=[
@@ -653,30 +647,53 @@ def doCalculations(  # TODO adapt docstring
         else:
             data = fascicle_data
 
-        # Get the rainbow colormap to make each fascicle visible
+        # Sort data by x_low
+        data = data.sort_values(by="x_low").reset_index(drop=True)
+
+        # Display the image and fill the plot
+        ax.imshow(
+            img_copy,
+            cmap="gray",
+            aspect="auto",
+            extent=[0, img_copy.shape[1], img_copy.shape[0], 0],
+        )
+
+        # Plot aponeuroses
+        ax.plot(
+            low_x,
+            low_y_new,
+            marker="p",
+            color="blue",
+            linewidth=2,
+            alpha=0.8,
+            label="Lower Aponeurosis",
+        )
+        ax.plot(
+            upp_x,
+            upp_y_new,
+            marker="p",
+            color="blue",
+            linewidth=2,
+            alpha=0.8,
+            label="Upper Aponeurosis",
+        )
+
+        # Plot fascicles with unique colors
         colormap = plt.cm.get_cmap("rainbow", len(data))
-
-        # Plot the remaining fascicles with unique colors
-        for index, row in enumerate(data.iterrows()):
+        handles = []  # For legend
+        labels = []  # For legend
+        for index, row in data.iterrows():
             color = colormap(index)
-            plt.plot(
-                row[1]["coordsX"],
-                row[1]["coordsY"],
+            (line,) = ax.plot(
+                row["coordsX"],
+                row["coordsY"],
                 color=color,
-                alpha=0.3,
-                linewidth=4,
+                alpha=0.8,
+                linewidth=2,
+                label=f"Fascicle {row['x_low']}",
             )
-
-        # DISPLAY THE RESULTS
-        plt.imshow(img_copy, cmap="gray")
-        plt.title(f"Image ID: {filename}" + f"\n{scale_statement}", fontsize=25)
-        plt.plot(
-            low_x, low_y_new, marker="p", color="blue", linewidth=10, alpha=0.1
-        )  # Plot the aponeuroses
-        plt.plot(upp_x, upp_y_new, marker="p", color="blue", linewidth=10, alpha=0.1)
-
-        xplot = 125
-        yplot = 700
+            handles.append(line)
+            labels.append(f"Fascicle {index}")
 
         # Store the results for each frame and normalise using scale factor
         # (if calibration was done above)
@@ -694,28 +711,38 @@ def doCalculations(  # TODO adapt docstring
             fasc_l = fasc_l / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
 
-        plt.text(
+        # Add annotations
+        xplot, yplot = 50, img_copy.shape[0] - 150
+        ax.text(
             xplot,
             yplot,
-            ("Fascicle length: " + str("%.2f" % np.median(fasc_l)) + " mm"),
-            fontsize=15,
+            f"Median Fascicle Length: {np.median(fasc_l):.2f} mm",
+            fontsize=12,
             color="white",
         )
-        plt.text(
+        ax.text(
             xplot,
-            yplot + 50,
-            ("Pennation angle: " + str("%.1f" % np.median(pennation)) + " deg"),
-            fontsize=15,
+            yplot + 30,
+            f"Median Pennation Angle: {np.median(pennation):.1f}°",
+            fontsize=12,
             color="white",
         )
-        plt.text(
+        ax.text(
             xplot,
-            yplot + 100,
-            ("Thickness at centre: " + str("%.1f" % midthick) + " mm"),
-            fontsize=15,
+            yplot + 60,
+            f"Thickness at Centre: {midthick:.1f} mm",
+            fontsize=12,
             color="white",
         )
-        plt.grid(False)
+
+        # Remove grid and ticks for a cleaner look
+        ax.grid(False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        # Add the legend with sorted handles and labels
+        ax.legend(handles, labels, loc="upper right", fontsize=10)
+        plt.tight_layout()  # Adjust layout for text and plot
 
         if image_callback:
             image_callback(fig)

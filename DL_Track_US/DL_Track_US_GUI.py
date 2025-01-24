@@ -62,8 +62,6 @@ import numpy as np
 # from DL_Track_US import settings
 # from DL_Track_US.gui_modules import AdvancedAnalysis
 
-# TODO Crop function in the videos and the GUI
-
 
 matplotlib.use("TkAgg")
 
@@ -614,6 +612,8 @@ class DLTrack(ctk.CTk):
             self.video_canvas.imgtk = frame_tk
             self.video_canvas.configure(image=frame_tk, justify="center")
 
+            self.processed_frames.append(item)
+
         # Check if the item is a matplotlib figure
         elif isinstance(item, plt.Figure):
             # Display the matplotlib figure
@@ -626,8 +626,16 @@ class DLTrack(ctk.CTk):
                 column=0, row=1, columnspan=2, sticky=(W, E)
             )
 
+            # frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
+            # frame_image = Image.fromarray(frame_rgb)
+            # frame_tk = ImageTk.PhotoImage(image=frame_image)
+
+            self.processed_frames.append(item)
+
         else:
             print("Unsupported item type for display.")
+
+        print(len(self.processed_frames))
 
     def update_frame_by_slider(self, value):
         """

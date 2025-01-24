@@ -735,6 +735,7 @@ def calculateBatch(
                                 calib_dist=calib_dist,
                                 spacing=spacing,
                                 approach="curve_connect_linear",
+                                image_callback=image_frame,
                             )
                         )
 
@@ -752,6 +753,7 @@ def calculateBatch(
                                 calib_dist=calib_dist,
                                 spacing=spacing,
                                 approach="curve_connect_poly",
+                                image_callback=image_frame,
                             )
                         )
 
@@ -769,6 +771,7 @@ def calculateBatch(
                                 calib_dist=calib_dist,
                                 spacing=spacing,
                                 approach="orientation_map",
+                                image_callback=image_frame,
                             )
                         )
                         x_low = None
