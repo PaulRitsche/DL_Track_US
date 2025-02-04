@@ -171,19 +171,13 @@ def doCalculationsVideo(
     try:
 
         # Extract dictionary parameters
-        fasc_cont_thresh, min_width, max_pennation, min_pennation = [
-            int(dic[key])
-            for key in [
-                "fasc_cont_thresh",
-                "min_width",
-                "max_pennation",
-                "min_pennation",
-            ]
-        ]
-        apo_threshold, apo_length_thresh, fasc_threshold = [
-            float(dic[key])
-            for key in ["apo_treshold", "apo_length_thresh", "fasc_threshold"]
-        ]
+        fasc_cont_thresh = int(dic["fascicle_length_threshold"])
+        min_width = int(dic["minimal_muscle_width"])
+        max_pennation = int(dic["maximal_pennation_angle"])
+        min_pennation = int(dic["minimal_pennation_angle"])
+        apo_threshold = float(dic["aponeurosis_detection_threshold"])
+        apo_length_thresh = float(dic["aponeurosis_length_threshold"])
+        fasc_threshold = float(dic["fascicle_detection_threshold"])
 
         # Define empty lists for parameter storing
         fasc_l_all, pennation_all, x_lows_all, x_highs_all, thickness_all = (
@@ -601,12 +595,6 @@ def doCalculationsVideo(
             x_highs_all.append(df_sorted["X_high"].tolist())
             thickness_all.append(midthick)
 
-            # fasc_l_all.append(fasc_l)
-            # pennation_all.append(pennation)
-            # x_lows_all.append(x_low1)
-            # x_highs_all.append(x_high1)
-            # thickness_all.append(midthick)
-
             # Display each processed frame
             img_orig[mask_apoE > 0] = (235, 25, 42)
 
@@ -678,14 +666,6 @@ def doCalculationsVideo(
             # Send frame to UI
             if frame_callback:
                 frame_callback(comb)
-
-            # Check platform for imshow
-            # Windows
-            # if platform in ("win32", "linux"):
-            #     cv2.imshow("Analysed image", comb)
-            # # MacOS
-            # elif platform == "darwin":
-            #     print("Analysed image cannot be displayed on MacOS.")
 
             # # Press 'q' to stop the analysis
             if cv2.waitKey(10) & 0xFF == ord("q"):

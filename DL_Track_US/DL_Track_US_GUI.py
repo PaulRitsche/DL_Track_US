@@ -602,12 +602,14 @@ class DLTrack(ctk.CTk):
             # Process and display the OpenCV frame
             frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
             frame_image = Image.fromarray(frame_rgb)
-            frame_tk = ImageTk.PhotoImage(image=frame_image)
+            frame_tk = ImageTk.PhotoImage(image=frame_image, size=(800, 600))
 
             # Ensure the video canvas exists
             if not hasattr(self, "video_canvas"):
                 self.video_canvas = tk.Label(self.video_canvas, bg="white")
-                self.video_canvas.grid(column=0, row=1, columnspan=2, sticky=(W, E))
+                self.video_canvas.grid(
+                    column=0, row=1, columnspan=6, sticky=(W, E, S, N)
+                )
 
             self.video_canvas.imgtk = frame_tk
             self.video_canvas.configure(image=frame_tk, justify="center")
@@ -623,19 +625,13 @@ class DLTrack(ctk.CTk):
             self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
             self.figure_canvas.draw()
             self.figure_canvas.get_tk_widget().grid(
-                column=0, row=1, columnspan=2, sticky=(W, E)
+                column=0, row=1, columnspan=6, sticky=(W, E, S, N)
             )
-
-            # frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
-            # frame_image = Image.fromarray(frame_rgb)
-            # frame_tk = ImageTk.PhotoImage(image=frame_image)
 
             self.processed_frames.append(item)
 
         else:
             print("Unsupported item type for display.")
-
-        print(len(self.processed_frames))
 
     def update_frame_by_slider(self, value):
         """
@@ -863,9 +859,6 @@ class DLTrack(ctk.CTk):
         )
 
     # ---------------------------------------------------------------------------------------------------
-    # Open new toplevel instance for analysis parameter specification------------------------------------------------------------------------------------------
-
-    # ---------------------------------------------------------------------------------------------------
     # Methods and properties required for threading
 
     @property
@@ -1024,9 +1017,6 @@ class DLTrack(ctk.CTk):
             selected_fasc_model_path = self.fasc_model
             selected_scaling = self.scaling.get()
             selected_spacing = self.spacing.get()
-            selected_min_width = self.settings.minimal_muscle_width
-            selected_min_pennation = self.settings.minimal_pennation_angle
-            selected_max_pennation = self.settings.maximal_pennation_angle
             selected_filter_fasc = self.filter_fasc.get()
 
             thread = Thread(
@@ -1045,6 +1035,7 @@ class DLTrack(ctk.CTk):
                     self.display_frame,
                 ),
             )
+
         elif self.analysis_type.get() == "video":
 
             def processing_done_callback():
@@ -1078,13 +1069,7 @@ class DLTrack(ctk.CTk):
             selected_scaling = self.scaling.get()
             selected_spacing = self.spacing.get()
             selected_filter_fasc = self.filter_fasc.get()
-            selected_apo_threshold = 0.2
-            selected_apo_length_threshold = 600
-            selected_fasc_threshold = 0.05
-            selected_fasc_cont_threshold = 40
-            selected_min_width = 60
-            selected_min_pennation = 10
-            selected_max_pennation = 40
+
             thread = Thread(
                 target=gui_helpers.calculateArchitectureVideo,
                 args=(
@@ -1097,13 +1082,7 @@ class DLTrack(ctk.CTk):
                     int(selected_spacing),
                     int(selected_step),
                     int(selected_filter_fasc),
-                    float(selected_apo_threshold),
-                    int(selected_apo_length_threshold),
-                    float(selected_fasc_threshold),
-                    int(selected_fasc_cont_threshold),
-                    int(selected_min_width),
-                    int(selected_min_pennation),
-                    int(selected_max_pennation),
+                    settings,
                     self,
                     self.display_frame,
                 ),

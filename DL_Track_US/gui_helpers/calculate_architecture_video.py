@@ -173,13 +173,7 @@ def calculateArchitectureVideo(
     spacing: int,
     step: int,
     filter_fasc: bool,
-    apo_treshold: float,
-    apo_length_thresh: int,
-    fasc_threshold: float,
-    fasc_cont_thresh: int,
-    min_width: int,
-    min_pennation: int,
-    max_pennation: int,
+    settings: dict,
     gui,
     display_frame,
 ):
@@ -235,48 +229,9 @@ def calculateArchitectureVideo(
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
-    apo_threshold : float
-        Float variable containing the threshold applied to predicted
-        aponeurosis pixels by our neural networks. By varying this
-        threshold, different structures will be classified as aponeurosis
-        as the threshold for classifying a pixel as aponeurosis is changed.
-        Must be non-zero and non-negative.
-    apo_length_tresh : int
-        Integer variable containing the threshold applied to predicted
-        aponeurosis length in pixels. By varying this
-        threshold, different structures will be classified as
-        aponeurosis depending on their length. Must be non-zero and
-        non-negative.
-    fasc_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for
-        classifying a pixel as fascicle is changed. Must be non-zero and
-        non-negative.
-    fasc_cont_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer
-        fascicle segments will be considered, by lowering shorter segments.
-        Must be non-zero and non-negative.
-    min_width : int
-        Integer variable containing the minimal distance between aponeuroses
-        to be detected. The aponeuroses must be at least this distance apart
-        to be detected. The distance is specified in pixels. Must be non-zero
-        and non-negative.
-    min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles with
-        lower pennation angles will be excluded. The pennation angle is
-        calculated as the angle of insertion between extrapolated fascicle
-        and detected aponeurosis. Must be non-negative.
-    max_pennation : int
-        Integer variable containing the maximal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles with
-        higher pennation angles will be excluded. The pennation angle is
-        calculated as the angle of insertion between extrapolated fascicle and
-        detected aponeurosis. Must be non-negative and larger than
-        min_pennation.
+    settings : dict
+        Dictionary containing the settings of the GUI. These specify the
+        prediction parameters for the neural networks.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -304,9 +259,7 @@ def calculateArchitectureVideo(
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip="Flip", filetype="/**/*.avi, scaline="manual",
                        spacing=10, filter_fasc=False
-                       apo_threshold=0.1, fasc_threshold=0.05,
-                       fasc_cont_thres=40,
-                       curvature=3, min_pennation=10, max_pennation=35,
+                       settings=settings,
                        gui=<__main__.DLTrack object at 0x000002BFA7528190>)
     """
     list_of_files = glob.glob(rootpath + filetype, recursive=True)
@@ -320,26 +273,29 @@ def calculateArchitectureVideo(
         gui.should_stop = False
         gui.is_running = False
 
-    dic = {
-        "apo_treshold": apo_treshold,
-        "fasc_threshold": fasc_threshold,
-        "fasc_cont_thresh": fasc_cont_thresh,
-        "min_width": min_width,
-        "min_pennation": min_pennation,
-        "max_pennation": max_pennation,
-        "apo_length_thresh": apo_length_thresh,
-    }
-
     # Check analysis parameters for positive values
-    for _, value in dic.items():
-        if float(value) <= 0:
-            tk.messagebox.showerror(
-                "Information", "Analysis parameters must be non-zero and non-negative"
-            )
-            gui.should_stop = False
-            gui.is_running = False
-            gui.do_break()
-            return
+    for _, value in settings.items():
+        # Ensure value is not empty or zero
+        if isinstance(value, str):
+            if not value.strip():  # Check if string is empty or whitespace
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+        else:
+            if float(value) <= 0:  # Check if numeric value is <= 0
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
     try:
 
@@ -381,7 +337,7 @@ def calculateArchitectureVideo(
                 model_apo,
                 model_fasc,
                 calib_dist,
-                dic,
+                settings,
                 step,
                 filter_fasc,
                 gui,
