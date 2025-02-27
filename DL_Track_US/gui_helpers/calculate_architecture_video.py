@@ -51,6 +51,7 @@ import glob
 import os
 import time
 import tkinter as tk
+import numpy as np
 
 import cv2
 import matplotlib.pyplot as plt
@@ -59,14 +60,15 @@ from keras.models import load_model
 """
 from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
-from DL_Track_US.gui_helpers.calculate_architecture import IoU, exportToEcxel
+from DL_Track_US.gui_helpers.calculate_architecture import IoU, exportToExcel
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 """
 
-from gui_helpers.calculate_architecture import IoU, exportToEcxel
+from gui_helpers.calculate_architecture import IoU, exportToExcel
 from gui_helpers.calibrate_video import calibrateDistanceManually
 from gui_helpers.do_calculations_video import doCalculationsVideo
 from gui_helpers.manual_tracing import ManualAnalysis
+from gui_helpers.filter_data import applyFilters, hampelFilterList
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
@@ -346,19 +348,33 @@ def calculateArchitectureVideo(
 
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
+
+            # Apply Hampel Filter to the results to avoid outliers
+            # This is done here to loop over the final dataframe
+            fasc_l_all_filtered = [
+                hampelFilterList(fasc_l, win_size=4, num_dev=1)["filtered"]
+                for fasc_l in fasc_l_all
+            ]
+            pennation_all_filtered = [
+                hampelFilterList(pennation, win_size=4, num_dev=1)["filtered"]
+                for pennation in pennation_all
+            ]
+
             # Save Results
-            exportToEcxel(
+            exportToExcel(
                 rootpath,
                 fasc_l_all,
                 pennation_all,
                 x_lows_all,
                 x_highs_all,
                 thickness_all,
-                filename=filename,
+                filename,
+                fasc_l_all_filtered,
+                pennation_all_filtered,
             )
 
-    except ValueError:
-        pass
+    # except ValueError:
+    #     pass
 
     except IndexError:
         tk.messagebox.showerror(
