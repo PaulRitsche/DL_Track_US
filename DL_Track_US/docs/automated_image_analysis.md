@@ -40,21 +40,9 @@ a flip-flag for those images.
 
 - For this tutorial we will use the example images folder “DL_Track_US_examples/images” with it’s contained images and flip-flag.txt file.
 
-## 2. Creating Neural Network Directories
 
-<!-- verstehe diesen Schritt und den Screenshot nicht -->
 
-- The folder containing the images for this tutorial (in this case the
-“DL_Track_US_examples/images” folder) is already included in the 
-“DL_Track_US_example” folder.
-- The pre-trained **aponeurosis and fascicle neural networks** are located in the
-“DL_Track_US_example/**models**” folder. You can make use of these neural
-networks later as well, when you analyse your own images outside of this
-tutorial.
-
-![images&models](md_graphics\aia\images&models.PNG)
-
-## 3. Specifying Input Directories in the GUI
+## 2. Specifying Input Directories in the GUI
 
 Once the GUI is openend, the first step of every analysis type in DL_Track_US
 is to specify the input directories in the graphical user interface (GUI).
@@ -90,7 +78,7 @@ In the next section you will specify all relevant analysis parameters,
 including the analysis type. We will also explain what each parameter is used
 for.
 
-## 4. Specifying Relevant Parameters
+## 3. Specifying Analysis Parameters
 
 As a first step, you will select the right analysis type in the GUI.
 
@@ -187,37 +175,37 @@ amount of images in the images folder.
 ![flip flag button](md_graphics\aia\flip_flag_button.PNG)
 ![flip flag location](md_graphics\aia\flip_flag_location.PNG)
 
-## 5. Specifying Analysis Parameters
+## 4. Adjusting Settings
+
+<!-- Beschreibung der Parameter noch kontrollieren! -->
 
 As a last step, you need to specify the analysis parameters for the
 aponeurosis and fascicle neural networks. If you click on the <span style="color: #a34ba1;">**settings wheel**</span> a 
-python script with the name "settings.py" opens up in VS Code. On this page, all parameters used by the aponeurosis and
-fascicles neural networks during inference are specified.
+python script with the name "settings.py" opens up in your default text editor. On this page, all parameters used by the aponeurosis and
+fascicles neural networks during inference are specified. The default values are always specified on the right hand side of the parameters.
 
 ![analysis parameters](md_graphics\aia\analysis_parameters.PNG)
 ![settings.py](md_graphics\aia\settings_py.PNG)
 
-<!-- Beschreibung noch anpassen -->
-
-- The Apo Threshold parameters determines the threshold of the minimal
+- The aponeurosis detection threshold determines the threshold of the minimal
 acceptable probability by which a pixel is predicted as aponeurosis. The lower,
 the more pixels will be classified as aponeurosis.
-- The Fasc Threshold is the same thing just for fascicle segments.
-- The lower the Fasc Cont Threshold, the shorted the minimal acceptable length of
-detected fascicle segments to be included in the results.
-- The Minimal Width determined the minimal acceptable distance between
-superficial and deep aponeurosis.
+- Changing the aponeurosis lenght threshold will result in longer or shorter structures
+detected as aponeurosis.
+- The fascicle detection threshold and the fascicle lenght threshold are the same thing, just for the fasicles.
+- The minimal muscle width determines the minimal acceptable distance between superficial and deep aponeurosis.
 - Minimal and Maximal Pennation describe the respective minimal and maximal
 pennation angle that is physiologically possible in the analysed image/muscle.
-- In v0.2.1 of the GUI, we added the parameter „Apo Length Thresh“. This is set to
-600 px as default. Changing this value will result in longer or shorter structures
-detected as aponeurosis.
+- The fascicle calculation method ...
+- The lower the fasc contour threshold, the shorter the minimal acceptable length of
+detected fascicle segments to be included in the results.
+- The aponeurosis distance tolerance ...
 
-For this tutorial, you can leave all parameters the way they are. You can set the parameters by clicking the Set parameters button. Adapt
+For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
 these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
 a small sample of your images prior to the actual analysis.
 
-## 6. Running / Breaking DL_Track_US
+## 5. Running / Breaking DL_Track_US
 
 - By clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI window, you can start the
 analysis.
@@ -248,7 +236,7 @@ You have now completed the DL_Track_US tutorial for automated image
 analysis! There is one more thing though, error handling. Take a look at the
 next section to get more information.
 
-## 7. Error Handling
+## 6. Error Handling
 
 Whenever an error occurs during the analysis process, the DL_Track_US GUI
 will open a <span style="color: #299ed9;">**messagebox**</span>. This looks always similar to this:

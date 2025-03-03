@@ -33,7 +33,7 @@ All **images** to be analyzed should be in a single folder.
 
 - Once that is done, the selected folder will be displayed below the **Inputs** field and you can start to specify the relevant parameters for the analysis.
 
-## 3. Specifying Relevant Parameters
+## 3. Specifying Analysis Parameters
 
 Please select <span style="color: #a34ba1;">**image_manual**</span> from the dropdown-menu.
 
@@ -143,83 +143,83 @@ any extra unwanted mouse clicks.
 
 Next you can manually analyse the pennation angle.
 
-- Select the radiobutton <span style="color:purple;">**Pennation Angle**</span>.
-- A <span style="color:cyan;">**messagebox**</span> will appear advising you what to do.
-- Draw at least three <span style="color:orange;">**pennation angles**</span> per image at different regions of
+- Select the radiobutton <span style="color: #a34ba1;">**Pennation Angle**</span>.
+- A <span style="color:  #299ed9;">**messagebox**</span> will appear advising you what to do.
+- Draw at least three <span style="color: #f97e25;">**pennation angles**</span> per image at different regions of
 the image.
-- Each drawn <span style="color:orange;">**pennation angles**</span> MUST consist of two segments. The first
+- Each drawn pennation angles MUST consist of two segments. The first
 segment should follow the orientation of the fascicle, the second
 segment should follow the orientation of the deep aponeurosis. The
 segments should both originate at the insertion of the fascicle in the
 deep aponeurosis.
 - Please pay attention to avoid unwanted clicks on the image.
 
-<!-- Bild -->
-<!-- Bild -->
-<!-- Bild -->
+![pennation angle](md_graphics\mia\pennation_angle.PNG)
+![pennation angle 3](md_graphics\mia\pennation_angle_3.PNG)
 
 ## 5. Saving / Breaking / Next Image
 
-There are three buttons in the “Manual Analysis window” left to explain. The first button is the <span style="color:purple;">**Save Results**</span> button.
+There are three buttons in the “Manual Analysis window” left to explain. 
+The first button is the <span style="color: #a34ba1;">**Save Results**</span> button.
 
-- The <span style="color:purple;">**Save Results**</span> button is a very important button!
-- Press the <span style="color:purple;">**Save Results**</span> button once you have analyzed all parameters
+- The Save Results button is a very important button!
+- Press the Save Results button once you have analyzed all parameters
 that you wanted to analyze and before continuing with the next
 image.
 - An excel file with the name Manual_Results.xlsx is saved in the
-directory of the input images upon pressing the <span style="color:purple;">**Save Results**</span> button.
+directory of the input images upon pressing the Save Results button.
 Therein, all analysis results are stored. Moreover, by pressing the
-<span style="color:purple;">**Save Results**</span>, a screenshot of your current analysis is captured and
+Save Results, a screenshot of your current analysis is captured and
 stored. (Note: The image may look strange, as we can only approximate
 the coordinates and size of the manual analysis on your screen.)
 - In your case all files are saved in the
 “DL_Track_US_example/images_manual” folder.
 
-<!-- Bild -->
+![save results](md_graphics\mia\save_results.PNG)
 
-The second button we haven’t explained yet is the <span style="color:purple;">**Next Image**</span>
+The second button we haven’t explained yet is the <span style="color: #299ed9;">**Next Image**</span>
 button.
 
 - By clicking this button, you can proceed to the next image in the input
 folder (in your case the “DL_Track_US_example/images_manual”
 folder).
-- Please remember to press the <span style="color:cyan;">**Save Results**</span> button prior to
+- Please remember to press the **Save Results** button prior to
 proceeding to the next images, otherwise you analysis results for this
 image will be lost.
-- When the <span style="color:purple;">**Next Image**</span> button is pressed, the displayed image is
+- When the <span style="color: #299ed9;">**Next Image**</span> button is pressed, the displayed image is
 updated.
 
-<!-- Bild -->
-<!-- Bild -->
+![next image](md_graphics\mia\next_image.PNG)
+![next image 2](md_graphics\mia\next_image_2.PNG)
 
-The last button we need to explain is the <span style="color:purple;">**Break Analysis**</span> button.
+The last button we need to explain is the <span style="color: #2eaf66;">**Break Analysis**</span> button.
 
 - Pressing this button allows you to terminate the analysis and
 return to the main GUI window.
-- A <span style="color:cyan;">**messagebox**</span> will appear asking you if you really want to stop the
+- A <span style="color: #299ed9;">**messagebox**</span> will appear asking you if you really want to stop the
 analysis.
-- Once the <span style="color:purple;">**Break Analysis**</span> button is pressed and you answered the
+- Once the <span style="color: #2eaf66;">**Break Analysis**</span> button is pressed and you answered the
 messagebox with “YES”, the “Manual Analysis window” will be
 automatically closed.
 
-<!-- Bild -->
+![break analysis](md_graphics\mia\break_analysis.PNG)
 
 When you have saved your results clicking the very important button and
 followed our instructions during this tutorial, your input directory 
 “DL_Track_US_example/images_manual” should look like this. It should contain
-<span style="color:green;">**the images**</span>, saved <span style="color:red;">**screenshots**</span>, as well as the <span style="color:blue;">**Manual_Results.xlsx**</span> file.
+<span style="color: #2eaf66;">**the images**</span>, saved <span style="color: #299ed9;">**screenshots**</span>, as well as the <span style="color: #f97e25;">**Manual_Results.xlsx**</span> file.
 
-<!-- Bild -->
+![images folder after](md_graphics\mia\images_folder_after.PNG)
 
 ## 6. Error Handling
 
 Whenever an error occurs during the manual image analysis process, the
-DL_Track_US GUI will open a <span style="color:cyan;">**messagebox**</span>. This looks always similar to this:
+DL_Track_US GUI will open a <span style="color: #299ed9;">**messagebox**</span>. This looks always similar to this:
 
-<!-- Bild -->
+![error](md_graphics\mia\error.PNG)
 
-We tried to formulate these <span style="color:cyan;">**messageboxes**</span> as concise as possible. Just follow
+We tried to formulate these messageboxes as concise as possible. Just follow
 their instructions to fix the error and run the analysis anew. In case an error
-occurs that is not caught by an error <span style="color:cyan;">**messagebox**</span>, don’t hesitate to report this
+occurs that is not caught by an error messagebox, don’t hesitate to report this
 in the Q&A section in the [DL_Track_US discussion forum](https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a). Please take a look
 [here](https://dltrack.readthedocs.io/en/latest/contribute.html) how do best do this.

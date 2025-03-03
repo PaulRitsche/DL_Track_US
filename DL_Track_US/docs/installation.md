@@ -1,13 +1,13 @@
 We offer two possible installation approaches for our DL_Track_US software. The first option is to download the DL_Track_US executable file. The second option we describe is DL_Track package installation via Github and pythons package manager pip. We want to inform you that there are more ways to install the package. However, we do not aim to be complete and rather demonstrate an (in our opinion) user friendly way for the installation of DL_Track_US. Moreover, we advise users with less programming experience to make use of the first option and download the executable file.
 
-## Download the DL_Track_US executable
+## 1. Download the DL_Track_US executable
 
 1. Got to the OSF webpage containing the DL_Track_US executable, the pre-trained models and the example files using this [link](https://osf.io/7mjsc/?view_only=).
 2. Download the DL_Track_US_example.zip folder and unpack the file.
 3. Find the DL_Track_US.exe executable located in the DL_Track_US_example/executable folder.
 4. Open the DL_Track_US_GUI by double clicking the DL_Track_US.exe file and start with the testing procedure to check that everything works properly (see [Examples](https://dltrack.readthedocs.io/en/latest/usage.html) and [Testing](https://dltrack.readthedocs.io/en/latest/tests.html)). In case you get an anti-virus notification, trust us and click it away. We assure you the software is harmless.
 
-## Install DL_Track_US via Github, pip and Pypi.org
+## 2. Install DL_Track_US via Github, pip and Pypi.org
 
 In case you want to use this way to install and run DL_Track_US, we advise you to setup conda (see step 1) and download the environment.yml file from the repo (see steps 5-8). If you want to actively contribute to the project or customize the code, it might be usefull to you to do all of the following steps (for more information see [Contributing Guidelines](https://dltrack.readthedocs.io/en/latest/contribute.html)).
 
@@ -115,7 +115,7 @@ python DL_Track_US_GUI.py
 
 The main GUI should now open. If you run into problems, open a discussion in the Q&A section of [DL_Track_US discussions](https://github.com/PaulRitsche/DL_Track_US/discussions/categories/q-a) and assign the label “Problem”. You can find an example discussion there. For usage of DL_Track_US please take a look at the docs directory in the Github repository.
 
-## GPU Setup
+## 3. GPU Setup
 
 **Attention: The next section is only relevant for windows users!**
 

@@ -57,13 +57,21 @@ plugins:
 # front of the filename whose title you want to change.
 nav:
   - Welcome: index.md
+  - About Us: about_us.md
   - Installation: installation.md
+  - Quick Start: quick_start.md
   - Usage:
-    - Autamated Image Analysis: aia.md
-    - Manual Image Analysis: mia.md
-    - Automated Video Analysis: ava.md
-    - Manual Video Analysis: mva.md
+    - Autamated Image Analysis: automated_image_analysis.md
+    - Manual Image Analysis: manual_image_analysis.md
+    - Automated Video Analysis: automated_video_analysis.md
+    - Manual Video Analysis: manual_video_analysis.md
+    - Training Your Own Networks: training_your_own_networks.md
+  - Advanced Methods:
+    - Image Labels: image_labels.md
+    - Inspecting Masks: inspecting_masks.md
+    - Crop Video: crop_video.md
   - Contributing: contributing.md
+  - Code of Conduct: code_of_conduct.md
 #   - About us: about-us.md
 #   - Quick-Start: quick-start.md
 #   - Tutorials:
