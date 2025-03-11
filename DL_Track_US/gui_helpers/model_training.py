@@ -446,6 +446,26 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
     return f_loss
 
 
+def dice_loss(y_true, y_pred):
+    smooth = 1
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = y_true_f * y_pred_f
+    score = (2.0 * K.sum(intersection) + smooth) / (
+        K.sum(y_true_f) + K.sum(y_pred_f) + smooth
+    )
+    return 1 - score
+
+
+def dice_bce_loss(y_true, y_pred, smooth=1):
+
+    Dice_BCE = 0.8 * K.binary_crossentropy(y_true, y_pred) + 0.2 * dice_loss(
+        y_true, y_pred
+    )
+
+    return Dice_BCE
+
+
 def loadImages(img_path: str, mask_path: str) -> list:
     """Function to load images and manually labeled masks from a specified
     directory.

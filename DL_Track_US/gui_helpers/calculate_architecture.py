@@ -61,27 +61,22 @@ import pandas as pd
 import tensorflow as tf
 
 # Carla imports
-from gui_helpers.calibrate import calibrateDistanceManually, calibrateDistanceStatic
-from gui_helpers.do_calculations import doCalculations
-from gui_helpers.do_calculations_curved import doCalculations_curved
-from gui_helpers.manual_tracing import ManualAnalysis
 from keras import backend as K
 from keras.models import load_model
 from matplotlib.backends.backend_pdf import PdfPages
 from pandas import ExcelWriter
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
-from gui_helpers.filter_data import hampelFilterList
+
 
 # original imports
-# from DL_Track_US.gui_helpers.calibrate import (
-# calibrateDistanceManually,
-# calibrateDistanceStatic,
-# )
-# from DL_Track_US.gui_helpers.do_calculations import doCalculations
-# from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
-# from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
-
+from DL_Track_US.gui_helpers.calibrate import (
+    calibrateDistanceStatic,
+)
+from DL_Track_US.gui_helpers.do_calculations import doCalculations
+from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
+from DL_Track_US.gui_helpers.filter_data import hampelFilterList
 
 # plt.style.use("ggplot")
 # plt.switch_backend("Agg")
@@ -263,7 +258,7 @@ def importImageManual(path_to_image: str, flip: int):
     return img, filename
 
 
-def getFlipFlagsList(flip_flag_path: str) -> list:
+def getFlipFlagsList(flip_flag_path: str, gui) -> list:
     """Function to retrieve flip values from a .txt file.
 
     The flip flags decide wether an image should be flipped or not.
@@ -277,6 +272,8 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
     flip_flag_path : str
         String variabel containing the absolute path to the flip flag
         .txt file containing the flip flags.
+    gui : tk.Tk
+        The GUI object.
 
     Returns
     -------
@@ -291,14 +288,34 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
     """
     # Specify empty list
     flip_flags = []
-    # open .txt file
-    file = open(flip_flag_path, "r")
-    for line in file:
-        for digit in line:
-            if digit.isdigit():
-                flip_flags.append(digit)
 
-    return flip_flags
+    try:
+        # open .txt file
+        file = open(flip_flag_path, "r")
+        for line in file:
+            for digit in line:
+                if digit.isdigit():
+                    flip_flags.append(digit)
+
+        return flip_flags
+
+    except UnicodeDecodeError:
+        tk.messagebox.showerror(
+            "Information", "Location of flipflag file is incorrect."
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
+
+    except FileNotFoundError:
+        tk.messagebox.showerror(
+            "Information", "Location of flipflag file is incorrect."
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
 
 
 def exportToExcel(
@@ -381,6 +398,12 @@ def exportToExcel(
         df6 = pd.DataFrame(data=fl_filtered, dtype=float)
         df6.to_excel(writer, sheet_name="Fasc_length_filtered", index=True)
 
+        # add overall filtereed median
+        df61 = pd.DataFrame(
+            hampelFilterList(df6.median(axis=1, skipna=True))["filtered"]
+        )
+        df61.to_excel(writer, sheet_name="Fasc_length_filtered_median", index=True)
+
     # Add filtered pennation angle (if provided)
     if filtered_pennation is not None:
         pe_filtered = create_array(filtered_pennation)
@@ -388,6 +411,11 @@ def exportToExcel(
             pe_filtered[i, : len(j)] = j
         df7 = pd.DataFrame(data=pe_filtered, dtype=float)
         df7.to_excel(writer, sheet_name="Pennation_filtered", index=True)
+
+        df71 = pd.DataFrame(
+            hampelFilterList(df7.median(axis=1, skipna=True))["filtered"]
+        )
+        df71.to_excel(writer, sheet_name="pennation_filtered_median", index=True)
 
     writer.close()
 
@@ -572,29 +600,8 @@ def calculateBatch(
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)
 
-    # try:
-    #     # Load models
-    #     model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-    #     model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
-    # except OSError:
-    #     tk.messagebox.showerror("Information", "Apo/Fasc model path is incorrect.")
-    #     gui.should_stop = False
-    #     gui.is_running = False
-    #     gui.do_break()
-    #     return
-
     # Check validity of flipflag path and rais execption
-    try:
-        flip_flags = getFlipFlagsList(flip_file_path)
-
-    except FileNotFoundError:
-        tk.messagebox.showerror(
-            "Information", "Location of flipflag file is incorrect."
-        )
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
-        return
+    flip_flags = getFlipFlagsList(flip_file_path, gui)
 
     # Check analysis parameters for positive values
     for _, value in settings.items():
@@ -635,6 +642,11 @@ def calculateBatch(
 
     # Define count for index in .xlsx file
     count = 0
+
+    # Manual scaling here because only applied once on first image
+    if scaling == "Manual":
+        calib_dist = gui.calib_dist
+        scale_statement = f"10 mm corresponds to {calib_dist} pixels"
 
     # Open PDF for image segmentation saving
     with PdfPages(rootpath + "/ResultImages.pdf") as pdf:
@@ -684,13 +696,6 @@ def calculateBatch(
                             warnings.warn("Image fails with StaticScalingError")
                             continue
 
-                    # Manual scaling
-                    elif scaling == "Manual":
-                        calibrate_fn = calibrateDistanceManually
-                        calib_dist, scale_statement = calibrate_fn(
-                            nonflipped_img, spacing
-                        )
-
                     # No sclaing option
                     else:
                         calib_dist = None
@@ -707,10 +712,8 @@ def calculateBatch(
                                 w=width,
                                 calib_dist=calib_dist,
                                 spacing=spacing,
-                                filename=filename,
                                 model_apo=image_processor.model_apo,
                                 model_fasc=image_processor.model_fasc,
-                                scale_statement=scale_statement,
                                 dictionary=settings,
                                 filter_fasc=filter_fasc,
                                 image_callback=image_frame,

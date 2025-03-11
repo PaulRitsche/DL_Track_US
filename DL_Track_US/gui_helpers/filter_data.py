@@ -47,7 +47,7 @@ def applyFilters(data, filter_type="median", **kwargs):
 
         else:
             raise ValueError(
-                "Unsupported filter type. Choose from 'hampel', 'median', 'gaussian', or 'savitzky_golay'."
+                "Unsupported filter type. Choose from 'median', 'gaussian', or 'savitzky_golay'."
             )
 
     return filtered_data
@@ -102,7 +102,7 @@ def hampelFilterList(data: list, win_size=5, num_dev=1, center_win=True):
             "is_outlier": [False] * n,
         }
 
-    L = 1.4826  # Scaling factor for standard deviation estimation
+    L = 0.5  # Scaling factor for standard deviation estimation
 
     # Rolling median
     rolling_median = (

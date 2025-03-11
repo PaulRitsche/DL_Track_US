@@ -64,7 +64,7 @@ def doCalculationsVideo(
     step: int,
     filter_fasc: bool,
     gui,
-    frame_callback=None,  # TODO
+    frame_callback=None,
 ):
     """
     Function to compute muscle architectural parameters based on

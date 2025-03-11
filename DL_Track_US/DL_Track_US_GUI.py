@@ -40,35 +40,32 @@ import importlib
 import os
 import subprocess
 import sys
+import glob
 import tkinter as tk
 from threading import Lock, Thread
-from tkinter import Canvas, E, N, S, StringVar, Tk, W, filedialog, ttk
+from tkinter import E, N, S, StringVar, W, filedialog, ttk
 
 import customtkinter as ctk
 
 # Carla imports
-import gui_helpers
+# import gui_helpers
 import matplotlib
 
 matplotlib.use("Agg")
-
 import matplotlib.pyplot as plt
-import settings
-from gui_modules import AdvancedAnalysis
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+# import settings
+# from gui_modules import AdvancedAnalysis
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageTk
 import cv2
 import numpy as np
+import pandas as pd
 
 # original imports
-# from DL_Track_US import gui_helpers
-# from DL_Track_US import settings
-# from DL_Track_US.gui_modules import AdvancedAnalysis
-
-# TODO implement more filtering options and access them via settings.
-
-# matplotlib.use("TkAgg")
-
+from DL_Track_US import gui_helpers
+from DL_Track_US import settings
+from DL_Track_US.gui_modules import AdvancedAnalysis
 
 # disable interactive backend
 plt.ioff()
@@ -76,203 +73,158 @@ plt.ioff()
 
 class DLTrack(ctk.CTk):
     """
-    Python class to automatically or manually annotate longitudinal muscle
-    ultrasonography images/videos of human lower limb muscles.
-    An analysis tkinter GUI is opened upon initialization of the class.
-    By clicking the buttons, the user can switch between different
-    analysis modes for image/video analysis and model training.
-    The GUI consists of the following elements.
-    - Input Directory:
-    By pressing the "Input" button, the user is asked to select
-    an input directory containing all images/videos to be
-    analyzed. This can also be entered directly in the entry field.
-    - Apo Model Path:
-    By pressing the "Apo Model" button, the user is asked to select
-    the aponeurosis model used for aponeurosis segmentation. The absolute
-    model path can be entered directly in the enty field as well.
-    - Fasc Model Path:
-    By pressing the "Fasc Model" button, the user is asked to select
-    the fascicle model used for aponeurosis segmentation. The absolute
-    model path can be entered directly in the enty field as well.
-    - Analysis Type:
-    The analysis type can be selected. There are four analysis types,
-    the selection of which will trigger more analysis parameters
-    to be displayed.
-    Image (automatic image analysis), Video (automatic video analysis),
-    Image Manual (manual image analysis), Video Manual (manual image analysis).
-    - Break:
-    By pressing the "break" button, the user can stop the analysis process
-    after each finished image or image frame analysis.
-    - Run:
-    By pressing the "run" button, the user can start the analysis process.
-    - Model training:
-    By pressing the "train model" button, a new window opens and the
-    user can train an own neural network based on existing/own
-    training data.
+    DLTrack GUI for Muscle Ultrasound Analysis
+    ==========================================
+
+    This module provides a graphical user interface (GUI) for the DL_Track package,
+    allowing users to annotate longitudinal ultrasonography images and videos both
+    manually and automatically. The GUI facilitates navigation through the package's
+    functionalities, including automated and manual evaluation of muscle
+    ultrasonography images. It computes muscle fascicle length, pennation angle,
+    and muscle thickness using convolutional neural networks (U-Net, VGG16).
+
+    The GUI integrates and improves upon the work of Cronin et al. (2020),
+    enhancing usability and accessibility for researchers and practitioners.
+
+    Dependencies
+    ------------
+    - `tkinter` : Standard GUI toolkit for Python.
+    - `customtkinter` : Enhanced GUI styling.
+    - `threading` : Enables concurrent execution.
+    - `matplotlib` : Used for visualization and rendering plots.
+    - `cv2` (OpenCV) : Image processing library.
+    - `numpy`, `pandas` : Numerical and data manipulation.
+    - `PIL` (Pillow) : Image handling.
+    - `glob`, `os`, `sys`, `subprocess` : File and system interactions.
+
+    Classes
+    -------
+    DLTrack
+        A graphical interface for muscle ultrasound annotation, supporting automatic
+        and manual segmentation, model training, and analysis.
 
     Attributes
     ----------
-    self._lock : _thread.lock
-        Thread object to lock the self._lock variable for access by another
-        thread.
-    self._is_running : bool, default = False
-        Boolen variable determining the active state
-        of the GUI. If False, the is not running. If True
-        the GUI is running.
-    self._should_stop : bool, default = False
-        Boolen variable determining the active state
-        of the GUI. If False, the is allowed to continue running. If True
-        the GUI is stopped and background processes deactivated.
-    self.main : tk.TK
-        tk.TK instance which is the base frame for the GUI.
-    self.input : tk.Stringvar
-        tk.Stringvariable containing the path to the input directory.
-    self.apo_model : tk.Stringvar
-        tk.Stringvariable containing the path to the aponeurosis
-        model.
-    self.fasc_model : tk.Stringvar
-        tk.Stringvariable containing the path to the fascicle
-        model.
+    self._lock : threading.Lock
+        Lock object for thread safety.
+    self._is_running : bool
+        Boolean flag indicating whether the GUI is active.
+    self._should_stop : bool
+        Boolean flag to stop ongoing processes.
+    self.main : tkinter.Tk
+        Main GUI window.
+    self.input : str
+        Directory path for input files.
+    self.apo_model : str
+        Path to aponeurosis segmentation model.
+    self.fasc_model : str
+        Path to fascicle segmentation model.
     self.analysis_type : {"image", "video", "image_manual", "video_manual"}
-        tk.Stringvariable containing the selected analysis type.
-        This can be "image", "video", "image_manual", "video_manual".
-    self.scaling : {"bar", "manual","no scaling"}
-        tk.Stringvariable containing the selected scaling type.
-        This can be "bar", "manual" or "no scaling".
-    self.filetype : tk.Stringvar
-        tk.Stringvariabel containing the selected filetype for
-        the images to be analyzed. The user can select from the
-        dopdown list or enter an own filetype. The formatting
-        should be kept constant.
-    self.spacing : {10, 5, 15, 20}
-        tk.Stringvariable containing the selected spacing distance
-        used for computation of pixel / cm ratio. This must only be
-        specified when the analysis type "bar" or "manual" is selected.
-    self.flipflag : tk.Stringvar
-        tk.Stringvariable containing the path to the file with the flip
-        flags for each image in the input directory.
+        Selected analysis mode.
+    self.scaling : {"bar", "manual", "no scaling"}
+        Scaling method.
+    self.filetype : str
+        Selected file type for analysis.
+    self.spacing : int
+        Spacing distance for pixel/cm ratio calculations.
+    self.flipflag : str
+        File path for flip flags.
     self.flip : {"no_flip", "flip"}
-        tk.Stringvariable determining wheter all frames in the video
-        file will be flipped during automated analysis of videos. This
-        can be "no_flip" or "flip".
-    self.video : tk.Stringvar
-        tk.Stringvariable containing the absolute path to the video
-        file being analyzed during manual video analysis.
-    self.apo_threshold : tk.Stringvar
-        tk.Stringvariable containing the threshold applied to predicted
-        aponeurosis pixels by our neural networks. Must be non-zero and
-        non-negative.
-    self.fasc_threshold : tk.Stringvar
-        tk.Stringvariable containing the threshold applied to predicted
-        fascicle pixels by our neural networks. Must be non-zero and
-        non-negative.
-    self.fasc_cont_threshold : tk.Stringvar
-        tk.Stringvariable containing the threshold applied to predicted
-        fascicle segments by our neural networks. Must be non-zero and
-        non-negative.
-    self.min_width : tk.stringvar
-        tk.Stringvariablecontaining the minimal distance between aponeuroses
-        to be detected. Must be non-zero and non-negative.
-    self.min_pennation : tk.Stringvar
-        tk.Stringvariable containing the mininmal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle.
-        Must be non-negative.
-    self.max_pennation : tk.Stringvariable
-        tk.Stringvariable containing the maximal (physiological)
-        acceptable pennation angle occuring in the analyzed image/muscle.
-        Must be non-negative and larger than min_pennation.
-    self.train_image_dir : tk.Stringvar
-        tk.Straingvar containing the path to the directory of the training
-        images. Image must be in RGB format.
-    self.mask_path : tk.Stringvar
-        tk.Stringvariable containing the path to the directory of the mask
-        images. Masks must be binary.
-    self.out_dir : tk.Stringvar
-        tk.Stringvariable containing the path to the directory where the
-        trained model should be saved.
-    self.batch_size : tk.Stringvar
-        tk.Stringvariable containing the batch size per iteration through the
-        network during model training. Must be non-negative and non-zero.
-    self.learning_rate : tk.Stringvariable
-        tk.Stringvariable the learning rate used during model training.
-        Must be non-negative and non-zero.
-    self.epochs : tk.Stringvar
-        tk.Straingvariable containing the amount of epochs that the model
-        is trained befor training is aborted. Must be non-negative and
-        non-zero.
-    self.loss : tk.Stringvar
-        tk.Stringvariable containing the loss function that is used during
-        training.
+        Flip option for video analysis.
+    self.video : str
+        Path to video file for manual analysis.
+    self.apo_threshold : float
+        Threshold value for aponeurosis segmentation.
+    self.fasc_threshold : float
+        Threshold value for fascicle segmentation.
+    self.fasc_cont_threshold : float
+        Threshold for fascicle continuity detection.
+    self.min_width : float
+        Minimum detectable distance between aponeuroses.
+    self.min_pennation : float
+        Minimum acceptable pennation angle.
+    self.max_pennation : float
+        Maximum acceptable pennation angle.
+    self.train_image_dir : str
+        Path to training image dataset.
+    self.mask_path : str
+        Path to binary mask dataset.
+    self.out_dir : str
+        Directory for saving trained models.
+    self.batch_size : int
+        Batch size for model training.
+    self.learning_rate : float
+        Learning rate for model training.
+    self.epochs : int
+        Number of training epochs.
+    self.loss : str
+        Loss function used for training.
 
     Methods
     -------
-    get_input_dir
-        Instance method to ask the user to select the input directory.
-    get_apo_model_path
-        Instance method to ask the user to select the apo model path.
-    get_fasc_model_path
-        Instance method to ask the user to select the fascicle model path.
-    image_analysis
-        Instance method to display the required parameters
-        that need to be entered by the user when images
-        are automatically analyzed.
-    video_analysis
-        Instance method to display the required parameters
-        that need to be entered by the user when videos
-        are automatically analyzed.
-    image_manual
-        Instance method to display the required parameters
-        that need to be entered by the user when images are
-        evaluated manually.
-    video_manual
-        Instance method to display the required parameters
-        that need to be entered by the user when videos are
-        evaluated manually.
-    get_flipfile_path
-        Instance method to ask the user to select the flipfile path.
-    get_video_path
-        Instance method to ask the user to select the video path
-        for manual video analysis.
-    run_code
-        Instance method to execute the analysis process when the
-        "run" button is pressed.
-    do_break
-        Instance method to break the analysis process when the
-        button "break" is pressed.
-    open_window
-        Instance method to open new window for analysis parameter input.
-    train_model_window
-        Instance method to open new window for model training.
-    get_train_dir
-        Instance method to ask the user to select the training image
-        directory path.
-    get_mask_dir
-        Instance method to ask the user to select the training mask
-        directory path.
-    get_output_dir
-        Instance method to ask the user to select the output
-        directory path.
-    train_model
-        Instance method to execute the model training when the
-        "start training" button is pressed.
-    change_analysis_type
-        Instance method to change GUI layout based on the analysis type.
+    __init__()
+        Initializes the GUI and sets up event listeners.
+    mclick(event)
+        Detects mouse clicks for calibration.
+    calibrate_distance()
+        Computes pixel-to-mm conversion for manual calibration.
+    calibrateDistanceManually()
+        Opens a manual calibration interface.
+    display_results(input_df_raw, input_df_filtered, input_df_medians)
+        Displays analysis results in the GUI.
+    on_processing_complete()
+        Updates UI elements after processing.
+    display_frame(item)
+        Displays the current image or video frame in the GUI.
+    update_frame_by_slider(value)
+        Changes displayed frame based on slider value.
+    update_slider_range()
+        Synchronizes slider with processed frames.
+    load_settings()
+        Loads user-defined settings.
+    open_settings()
+        Opens the configuration settings file.
+    get_input_dir()
+        Opens a file dialog to select the input directory.
+    get_apo_model_path()
+        Opens a file dialog to select the aponeurosis model file.
+    get_fasc_model_path()
+        Opens a file dialog to select the fascicle model file.
+    change_analysis_type()
+        Updates UI elements based on the selected analysis type.
+    change_spacing()
+        Enables or disables spacing selection based on scaling type.
+    get_flipfile_path()
+        Opens a file dialog to select the flip flag file.
+    get_video_path()
+        Opens a file dialog to select the video file for manual analysis.
+    should_stop()
+        Thread-safe property indicating whether the process should stop.
+    is_running()
+        Thread-safe property indicating if the process is running.
+    run_code()
+        Runs the selected analysis in a separate thread.
+    do_break()
+        Stops the currently running analysis process.
+    check_processing_complete(thread, callback)
+        Monitors the completion of an analysis process.
 
     Notes
     -----
-    This class contains only instance attributes.
-    The instance methods contained in this class are solely purposed for
-    support of the main GUI instance method. They cannot be used
-    independantly or seperately.
+    - This GUI is an interactive front-end for DL_Track, ensuring easy access
+    to image and video analysis.
 
-    For more detailed documentation of the functions employed
-    in this GUI upon running the analysis or starting model training
-    see the respective modules in the /gui_helpers subfolder.
-
-    See Also
-    --------
-    model_training.py, calculate_architecture.py,
-    calculate_architecture_video.py
+    References
+    ----------
+    [1] Simonyan, K., & Zisserman, A. (2014). “Very deep convolutional networks for
+        large-scale image recognition.” arXiv preprint arXiv:1409.1556.
+    [2] Ronneberger, O., Fischer, P., & Brox, T. (2015). "U-Net: Convolutional Networks
+        for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597.
+    [3] Cronin, N. J., Finni, T., & Seynnes, O. (2020). "Fully automated analysis of
+        muscle architecture from B-mode ultrasound images with deep learning."
+        arXiv preprint arXiv:2009.04790.
+    [4] Ritsche et al., (2023). DL_Track_US: a python package to analyse muscle ultrasonography images.
+        Journal of Open Source Software, 8(85), 5206, https://doi.org/10.21105/joss.05206
     """
 
     def __init__(self, *args, **kwargs):
@@ -284,6 +236,7 @@ class DLTrack(ctk.CTk):
 
         # Load settings
         self.load_settings()
+        self.mlocs = []
 
         # set up threading
         self._lock = Lock()
@@ -306,11 +259,13 @@ class DLTrack(ctk.CTk):
         # Configure resizing of user interface
         for row in range(21):
             self.main.rowconfigure(row, weight=1)
-        for column in range(3):
+        for column in range(4):
             self.main.rowconfigure(column, weight=1)
 
-        self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=5)
+        self.rowconfigure(0, weight=1)
+        self.minsize(width=600, height=400)
 
         # Buttons
         # Input directory
@@ -336,9 +291,6 @@ class DLTrack(ctk.CTk):
             self.main, text="Fasc Model", command=self.get_fasc_model_path
         )
         fasc_model_button.grid(column=2, row=4, sticky=W)
-
-        # Entryboxes
-        # TODO Include analysis in main UI window.
 
         # Analysis Type
         # Separators
@@ -407,6 +359,7 @@ class DLTrack(ctk.CTk):
         )
         self.scaling_entry.grid(column=1, row=14, sticky=(W, E))
         self.scaling.set("Bar")
+        self.scaling.trace_add("write", self.change_spacing)
 
         # Spacing label
         self.spacing_label = ctk.CTkLabel(self.main, text="Spacing (mm)")
@@ -424,6 +377,15 @@ class DLTrack(ctk.CTk):
         )
         self.spacing_entry.grid(column=1, row=15, sticky=(W, E))
         self.spacing.set("10")
+
+        # Flipfile button
+        self.spacing_button = ctk.CTkButton(
+            self.main,
+            text="Calibrate",
+            command=self.calibrateDistanceManually,
+            state="disabled",
+        )
+        self.spacing_button.grid(column=2, row=15, sticky=W)
 
         # Filter Fascicle label
         self.filter_label = ctk.CTkLabel(self.main, text="Filter Fascicles")
@@ -512,7 +474,7 @@ class DLTrack(ctk.CTk):
         )
 
         # Settings button
-        gear_path = master_path + "/gui_helpers/gui_files/Gear.png"
+        gear_path = master_path + "/gui_helpers/gui_files/gear.png"
         self.gear = ctk.CTkImage(
             light_image=Image.open(gear_path),
             size=(30, 30),
@@ -536,27 +498,15 @@ class DLTrack(ctk.CTk):
 
         # Make frame for results
         self.results = ctk.CTkFrame(self)
-        self.results.grid(column=1, row=0, sticky=(N, S, W, E))
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=4)
-        self.results.rowconfigure(0, weight=1)
-        self.results.columnconfigure(0, weight=1)
+        self.results.grid(column=1, row=0, columnspan=3, sticky=(N, S, W, E))
+        self.results.bind("<Button-1>", self.mclick)
 
         # Configure rows with a loop
         for row in range(5):
             self.results.rowconfigure(row, weight=1)
+        self.results.columnconfigure(0, weight=1)
 
-        self.video_canvas = tk.Label(
-            self.results,
-            bg="black",
-        )
-        self.video_canvas.grid(
-            column=0,
-            row=0,
-            columnspan=6,
-            rowspan=8,
-            sticky=(N, S, W, E),
-        )
+        self.gear_img = ImageTk.PhotoImage(Image.open(gear_path))
 
         # Add a slider for frame navigation
         self.frame_slider = tk.Scale(
@@ -577,6 +527,191 @@ class DLTrack(ctk.CTk):
         self.processed_frames = []
         self.current_frame_index = 0
 
+        # Create frame for output
+        self.terminal = ctk.CTkFrame(
+            self.results,
+            fg_color="lightgrey",
+            border_width=2,
+            border_color="White",
+        )
+        self.terminal.grid(
+            column=0,
+            row=11,
+            columnspan=6,
+            pady=8,
+            padx=10,
+            sticky=(N, S, W, E),
+        )
+
+    def mclick(self, event):
+        """Instance method to detect mouse click coordinates in image."""
+        self.mlocs.append((event.x, event.y))
+        self.calib_canvas.create_oval(
+            event.x - 5, event.y - 5, event.x + 5, event.y + 5, fill="red"
+        )
+        if len(self.mlocs) == 2:
+            self.calib_canvas.unbind("<Button-1>")
+            self.confirm_button.grid(
+                column=0, row=5, columnspan=1, sticky=(E), padx=10, pady=10
+            )
+
+    def calibrate_distance(self):
+        """Calculate the distance between two points and display the result."""
+        if len(self.mlocs) < 2:
+            tk.messagebox.showerror(
+                "Error", "Please select two points before calibrating."
+            )
+            return
+
+        x1, y1 = self.mlocs[0]
+        x2, y2 = self.mlocs[1]
+        self.calib_dist = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+        # Adjust distance based on spacing input
+        spacing = self.spacing.get()
+        if spacing == 5:
+            self.calib_dist *= 2
+        elif spacing == 15:
+            self.calib_dist *= 2 / 3
+        elif spacing == 20:
+            self.calib_dist /= 2
+
+        scale_statement = f"10 mm corresponds to {self.calib_dist:.2f} pixels"
+        tk.messagebox.showinfo("Calibration Result", scale_statement)
+        self.confirm_button.grid_remove()
+        self.calib_canvas.destroy()
+
+        self.mlocs.clear()  # Reset for next calibration
+
+    def calibrateDistanceManually(self):
+        """Function to manually calibrate an image to convert measurements
+        in pixel units to centimeters."""
+        if sys.platform.startswith("darwin"):
+            tk.messagebox.showerror(
+                "Information",
+                "Manual scaling not available on MacOS"
+                + "\n Continue with 'No Scaling' Scaling Type.",
+            )
+            return None, None
+
+        # Initialize canvas
+        self.calib_canvas = ctk.CTkCanvas(
+            self.results, bg="#2A484E", width=400, height=600
+        )
+        self.calib_canvas.grid(
+            column=0, row=0, columnspan=6, rowspan=8, sticky=(N, S, W, E)
+        )
+
+        # Add a confirmation button
+        self.confirm_button = ctk.CTkButton(
+            self.results,
+            text="Confirm",
+            command=self.calibrate_distance,
+        )
+        self.confirm_button.grid(
+            column=0, row=5, columnspan=1, sticky=(E), padx=10, pady=10
+        )
+        self.confirm_button.grid_remove()  # Hide button initially
+
+        # Load first video frame
+        list_of_files = glob.glob(self.input_dir + self.filetype.get(), recursive=True)
+        if not list_of_files:
+            tk.messagebox.showerror("Error", "No video files found.")
+            return
+
+        cap = cv2.VideoCapture(list_of_files[0])
+        vid_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        vid_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        # reconfigure canvas dimensions
+        self.calib_canvas.config(width=vid_width, height=vid_height)
+
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            tk.messagebox.showerror("Error", "Failed to read video frame.")
+            return
+
+        # Convert frame to an image
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(frame_rgb)
+        self.img_tk = ImageTk.PhotoImage(image=img)  # Store reference
+
+        # Clear previous image if any
+        self.calib_canvas.delete("all")
+
+        # Display the image on the canvas
+        self.calib_canvas.create_image(0, 0, anchor=tk.NW, image=self.img_tk)
+
+        # Bind mouse click event
+        self.calib_canvas.bind("<Button-1>", self.mclick)
+
+    def display_results(
+        self,
+        input_df_raw,
+        input_df_filtered,
+        input_df_medians,
+    ):
+        """
+        Instance method that displays all analysis results in the
+        output terminal using Pandastable. Input must be a Pandas dataframe.
+
+        Executed trough functions with calculated anylsis results.
+
+        Parameters
+        ----------
+        input_df_raw : pd.DataFrame
+            Dataftame containing the raw analysis results.
+        input_df_filtered : pd.DataFrame
+            Dataftame containing the filtered analysis results.
+        input_df_medians : pd.DataFrame
+            Dataftame containing the filtered median results.
+        """
+        # Calculate the median length of the fascicles
+        # Drop the first column if it's just row indices
+        data_raw_cleaned = input_df_raw.iloc[:, 1:]
+        data_filtered_cleaned = input_df_filtered.iloc[:, 1:]
+
+        # Compute row-wise median for each DataFrame
+        medians_raw = data_raw_cleaned.median(axis=1, skipna=True)
+        medians_filtered = data_filtered_cleaned.median(axis=1, skipna=True)
+        filtered_medians = input_df_medians.iloc[:, 1:]
+
+        # Create a new figure for the plot
+        fig, ax = plt.subplots()
+        ax.plot(medians_raw, "o-", label="Median Fascicle Length")
+        ax.plot(
+            medians_filtered,
+            "+-",
+            label="Median Filtered Fascicle Length",
+            color="green",
+        )  # Add filtered lengths in green
+        ax.plot(
+            filtered_medians,
+            "x-",
+            label="Filtered Median Fascicle Length",
+            color="yellow",
+        )  # Add filtered lengths in green
+        ax.set_xlabel("Frame")
+        ax.legend()
+        ax.grid(True)
+        plt.tight_layout()
+
+        # Display the plot in the video_canvas
+        if hasattr(self, "result_canvas"):
+            self.result_canvas.get_tk_widget().destroy()
+
+        self.result_canvas = FigureCanvasTkAgg(fig, master=self.terminal)
+        self.result_canvas.draw()
+        result_widget = self.result_canvas.get_tk_widget()
+        result_widget.grid(column=0, row=0, columnspan=16, sticky=(W, E))
+        result_widget.config(height=200)
+
+        # Configure resizing of the figure
+        self.terminal.grid_columnconfigure(0, weight=1)
+        self.terminal.grid_rowconfigure(0, weight=1)
+
     def on_processing_complete(self):
         """
         Callback to execute after processing completes.
@@ -590,14 +725,61 @@ class DLTrack(ctk.CTk):
             )
             print(f"Slider updated to range 0-{num_items - 1}.")
 
+        # Load the results into the table after processing
+        if hasattr(self, "filename") and self.filename:
+
+            print(self.filename)
+            results_file_path = os.path.join(
+                self.input_dir, f"{self.filename}.xlsx"
+            )  # taken from calculate_architecture.py
+        else:
+            results_file_path = os.path.join(self.input_dir, "Results.xlsx")
+
+        try:
+            if os.path.exists(results_file_path):
+                results_data_raw = pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_raw"
+                )
+                results_data_filtered = pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_filtered"
+                )
+                results_data_medians = pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_filtered_median"
+                )
+
+                self.display_results(
+                    results_data_raw, results_data_filtered, results_data_medians
+                )
+        except:
+            print("No results file found.")
+
+        # reset slider
+        self.processed_frames = []
+
     def display_frame(self, item):
         """
         Display the current frame or figure on the GUI canvas.
         """
 
+        self.video_canvas = tk.Label(
+            self.results, bg="#2A484E", image=self.gear_img, border=3
+        )
+
+        self.video_canvas.grid(
+            column=0,
+            row=0,
+            columnspan=6,
+            rowspan=8,
+            sticky=(N, S, W, E),
+        )
+
         if item is None:
             print("No frame or figure to display.")
             return
+
+        if hasattr(self, "calib_canvas"):
+            self.calib_canvas.destroy()
+            del self.calib_canvas
 
         # Check if the item is an OpenCV frame (NumPy array)
         if isinstance(item, np.ndarray):
@@ -606,17 +788,15 @@ class DLTrack(ctk.CTk):
             frame_image = Image.fromarray(frame_rgb)
             frame_tk = ImageTk.PhotoImage(image=frame_image, size=(600, 800))
 
-            # Ensure the video canvas exists
-            if not hasattr(self, "video_canvas"):
-                self.video_canvas = tk.Label(self.video_canvas, bg="black")
-                self.video_canvas.grid(
-                    column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
-                )
-
             self.video_canvas.imgtk = frame_tk
-            self.video_canvas.configure(image=frame_tk).grid(
+            self.video_canvas.configure(image=frame_tk)
+            self.video_canvas.grid(
                 column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
             )
+
+            # Configure UI resizing behavior
+            self.video_canvas.grid_columnconfigure(0, weight=1)
+            self.video_canvas.grid_rowconfigure(0, weight=1)
 
             self.processed_frames.append(item)
 
@@ -635,10 +815,6 @@ class DLTrack(ctk.CTk):
             figure_widget.grid(
                 column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
             )
-
-            # Configure UI resizing behavior
-            self.video_canvas.grid_columnconfigure(0, weight=1)
-            self.video_canvas.grid_rowconfigure(0, weight=1)
 
             self.processed_frames.append(item)
 
@@ -849,12 +1025,21 @@ class DLTrack(ctk.CTk):
             self.spacing_entry.configure(state="disabled")
             self.filter_yes.configure(state="disabled")
             self.filter_no.configure(state="disabled")
-            self.flip_label.configure(text="Video Path")
+            self.spacing_button.configure(state="disabled")
             self.flipfile_button.configure(
                 text="Video Path", command=self.get_video_path, state="normal"
             )
             self.flip_entry.configure(state="disabled")
             self.step_entry.configure(state="disabled")
+
+    def change_spacing(self, *args):
+        """
+        Enable the spacing button only when the scaling type is set to "Manual".
+        """
+        if self.scaling.get() == "Manual":
+            self.spacing_button.configure(state="normal")
+        else:
+            self.spacing_button.configure(state="disabled")
 
     def get_flipfile_path(self):
         """Instance method to ask the user to select the flipfile path.
@@ -978,218 +1163,226 @@ class DLTrack(ctk.CTk):
             file or training parameters correctly. A tk.messagebox
             is openend containing hints how to solve the issue.
         """
-        # try:
-        if self.is_running:
-            # don't run again if it is already running
-            return
-        self.is_running = True
-
-        # load settings
-        self.load_settings()
-
-        # Get input dir
-        selected_input_dir = self.input_dir
-
-        # Make sure some kind of input directory is specified.
-        if len(selected_input_dir) < 3:
-            tk.messagebox.showerror("Information", "Input directory is incorrect.")
-            self.should_stop = False
-            self.is_running = False
-            self.do_break()
-            return
-
-        # Define dictionary containing settings
-        settings = {
-            "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
-            "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
-            "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
-            "fascicle_length_threshold": self.settings.fascicle_length_threshold,
-            "minimal_muscle_width": self.settings.minimal_muscle_width,
-            "minimal_pennation_angle": self.settings.minimal_pennation_angle,
-            "maximal_pennation_angle": self.settings.maximal_pennation_angle,
-            "fascicle_calculation_method": self.settings.fascicle_calculation_method,
-            "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
-            "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
-        }
-
-        # Start thread depending on Analysis type
-        if self.analysis_type.get() == "image":
-
-            def processing_done_callback():
-                self.on_processing_complete()  # Update slider range here
-
-            selected_filetype = self.filetype.get()
-
-            # Make sure some kind of filetype is specified.
-            if len(selected_filetype) < 3:
-                tk.messagebox.showerror("Information", "Filetype is invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
+        try:
+            if self.is_running:
+                # don't run again if it is already running
                 return
+            self.is_running = True
 
-            # Get relevant UI parameters
-            selected_flipflag_path = self.flipflag_dir
-            selected_apo_model_path = self.apo_model
-            selected_fasc_model_path = self.fasc_model
-            selected_scaling = self.scaling.get()
-            selected_spacing = self.spacing.get()
-            selected_filter_fasc = self.filter_fasc.get()
+            # load settings
+            self.load_settings()
 
-            thread = Thread(
-                target=gui_helpers.calculateBatch,
-                args=(
-                    selected_input_dir,
-                    selected_apo_model_path,
-                    selected_fasc_model_path,
-                    selected_flipflag_path,
-                    selected_filetype,
-                    selected_scaling,
-                    int(selected_spacing),
-                    int(selected_filter_fasc),
-                    settings,
-                    self,
-                    self.display_frame,
-                ),
-            )
-
-        elif self.analysis_type.get() == "video":
-
-            def processing_done_callback():
-                self.on_processing_complete()  # Update slider range here
-
-            selected_filetype = self.filetype.get()
-
-            # Make sure some kind of filetype is specified.
-            if len(selected_filetype) < 3:
-                tk.messagebox.showerror("Information", "Filetype is invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
-
-            selected_step = self.step.get()
-
-            # Make sure some kind of step is specified.
-            if len(selected_step) < 1 or int(selected_step) < 1:
-                tk.messagebox.showerror("Information", "Frame Steps is invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
-
-            selected_flip = self.flip.get()
-            selected_apo_model_path = self.apo_model
-            selected_fasc_model_path = self.fasc_model
-            selected_scaling = self.scaling.get()
-            selected_spacing = self.spacing.get()
-            selected_filter_fasc = self.filter_fasc.get()
-
-            thread = Thread(
-                target=gui_helpers.calculateArchitectureVideo,
-                args=(
-                    selected_input_dir,
-                    selected_apo_model_path,
-                    selected_fasc_model_path,
-                    selected_filetype,
-                    selected_scaling,
-                    selected_flip,
-                    int(selected_spacing),
-                    int(selected_step),
-                    int(selected_filter_fasc),
-                    settings,
-                    self,
-                    self.display_frame,
-                ),
-            )
-        elif self.analysis_type.get() == "image_manual":
-
-            selected_filetype = self.filetype.get()
-
-            # Make sure some kind of filetype is specified.
-            if len(selected_filetype) < 3:
-                tk.messagebox.showerror("Information", "Filetype is invalid.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
-
-            thread = Thread(
-                target=gui_helpers.calculateBatchManual,
-                args=(
-                    selected_input_dir,
-                    selected_filetype,
-                    self,
-                ),
-            )
-        else:
-            selected_video_path = self.video.get()
+            # Get input dir
+            selected_input_dir = self.input_dir
 
             # Make sure some kind of input directory is specified.
-            if len(selected_video_path) < 3:
+            if len(selected_input_dir) < 3:
                 tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 self.should_stop = False
                 self.is_running = False
                 self.do_break()
                 return
 
-            thread = Thread(
-                target=gui_helpers.calculateArchitectureVideoManual,
-                args=(
-                    selected_video_path,
-                    self,
+            # Define dictionary containing settings
+            settings = {
+                "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
+                "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
+                "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
+                "fascicle_length_threshold": self.settings.fascicle_length_threshold,
+                "minimal_muscle_width": self.settings.minimal_muscle_width,
+                "minimal_pennation_angle": self.settings.minimal_pennation_angle,
+                "maximal_pennation_angle": self.settings.maximal_pennation_angle,
+                "fascicle_calculation_method": self.settings.fascicle_calculation_method,
+                "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
+                "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
+                "selected_filter": self.settings.selected_filter,
+                "hampel_window_size": self.settings.hampel_window_size,
+                "hampel_num_dev": self.settings.hampel_num_dev,
+            }
+
+            # Start thread depending on Analysis type
+            if self.analysis_type.get() == "image":
+
+                def processing_done_callback():
+                    self.on_processing_complete()  # Update slider range here
+
+                selected_filetype = self.filetype.get()
+
+                # Make sure some kind of filetype is specified.
+                if len(selected_filetype) < 3:
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
+
+                # Get relevant UI parameters
+                selected_flipflag_path = self.flipflag_dir
+                selected_apo_model_path = self.apo_model
+                selected_fasc_model_path = self.fasc_model
+                selected_scaling = self.scaling.get()
+                selected_spacing = self.spacing.get()
+                selected_filter_fasc = self.filter_fasc.get()
+
+                thread = Thread(
+                    target=gui_helpers.calculateBatch,
+                    args=(
+                        selected_input_dir,
+                        selected_apo_model_path,
+                        selected_fasc_model_path,
+                        selected_flipflag_path,
+                        selected_filetype,
+                        selected_scaling,
+                        int(selected_spacing),
+                        int(selected_filter_fasc),
+                        settings,
+                        self,
+                        self.display_frame,
+                    ),
+                )
+
+            elif self.analysis_type.get() == "video":
+
+                def processing_done_callback():
+                    self.on_processing_complete()  # Update slider range here
+
+                selected_filetype = self.filetype.get()
+
+                # Make sure some kind of filetype is specified.
+                if len(selected_filetype) < 3:
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
+
+                selected_step = self.step.get()
+
+                # Make sure some kind of step is specified.
+                if len(selected_step) < 1 or int(selected_step) < 1:
+                    tk.messagebox.showerror("Information", "Frame Steps is invalid.")
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
+
+                if self.scaling.get() == "Manual":
+                    self.calibrateDistanceManually()
+
+                selected_flip = self.flip.get()
+                selected_apo_model_path = self.apo_model
+                selected_fasc_model_path = self.fasc_model
+                selected_scaling = self.scaling.get()
+                selected_spacing = self.spacing.get()
+                selected_filter_fasc = self.filter_fasc.get()
+
+                thread = Thread(
+                    target=gui_helpers.calculateArchitectureVideo,
+                    args=(
+                        selected_input_dir,
+                        selected_apo_model_path,
+                        selected_fasc_model_path,
+                        selected_filetype,
+                        selected_scaling,
+                        selected_flip,
+                        int(selected_step),
+                        int(selected_filter_fasc),
+                        settings,
+                        self,
+                        self.display_frame,
+                    ),
+                )
+            elif self.analysis_type.get() == "image_manual":
+
+                selected_filetype = self.filetype.get()
+
+                # Make sure some kind of filetype is specified.
+                if len(selected_filetype) < 3:
+                    tk.messagebox.showerror("Information", "Filetype is invalid.")
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
+
+                thread = Thread(
+                    target=gui_helpers.calculateBatchManual,
+                    args=(
+                        selected_input_dir,
+                        selected_filetype,
+                        self,
+                    ),
+                )
+            else:
+                selected_video_path = self.video.get()
+
+                # Make sure some kind of input directory is specified.
+                if len(selected_video_path) < 3:
+                    tk.messagebox.showerror(
+                        "Information", "Input directory is incorrect."
+                    )
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
+
+                thread = Thread(
+                    target=gui_helpers.calculateArchitectureVideoManual,
+                    args=(
+                        selected_video_path,
+                        self,
+                    ),
+                )
+
+            thread.start()
+
+            self.after(
+                100,
+                lambda: self.check_processing_complete(
+                    thread, processing_done_callback
                 ),
             )
 
-        thread.start()
+        # Error handling
+        except AttributeError:
+            tk.messagebox.showerror(
+                "Information",
+                "Check input parameters."
+                + "\nPotential error sources:"
+                + "\n - Invalid specified directory.",
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
 
-        self.after(
-            100,
-            lambda: self.check_processing_complete(thread, processing_done_callback),
-        )
+        except FileNotFoundError:
+            tk.messagebox.showerror(
+                "Information",
+                "Check input parameters."
+                + "\nPotential error source:"
+                + "\n - Invalid specified directory.",
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
 
-        # # Error handling
-        # except AttributeError:
-        #     tk.messagebox.showerror(
-        #         "Information",
-        #         "Check input parameters."
-        #         + "\nPotential error sources:"
-        #         + "\n - Invalid specified directory."
-        #         "\n - Analysis Type not set" + "\n - Analysis parameters not set.",
-        #     )
-        #     self.do_break()
-        #     self.should_stop = False
-        #     self.is_running = False
+        except PermissionError:
+            tk.messagebox.showerror(
+                "Information",
+                "Check input parameters."
+                + "\nPotential error source:"
+                + "\n - Invalid specified directory.",
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
 
-        # except FileNotFoundError:
-        #     tk.messagebox.showerror(
-        #         "Information",
-        #         "Check input parameters."
-        #         + "\nPotential error source:"
-        #         + "\n - Invalid specified directory.",
-        #     )
-        #     self.do_break()
-        #     self.should_stop = False
-        #     self.is_running = False
-
-        # except PermissionError:
-        #     tk.messagebox.showerror(
-        #         "Information",
-        #         "Check input parameters."
-        #         + "\nPotential error source:"
-        #         + "\n - Invalid specified directory.",
-        #     )
-        #     self.do_break()
-        #     self.should_stop = False
-        #     self.is_running = False
-
-        # except ValueError:
-        #     tk.messagebox.showerror(
-        #         "Information", "Analysis parameter entry fields" + " must not be empty."
-        #     )
-        #     self.do_break()
-        #     self.should_stop = False
-        #     self.is_running = False
+        except ValueError:
+            tk.messagebox.showerror(
+                "Information", "Analysis parameter entry fields" + " must not be empty."
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
 
     def do_break(self):
         """Instance method to break the analysis process when the
@@ -1234,7 +1427,7 @@ def runMain() -> None:
     For documentation of DL_Track see top of this module.
     """
     app = DLTrack()
-    app._state_before_windows_set_titlebar_color = "zoomed"
+    # app._state_before_windows_set_titlebar_color = "zoomed"
     app.mainloop()
 
 
@@ -1243,5 +1436,5 @@ def runMain() -> None:
 # when navigated to the folder containing the file and all dependencies.
 if __name__ == "__main__":
     app = DLTrack()
-    app._state_before_windows_set_titlebar_color = "zoomed"
+    # app._state_before_windows_set_titlebar_color = "zoomed"
     app.mainloop()
