@@ -22,7 +22,7 @@ All videos to be analyzed should be in a single folder.
 
 ![video folder](md_graphics\mva\video_folder.PNG)
 
-## 2. Creating a Video Directory
+## 2. Specifying Input Directory in the GUI
 
 - Please select  <span style="color: #a34ba1;">**video_manual**</span> from the dropdown-menu.
 
@@ -56,6 +56,4 @@ identical.
 - Saving the results (with the very important button), continuing to
 the next image frame, terminating the analysis process and error
 handling is identical.
-- Therefore, we kindly refer you to section 4 of this tutorial Manual Image
-Analysis (because we don’t want to repeat ourselves) to see how the
-all the architectural parameters are analysed.
+- Therefore, we kindly refer you to the [Manual Image Analysis](manual_image_analysis.md) to see how all the architectural parameters are analysed.

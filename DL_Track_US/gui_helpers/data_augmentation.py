@@ -123,13 +123,6 @@ def image_augmentation(input_img_folder, input_mask_folder, gui):
                 next(aug_image)[0].astype(np.uint8)
                 next(aug_mask)[0].astype(np.uint8)
 
-        # Inform user in GUI
-        tk.messagebox.showinfo(
-            "Information",
-            "Data augmentation successful."
-            + "\nResults are saved to specified input paths.",
-        )
-
     # Error handling
     except ValueError:
         tk.messagebox.showerror("Information", "Check input parameters.")

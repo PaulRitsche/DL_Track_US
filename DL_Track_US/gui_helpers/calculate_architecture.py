@@ -51,6 +51,10 @@ import tkinter as tk
 import warnings
 
 import cv2
+import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -67,6 +71,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pandas import ExcelWriter
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
+from gui_helpers.filter_data import hampelFilterList
 
 # original imports
 # from DL_Track_US.gui_helpers.calibrate import (
@@ -78,12 +83,15 @@ from tensorflow.keras.utils import img_to_array
 # from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
 
 
-plt.style.use("ggplot")
-plt.switch_backend("agg")
+# plt.style.use("ggplot")
+# plt.switch_backend("Agg")
 
 # Ensure eager execution is enabled
 tf.config.run_functions_eagerly(True)
 tf.data.experimental.enable_debug_mode()
+
+# remove interactive plotting
+plt.ioff()
 
 
 class ImageProcessor:
@@ -293,7 +301,7 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
     return flip_flags
 
 
-def exportToEcxel(
+def exportToExcel(
     path: str,
     fasc_l_all: list,
     pennation_all: list,
@@ -301,90 +309,86 @@ def exportToEcxel(
     x_highs_all: list,
     thickness_all: list,
     filename: str = "Results",
+    filtered_fasc=None,
+    filtered_pennation=None,
 ):
-    """Function to save the analysis results to a .xlsx file.
-
-    A list of each variable to be saved must be inputted. The inputs are
-    inculded in a dataframe and saved to an .xlsx file.
-    The .xlsx file is saved to the specified rootpath containing
-    each analyzed frame. Estimates or fascicle length, pennation angle,
-    muscle thickness and intersections of fascicles with aponeuroses
-    are saved.
+    """
+    Saves raw and optionally filtered analysis results to an Excel file, including an index column for each frame.
 
     Parameters
     ----------
     path : str
-        String variable containing the path to where the .xlsx file
-        should be saved.
-     filename : str
-        String value containing the name of the input video, not the
-        entire path. The .xlsx file is named accordingly.
-    fasc_l_all : list
-        List variable containing all fascicle estimates from
-        a single frame that was analyzed.
-    pennation_all : list
-        List variable containing all pennation angle estimates from
-        a single frame that was analyzed.
-    x_lows_all : list
-        List variable containing all x-coordinate estimates from
-        intersection of the fascicle with the the lower aponeurosiis
-        of a single frame that was analyzed.
-    x_highs_all : list
-        List variable containing all x-coordinate estimates from
-        the intersection of the fascicle with the upper aponeurosiis
-        of a single frame that was analyzed.
-    thickness_all : list
-        List variable containing all muscle thickness estimates from
-        a single frame that was analyzed.
-
-    Examples
-    --------
-    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos",
-                             filename="video1.avi",
-                             fasc_l_all=[7.8,, 6.4, 9.1],
-                             pennation_all=[20, 21.1, 24],
-                             x_lows_all=[749, 51, 39],
-                             x_highs_all=[54, 739, 811],
-                             thickness_all=[1.85])
+        Path where the Excel file will be saved.
+    filename : str
+        Name of the Excel file.
+    fasc_l_all : list of lists
+        Raw fascicle length data.
+    pennation_all : list of lists
+        Raw pennation angle data.
+    x_lows_all : list of lists
+        X-coordinates of lower aponeurosis intersections.
+    x_highs_all : list of lists
+        X-coordinates of upper aponeurosis intersections.
+    thickness_all : list of lists
+        Muscle thickness measurements.
+    filtered_fasc : list of lists, optional
+        Filtered fascicle length data.
+    filtered_pennation : list of lists, optional
+        Filtered pennation angle data.
     """
-    # Create empty arrays
-    fl = np.zeros([len(fasc_l_all), len(max(fasc_l_all, key=lambda x: len(x)))])
-    pe = np.zeros([len(pennation_all), len(max(pennation_all, key=lambda x: len(x)))])
-    xl = np.zeros([len(x_lows_all), len(max(x_lows_all, key=lambda x: len(x)))])
-    xh = np.zeros([len(x_highs_all), len(max(x_highs_all, key=lambda x: len(x)))])
 
-    # Add respective values to the respecive array
+    def create_array(data):
+        """Creates a NumPy array with NaNs for padding."""
+        return np.full((len(data), len(max(data, key=len, default=[]))), np.nan)
+
+    # Convert lists to NumPy arrays
+    fl_raw = create_array(fasc_l_all)
+    pe_raw = create_array(pennation_all)
+    xl = create_array(x_lows_all)
+    xh = create_array(x_highs_all)
+
+    # Fill arrays with data
     for i, j in enumerate(fasc_l_all):
-        fl[i][0 : len(j)] = j  # fascicle length
-    fl[fl == 0] = np.nan
+        fl_raw[i, : len(j)] = j
     for i, j in enumerate(pennation_all):
-        pe[i][0 : len(j)] = j  # pennation angle
-    pe[pe == 0] = np.nan
+        pe_raw[i, : len(j)] = j
     for i, j in enumerate(x_lows_all):
-        xl[i][0 : len(j)] = j  # lower intersection
-    xl[xl == 0] = np.nan
+        xl[i, : len(j)] = j
     for i, j in enumerate(x_highs_all):
-        xh[i][0 : len(j)] = j  # upper intersection
-    xh[xh == 0] = np.nan
+        xh[i, : len(j)] = j
 
-    # Create dataframes with values
-    df1 = pd.DataFrame(data=fl)
-    df2 = pd.DataFrame(data=pe)
-    df3 = pd.DataFrame(data=xl)
-    df4 = pd.DataFrame(data=xh)
-    df5 = pd.DataFrame(data=thickness_all)
+    # Create DataFrames with an index column
+    df1 = pd.DataFrame(data=fl_raw, dtype=float)
+    df2 = pd.DataFrame(data=pe_raw, dtype=float)
+    df3 = pd.DataFrame(data=xl, dtype=float)
+    df4 = pd.DataFrame(data=xh, dtype=float)
+    df5 = pd.DataFrame(data=thickness_all, dtype=float)
 
-    # Create a pandas Excel
-    writer = ExcelWriter(path + "/" + filename + ".xlsx")
+    # Write to Excel
+    writer = ExcelWriter(f"{path}/{filename}.xlsx")
 
-    # Write each dataframe to a different worksheet.
-    df1.to_excel(writer, sheet_name="Fasc_length")
-    df2.to_excel(writer, sheet_name="Pennation")
-    df3.to_excel(writer, sheet_name="X_low")
-    df4.to_excel(writer, sheet_name="X_high")
-    df5.to_excel(writer, sheet_name="Thickness")
+    df1.to_excel(writer, sheet_name="Fasc_length_raw", index=True)
+    df2.to_excel(writer, sheet_name="Pennation_raw", index=True)
+    df3.to_excel(writer, sheet_name="X_low", index=True)
+    df4.to_excel(writer, sheet_name="X_high", index=True)
+    df5.to_excel(writer, sheet_name="Thickness", index=True)
 
-    # Close the Pandas Excel writer and output the Excel file
+    # Add filtered fascicle length (if provided)
+    if filtered_fasc is not None:
+        fl_filtered = create_array(filtered_fasc)
+        for i, j in enumerate(filtered_fasc):
+            fl_filtered[i, : len(j)] = j
+        df6 = pd.DataFrame(data=fl_filtered, dtype=float)
+        df6.to_excel(writer, sheet_name="Fasc_length_filtered", index=True)
+
+    # Add filtered pennation angle (if provided)
+    if filtered_pennation is not None:
+        pe_filtered = create_array(filtered_pennation)
+        for i, j in enumerate(filtered_pennation):
+            pe_filtered[i, : len(j)] = j
+        df7 = pd.DataFrame(data=pe_filtered, dtype=float)
+        df7.to_excel(writer, sheet_name="Pennation_filtered", index=True)
+
     writer.close()
 
 
@@ -592,19 +596,29 @@ def calculateBatch(
         gui.do_break()
         return
 
-    # Check if analysis parameters are postive
-    # TODO check if settings file is correct.
-    # for _, value in settings.items():
-
-    #     if float(value) <= 0:
-    #         tk.messagebox.showerror(
-    #             "Information",
-    #             "Analysis paremters must be non-zero" + " and non-negative",
-    #         )
-    #         gui.should_stop = False
-    #         gui.is_running = False
-    #         gui.do_break()
-    #         return
+    # Check analysis parameters for positive values
+    for _, value in settings.items():
+        # Ensure value is not empty or zero
+        if isinstance(value, str):
+            if not value.strip():  # Check if string is empty or whitespace
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+        else:
+            if float(value) <= 0:  # Check if numeric value is <= 0
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
     # Get fascicle calcilation approach
     fasc_calculation_approach = settings["fascicle_calculation_method"]
@@ -820,14 +834,27 @@ def calculateBatch(
                 duration = time.time() - start_time
                 print(f"duration total analysis: {duration}")
 
+                # Apply Hampel Filter to the results to avoid outliers
+                # This is done here to loop over the final dataframe
+                fasc_l_all_filtered = [
+                    hampelFilterList(fasc_l, win_size=4, num_dev=1)["filtered"]
+                    for fasc_l in fascicles_all
+                ]
+                pennation_all_filtered = [
+                    hampelFilterList(pennation, win_size=4, num_dev=1)["filtered"]
+                    for pennation in pennation_all
+                ]
+
                 # Save results as.xlsx file
-                exportToEcxel(
+                exportToExcel(
                     rootpath,
                     fascicles_all,
                     pennation_all,
                     x_low_all,
                     x_high_all,
                     thickness_all,
+                    filtered_fasc=fasc_l_all_filtered,
+                    filtered_pennation=pennation_all_filtered,
                 )
 
             except FileNotFoundError:

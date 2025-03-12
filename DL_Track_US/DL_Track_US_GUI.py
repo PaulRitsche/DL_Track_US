@@ -49,6 +49,9 @@ import customtkinter as ctk
 # Carla imports
 import gui_helpers
 import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import settings
 from gui_modules import AdvancedAnalysis
@@ -62,8 +65,13 @@ import numpy as np
 # from DL_Track_US import settings
 # from DL_Track_US.gui_modules import AdvancedAnalysis
 
+# TODO implement more filtering options and access them via settings.
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
+
+
+# disable interactive backend
+plt.ioff()
 
 
 class DLTrack(ctk.CTk):
@@ -531,26 +539,20 @@ class DLTrack(ctk.CTk):
         self.results.grid(column=1, row=0, sticky=(N, S, W, E))
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=4)
-        self.results.rowconfigure(0, weight=2)
+        self.results.rowconfigure(0, weight=1)
         self.results.columnconfigure(0, weight=1)
 
         # Configure rows with a loop
         for row in range(5):
             self.results.rowconfigure(row, weight=1)
 
-        # Create logo canvas figure
-        self.logo_canvas = tk.Label(self.results, bg="black", width=800, height=600)
-        self.logo_canvas.grid(
-            row=0, column=0, rowspan=9, sticky=(N, S, E, W), pady=(5, 0)
-        )
-
         self.video_canvas = tk.Label(
-            self.logo_canvas,
+            self.results,
             bg="black",
         )
         self.video_canvas.grid(
             column=0,
-            row=1,
+            row=0,
             columnspan=6,
             rowspan=8,
             sticky=(N, S, W, E),
@@ -602,36 +604,51 @@ class DLTrack(ctk.CTk):
             # Process and display the OpenCV frame
             frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
             frame_image = Image.fromarray(frame_rgb)
-            frame_tk = ImageTk.PhotoImage(image=frame_image, size=(800, 600))
+            frame_tk = ImageTk.PhotoImage(image=frame_image, size=(600, 800))
 
             # Ensure the video canvas exists
             if not hasattr(self, "video_canvas"):
-                self.video_canvas = tk.Label(self.video_canvas, bg="white")
+                self.video_canvas = tk.Label(self.video_canvas, bg="black")
                 self.video_canvas.grid(
-                    column=0, row=1, columnspan=6, sticky=(W, E, S, N)
+                    column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
                 )
 
             self.video_canvas.imgtk = frame_tk
-            self.video_canvas.configure(image=frame_tk, justify="center")
+            self.video_canvas.configure(image=frame_tk).grid(
+                column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
+            )
 
             self.processed_frames.append(item)
 
         # Check if the item is a matplotlib figure
         elif isinstance(item, plt.Figure):
-            # Display the matplotlib figure
+            # Remove the existing figure if it exists
             if hasattr(self, "figure_canvas"):
                 self.figure_canvas.get_tk_widget().destroy()
 
+            # Create a new FigureCanvasTkAgg
             self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
             self.figure_canvas.draw()
-            self.figure_canvas.get_tk_widget().grid(
-                column=0, row=1, columnspan=6, sticky=(W, E, S, N)
+
+            # Create a widget for the figure
+            figure_widget = self.figure_canvas.get_tk_widget()
+            figure_widget.grid(
+                column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
             )
+
+            # Configure UI resizing behavior
+            self.video_canvas.grid_columnconfigure(0, weight=1)
+            self.video_canvas.grid_rowconfigure(0, weight=1)
 
             self.processed_frames.append(item)
 
         else:
             print("Unsupported item type for display.")
+
+    # Function to resize the figure dynamically
+    def resize_figure(self, event):
+        width, height = event.width, event.height
+        self.figure_canvas.get_tk_widget().config(width=width, height=height)
 
     def update_frame_by_slider(self, value):
         """
@@ -1060,8 +1077,6 @@ class DLTrack(ctk.CTk):
                 self.is_running = False
                 self.do_break()
                 return
-
-            # TODO implement settings for video analysis
 
             selected_flip = self.flip.get()
             selected_apo_model_path = self.apo_model

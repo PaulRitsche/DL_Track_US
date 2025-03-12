@@ -67,7 +67,7 @@ In the next section you will specify all relevant analysis parameters,
 including the analysis type. We will also explain what each parameter is used
 for.
 
-## 3. Specifying Relevant Parameters
+## 3. Specifying Analysis Parameters
 
 As a first step, you will select the right analysis type in the GUI.
 
@@ -179,9 +179,40 @@ also reducesthe overall analysis time.
 
 ![step size](md_graphics\ava\step_size.png)
 
-## 4. Specifying Analysis Parameters
+## 4. Adjusting Settings
 
-<!-- Noch einfügen von Automated Image Analysis -->
+As a last step, you need to adjust the settings for the
+aponeurosis and fascicle neural networks. If you click on the <span style="color: #a34ba1;">**settings wheel**</span> a 
+python script with the name "settings.py" opens up in your default text editor. On this page, all parameters used by the aponeurosis and
+fascicles neural networks during inference are specified. The default values are always listed on the right hand side of the parameters. The settings are explained in detail at the top of the settings.py file.
+
+![analysis parameters](md_graphics\ava\analysis_parameters.PNG)
+![settings.py](md_graphics\ava\settings_py.PNG)
+
+- The **aponeurosis detection threshold** determines the threshold of the minimal
+acceptable probability by which a pixel is predicted as aponeurosis. The lower,
+the more pixels will be classified as aponeurosis.
+
+- Changing the **aponeurosis length threshold** will result in longer or shorter structures
+detected as aponeurosis.
+
+- The **fascicle detection threshold** and the fascicle lenght threshold are the same thing, just for the fasicles.
+
+- The **minimal muscle width** determines the minimal acceptable distance between superficial and deep aponeurosis.
+
+- **Minimal and Maximal Pennation** describe the respective minimal and maximal
+pennation angle that is physiologically possible in the analysed image/muscle.
+
+- The **fascile calculation method** determines the approach by which the fascile length is calculated. This can either be linear_extrapolation, curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
+
+- The lower the **fascile contour tolerance**, the shorter the minimal acceptable length of
+detected fascicle segments to be included in the results.
+
+- The lower the **aponeurosis distance tolerance**, the nearer a fascicle fragment must be to the aponeurosis. This increases certainty of pennation angle calculation and extrapolation.
+
+For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
+these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
+a small sample of your images prior to the actual analysis.
 
 ## 5. Running / Breaking DL_Track_US
 
@@ -194,7 +225,9 @@ analysis.
 well.
 - Clicking the <span style="color: #299ed9;">**Break**</span> button allows you to stop the analysis at any point.
 The currently evaluated image will be processed and then the
-analysis isterminated.
+analysis is terminated.
+
+
 
 Subsequently to clicking the Run button in the main GUI, navigate again to the
 “DL_Track_US_example/video”.

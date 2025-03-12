@@ -9,6 +9,7 @@ from DL_Track_US import gui_helpers
 import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
+from threading import Lock, Thread
 
 
 class AdvancedAnalysis:
@@ -22,6 +23,11 @@ class AdvancedAnalysis:
 
         self.parent = parent
         self.parent.load_settings()
+
+        # set up threading
+        self._lock = Lock()
+        self._is_running = False
+        self._should_stop = False
 
         # Open Window
         self.advanced_window = ctk.CTkToplevel(fg_color="#2A484E")
@@ -369,12 +375,12 @@ class AdvancedAnalysis:
                 ).grid(column=0, row=12, sticky=E)
 
                 # Model train button
-                model_button = ctk.CTkButton(
+                self.model_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Start Training",
                     command=self.train_model,
                 )
-                model_button.grid(column=2, row=12, sticky=E)
+                self.model_button.grid(column=2, row=12, sticky=E)
 
             elif self.advanced_option.get() == "Crop Video":
 
@@ -617,10 +623,13 @@ class AdvancedAnalysis:
                 return
             self.is_running = True
 
+            # configure stop button
+            self.model_button.configure(text="Stop Training", command=self.do_break)
+
             # Get input paremeter
-            selected_images = self.train_image_dir.get()
-            selected_masks = self.mask_dir.get()
-            selected_outpath = self.out_dir.get()
+            selected_images = self.train_image_dir
+            selected_masks = self.mask_dir
+            selected_outpath = self.out_dir
 
             # Make sure some kind of filetype is specified.
             if (
@@ -681,8 +690,8 @@ class AdvancedAnalysis:
             self.is_running = True
 
             # Get input paremeters
-            selected_images = self.train_image_dir.get()
-            selected_masks = self.mask_dir.get()
+            selected_images = self.train_image_dir
+            selected_masks = self.mask_dir
 
             # Make sure some kind of filetype is specified.
             if len(selected_images) < 3 or len(selected_masks) < 3:
@@ -694,6 +703,13 @@ class AdvancedAnalysis:
 
             gui_helpers.image_augmentation(selected_images, selected_masks, self)
 
+            # Inform user in GUI
+            tk.messagebox.showinfo(
+                "Information",
+                "Data augmentation successful."
+                + "\nResults are saved to specified input paths.",
+            )
+
         # Error handling
         except ValueError:
             tk.messagebox.showerror(
@@ -704,3 +720,90 @@ class AdvancedAnalysis:
             self.do_break()
             self.should_stop = False
             self.is_running = False
+
+    # -----------------------------------------------------------
+    # --- Threading properties ---
+
+    @property
+    def should_stop(self) -> bool:
+        """Instance method to define the should_stop
+        property getter method. By defining this as a property,
+        should_stop is treated like a public attribute even
+        though it is private.
+
+        This is used to stop the analysis process running
+        in a seperate thread.
+
+        Returns
+        -------
+        should_stop : bool
+            Boolean variable to decide whether the analysis process
+            started from the GUI should be stopped. The process is
+            stopped when should_stop = True.
+        """
+        self._lock.acquire()
+        # Get private variable _should_stop
+        should_stop = self._should_stop
+        self._lock.release()
+        return should_stop
+
+    @property
+    def is_running(self) -> bool:
+        """Instance method to define the is_running
+        property getter method. By defining this as a property,
+        is_running is treated like a public attribute even
+        though it is private.
+
+        This is used to stop the analysis process running
+        in a seperate thread.
+
+        Returns
+        -------
+        is_running : bool
+            Boolean variable to check whether the analysis process
+            started from the GUI is running. The process is only
+            stopped when is_running = True.
+        """
+        self._lock.acquire()
+        is_running = self._is_running
+        self._lock.release()
+        return is_running
+
+    @should_stop.setter
+    def should_stop(self, flag: bool):
+        """Instance method to define the should_stop
+        property setter method. The setter method is used
+        to set the self._should_stop attribute as if it was
+        a public attribute. The argument "flag" is thereby
+        validated to ensure proper input (boolean)
+        """
+        self._lock.acquire()
+        self._should_stop = flag
+        self._lock.release()
+
+    @is_running.setter
+    def is_running(self, flag: bool):
+        """Instance method to define the is_running
+        property setter method. The setter method is used
+        to set the self._is_running attribute as if it was
+        a public attribute. The argument "flag" is thereby
+        validated to ensure proper input (boolean)
+        """
+        self._lock.acquire()
+        self._is_running = flag
+        self._lock.release()
+
+    def do_break(self):
+        """Instance method to break the analysis process when the
+        button "break" is pressed.
+
+        This changes the instance attribute self.should_stop
+        to True, given that the analysis is already running.
+        The attribute is checked befor every iteration
+        of the analysis process.
+        """
+
+        self.should_stop = True
+        self.is_running = False
+
+        self.model_button.configure(text="Start Training", command=self.train_model)

@@ -61,6 +61,69 @@ from tensorflow.keras.applications import VGG16
 from tensorflow.keras.layers import Concatenate, Conv2D, Conv2DTranspose
 from tensorflow.keras.utils import img_to_array, load_img
 from tqdm import tqdm
+from tensorflow.keras.callbacks import Callback
+
+
+class StopTrainingCallback(Callback):
+    """
+    A custom Keras callback to stop training early based on a GUI signal.
+
+    This callback checks the `should_stop` attribute of a GUI instance at the
+    beginning of each epoch and stops training if the flag is set to `True`.
+
+    Parameters
+    ----------
+    gui_instance : object
+        The GUI instance that contains the `should_stop` attribute.
+        It should be set to `True` when the user requests training to stop.
+
+    Attributes
+    ----------
+    gui_instance : object
+        Reference to the GUI instance for checking the stopping condition.
+
+    Methods
+    -------
+    on_epoch_begin(epoch, logs=None)
+        Checks if `should_stop` is set to `True` and stops training if necessary.
+
+    Examples
+    --------
+    >>> from tensorflow.keras.models import Sequential
+    >>> from tensorflow.keras.layers import Dense
+    >>> model = Sequential([Dense(10, activation='relu', input_shape=(20,))])
+    >>> model.compile(optimizer='adam', loss='mse')
+    >>> gui_instance.should_stop = False  # Simulating a GUI stop flag
+    >>> stop_callback = StopTrainingCallback(gui_instance)
+    >>> model.fit(X_train, y_train, epochs=100, callbacks=[stop_callback])
+    """
+
+    def __init__(self, gui_instance):
+        """
+        Initializes the StopTrainingCallback with a reference to the GUI instance.
+
+        Parameters
+        ----------
+        gui_instance : object
+            The GUI instance containing the `should_stop` attribute.
+        """
+        super().__init__()
+        self.gui_instance = gui_instance
+
+    def on_epoch_begin(self, epoch, logs=None):
+        """
+        Called at the beginning of each epoch. Checks if training should stop.
+
+        Parameters
+        ----------
+        epoch : int
+            The index of the current epoch.
+        logs : dict, optional
+            Dictionary containing training metrics (default is None).
+        """
+        if self.gui_instance.should_stop:
+            print(f"Stopping training at epoch {epoch}")
+            self.model.stop_training = True
 
 
 def conv_block(inputs, num_filters: int):
@@ -591,6 +654,9 @@ def trainModel(
             model_apo.summary()
 
             # VGG16
+            # Create the stop callback
+            stop_callback = StopTrainingCallback(gui)
+
             # Set some training parameters
             callbacks = [
                 EarlyStopping(patience=8, verbose=1),
@@ -604,6 +670,7 @@ def trainModel(
                     save_weights_only=False,
                 ),  # Give the model a name (the .h5 part)
                 CSVLogger(out_path + "Trained_model.csv", separator=",", append=False),
+                stop_callback,
             ]
 
             # Inform user in GUI
@@ -624,11 +691,17 @@ def trainModel(
                 )
 
                 # Inform user in GUI
-                tk.messagebox.showinfo(
-                    "Information",
-                    "Model was successfully trained"
-                    + "\nResults are saved to specified output path.",
-                )
+                if gui.is_running:
+                    tk.messagebox.showinfo(
+                        "Information",
+                        "Model was successfully trained"
+                        + "\nResults are saved to specified output path.",
+                    )
+                else:
+                    tk.messagebox.showinfo(
+                        "Information",
+                        "Model training was stopped by user.",
+                    )
 
                 # Variables stored in results.history: val_loss, val_acc,
                 # val_IoU, loss, acc, IoU, lr
