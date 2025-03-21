@@ -1,34 +1,34 @@
-The first analysis type this tutorial covers is the automated image analysis. The images are evaluated without user input and may be scaled. 
-Scaling the images will ensure estimated muscle architectural parameters are converted to centimetre units. For this type of analysis, single images (not videos) are a prerequisite.
+On this page you get to know the automated image analysis.
+The images are evaluated without user input and may be scaled. 
+Scaling the images will ensure estimated muscle architectural parameters are converted to centimetre units.
+For this type of analysis, single images (not videos) are a prerequisite.
 These images should be contained in a single folder, like in the “DL_Track_US_example/images” folder.
 
-If you haven’t downloaded this folder,
-please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip the folder
-and put it somewhere accessible. We will make use of the included
-example files extensively during this tutorial. In the next few chapters, we
-will look at every required step to successfully perform automated image
-analysis with DL_Track_US.
+If you haven’t downloaded this folder yet,
+please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)).
+Unzip the folder and put it somewhere accessible.
 
 ## 1. Creating Image Directory & FlipFlag.txt File
 
-- All **images** you want to analyze should be placed in one folder.
+- All images you want to analyze should be placed in one folder.
+- The “DL_Track_US_example/images“ folder contains <span style="color: #2eaf66;">**4 images**</span> and 
+a <span style="color: #f97e25;">**flip_flag.txt**</span> file.
+- It is not required to have the flip_flag.txt file in the same folder as the images to be analysed, but it is convenient.
 
 ![image directory](md_graphics\aia\image_directory.PNG)
 
-- The “DL_Track_US_example/images“ folder contains <span style="color: #2eaf66;">**4 images**</span> and a <span style="color: #f97e25;">**flip_flag.txt**</span> file. 
-It is not required to have the flip_flag.txt file in the same folder as the images to be analysed, but it is convenient.
-- Lets take a closer look at the flip_flag.txt file. Below you can see the flip_flag.txt file in the directory.
+- Lets take a closer look at the flip_flag.txt file.
+- For every image there must be a <span style="color: #a34ba1;">**flip-flag**</span>. 
+- The flip-flag determines if an image is flipped during analysis or not. A “0” stands for no flipping, whereas “1” means flip the image.
+- If the number of flip-flags and images doesn’t match, an error is raised.
 
 ![flip flag](md_graphics\aia\flip_flag.PNG)
 
-- For every image there must be a <span style="color: #a34ba1;">**flip-flag**</span>. If the number of flip-flags
-and images doesn’t match, an error is raised.
 - Another possible way to specify is displayed below. This is relevant when
 multiple subfolders are included, as each line then represents a subfolder.
 
 ![flip flag 2](md_graphics\aia\flip_flag_2.PNG)
 
-- The <span style="color:#934fba;">**flip-flag**</span> determines if an image is flipped during analysis or not. A “0” stands for no flipping, whereas “1” means flip the image.
 - None of the example images must be flipped. Their fascicle orientation is
 correct, with fascicles originating at the bottom left and inserting on the
 top right.
@@ -36,11 +36,7 @@ top right.
 fascicles in your image are orientated differently, please specify a “1” as
 a flip-flag for those images.
 
-![fascial orientation](md_graphics\aia\fascial_orientation.PNG)
-
-- For this tutorial we will use the example images folder “DL_Track_US_examples/images” with it’s contained images and flip-flag.txt file.
-
-
+<img src="\md_graphics\aia\fascial_orientation.PNG" width="600">
 
 ## 2. Specifying Input Directories in the GUI
 
@@ -57,7 +53,7 @@ need to select the images folder.
 ![input folder 2](md_graphics\aia\input_folder_2.PNG)
 
 - Secondly, specify the absolute path to the **aponeurosis neural network**
-in the “DL_Track_US_example/**models**”.
+which is located in the “DL_Track_US_example/**DL_Track_US_models**” Folder.
     - By clicking on the <span style="color: #a34ba1;">**Apo Model**</span> button, a selection window opens were
 you need to select the **aponeurosis neural network**.
     - Click <span style="color: #299ed9;">**Open**</span> to specify the path to the **aponeurosis neural network** in the GUI.
@@ -65,8 +61,8 @@ you need to select the **aponeurosis neural network**.
 ![apo model path](md_graphics\aia\apo_model_path.PNG)
 ![apo model path 2](md_graphics\aia\apo_model_path_2.PNG)
 
-- Thirdly, specify the absolute path to the **fascicle neural network** in
-the “DL_Track_US_example/**models**”.
+- Thirdly, specify the absolute path to the **fascicle neural network** which is also located in
+the “DL_Track_US_example/**DL_Track_US_models**” folder.
     - By clicking on the <span style="color: #a34ba1;">**Fasc Model**</span> button, a selection window opens were
 you need to select the **fascicle neural network**.
     - Click <span style="color: #299ed9;">**Open**</span> to specify the path to the **fascicle neural network** in the GUI.
@@ -91,8 +87,8 @@ Next, you need to specify the **Image Type**.
 - The ending of the Image Type must match the ending of your images,
 otherwise no files are found by DL_Track_US.
 - You can either select a pre-specified ending from the dropdown list or
-type your own ending.
-- Please keep the formatting similar to those Image Types provided in
+type in your own ending.
+- Please keep the formatting similar to the Image Types provided in
 the dropdown list.
 - All the images in the “DL_Track_US_example/images” folder
 are of the Image Type **“.tif”**. Thus, you should select the <span style="color: #a34ba1;">**“/*.tif”**</span> Image Type.
@@ -107,53 +103,50 @@ units.
 - There are three Scyling Types in the DL_Track_US package.
 - For this tutorial however, you will select the <span style="color: #a34ba1;">**"None"**</span> option as
 displayed below.
-- We will explain the other two Scyling Types in the next chapters.
 
 ![scaling type](md_graphics\aia\scaling_type.PNG)
 
 - Another Scaling Type is <span style="color: #a34ba1;">**“Bar”**</span>. This Scaling Type is
 only applicable if there are scaling bars in the right side of the
 ultrasonography image:
-
-![scaling type bar](md_graphics\aia\scaling_type_bar.PNG)
-
-- The <span style="color:light-blue;">**scaling bars**</span> do not need to look exactly like the ones in the
-above image. They just need to be **next to the image** and **clearly separated** from each other.
+- The <span style="color: #00bfba;">**scaling bars**</span> do not need to look exactly like the ones in the image below.
+They just need to be next to the image and clearly separated from each other.
 - We advise you to try this **Scaling type** on a few of your images and find
 out for yourself if it works.
 - Files that cannot be analysed with this Scaling type will be recorded in
 an failed_images.txt file in the image input folder.
 
-- The last of the three Scaling Types is  <span style="color: #a34ba1;">**“Manual”**</span>.
-    - This **Scaling Type** requires input from the user.
-    - When you choose “Manual” as your Scaling type, you need to manually place <span style="color:#00bfba;">**two points**</span> on
-     the image using the left mouse button
+![scaling type bar](md_graphics\aia\scaling_type_bar.PNG)
 
-![scaling type manual](md_graphics\aia\scaling_type_manual.PNG)
-
-- Just click one time with your left mouse button to record the first point
-(nothing will be displayed on the images during actual analysis).
-- Place the second point at a known distance of either 5, 10, 15 or 20
-millimetre.
-- The distance you chose must be represented in the Spacing (see next
-page) parameter in the GUI.
+The last of the three Scaling Types is  <span style="color: #a34ba1;">**“Manual”**</span>. This **Scaling Type** requires input from the user.
 
 - Whenever you use “**Bar**” or “**Manual**” as your Scaling Type, make sure
 that the minimal distance between the scaling bars or the known
 distance between the manually specified points is represented in
-the <span style="color: #a34ba1;">**Spacing**</span> parameter.
-
-![spacing](md_graphics\aia\spacing.PNG)
-
+the <span style="color: #2eaf66;">**Spacing**</span> parameter.
 - Select the Spacing parameter from the dropdown list as 5, 10, 15 or 20
 millimetre. For this tutorial it is not necessary to select anything, as the
-Spacing parameter is not used during an analysis with Scaling Type
-“**None**”.
-- The minimal <span style="color:#00bfba;">**distance**</span> between the scaling bars in an image. This is simply
-the <span style="color:#00bfba;">**distance**</span> in millimeter between the two nearest scaling bars in the
-image. If you do not know this <span style="color:#00bfba;">**distance**</span>, please use “**Manual**” or “**None**” Scaling Type. For example in the image from before, the <span style="color:#00bfba;">**distance**</span> between the nearest bars is 5 millimetre.
+Spacing parameter is not used during an analysis with Scaling Type “**None**”.
 
-![spacing 2](md_graphics\aia\spacing_2.PNG)
+<img src="\md_graphics\aia\spacing_3.png" width="600">
+
+- When you choose “Manual” as your Scaling type, you need to manually place **two points** on
+the image using the left mouse button.
+- In order to do this, you need to click <span style="color: #a34ba1;">**Calibrate**</span>.
+
+<img src="\md_graphics\aia\calibrate_button.png" width="600">
+
+- Then, just click one time with your left mouse button to record the first point
+(a red dot will apear).
+- Place the second point at a known distance of either 5, 10, 15 or 20
+millimetre.
+- Afterwards, click <span style="color: #a34ba1;">**Confirm**</span>.
+
+<img src="\md_graphics\aia\calibrate.png" width="600">
+
+After confirming a <span style="color: #299ed9;">**messagebox**</span> should appear with the distance of the spacing parameter in pixels.
+
+<img src="\md_graphics\aia\calibration_result.png" width="600">
 
 - In version 0.2.1 we introduced a new feature to DL_Track_US, called the **Filter Fascicle** option.
 - Here, you have two options, <span style="color: #a34ba1;">**“YES”**</span> or <span style="color: #a34ba1;">**“NO”**</span>.
@@ -165,7 +158,8 @@ Here are some results demonstrating the difference.
 
 ![filter fascicles 2](md_graphics\aia\filter_fascicles_2.PNG)
 
-- Next, specify the absolute path to the **flip_flag.txt** file.
+As a next Stept you need to specify the absolute path to the **flip_flag.txt** file.
+
 - By clicking the <span style="color: #a34ba1;">**Flip Flags**</span> button, a dialogue will pop up and you can
 select the <span style="color: #f97e25;">**flip_flag.txt**</span> file.
 - In this example, the flip_flag.txt file is located at “DL_Track_US_example/images”.
@@ -208,20 +202,29 @@ detected fascicle segments to be included in the results.
 
 For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
 these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
-a small sample of your images prior to the actual analysis.
+a small sample of your images prior to the actual analysis. If you should somehow distruct the settings.py file there is a backup called _backup_settings.py.
 
 ## 5. Running / Breaking DL_Track_US
 
 - By clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI window, you can start the
 analysis.
-
-![running breaking](md_graphics\aia\running_breaking.PNG)
-
 - Moreover, you can see that there is a <span style="color: #299ed9;">**Break**</span> button placed in the GUI as
 well.
 - Clicking the <span style="color: #299ed9;">**Break**</span> button allows you to stop the analysis at any point.
 The currently evaluated image will be processed and then the
 analysis isterminated.
+
+![running breaking](md_graphics\aia\running_breaking.PNG)
+
+After running the analyis the three lines are displayed in the line graph:
+
+- Median Fascicle Length
+- Median Filtered Fascicle Length
+- Filtered Median Fascicle Length
+
+<!-- Beschreibung Paul -->
+
+<img src="\md_graphics\aia\plotted_results.png">
 
 - In the “DL_Track_US_example/images” folder, you will see that two files
 will be / have been created, <span style="color: #f97e25;">**ResultImages.pdf**</span> and <span style="color: #2eaf66;">**Results.xlsx**</span>.

@@ -89,7 +89,11 @@ This is not used when the linear extrapolation method is used.
 The user must select the filter to be applied to the fascicle length and pennation angle data.
 Filters are applied after predicting and drawind the fascicles on the images, as fascicles are not removed but their values adapted.
 The results are saved in the output file in a seperate sheet.
-The filters to choose from are: 1. Hampel filter (default), 2. Median filter, 3. Gaussian filter, 4. Savitzky-Golay filter
+The filters to choose from are:
+1. Hampel filter (default)
+2. Median filter
+3. Gaussian filter
+4. Savitzky-Golay filter
 
 - hampel_window_size:
 The user must enter the window size for the Hampel filter.
@@ -106,23 +110,23 @@ The parameters are set automatically at each run.
 
 # ------------------------------------------------------------------------------
 # Prediction Parameters
-aponeurosis_detection_threshold = 0.15  # 0.2
-aponeurosis_length_threshold = 400  # 400
-fascicle_detection_threshold = 0.05  # 0.05
-fascicle_length_threshold = 60  # 40
-minimal_muscle_width = 60  # 60
+aponeurosis_detection_threshold = 0.2
+aponeurosis_length_threshold = 400
+fascicle_detection_threshold = 0.05
+fascicle_length_threshold = 40
+minimal_muscle_width = 60
 
 
 # ------------------------------------------------------------------------------
-# Muscle Architecture Calculation Parameters
+# Muscle Architecture Calculation Parameters ONLY FOR IMAGES
 minimal_pennation_angle = 10
 maximal_pennation_angle = 40
-fascicle_calculation_method = "linear_extrapolation"  # ONLY FOR IMAGES
-fascicle_contour_tolerance = 10  # 10
+fascicle_calculation_method = "curve_connect_linear"  # ONLY FOR IMAGES
+fascicle_contour_tolerance = 10
 aponeurosis_distance_tolerance = 100
 
 # ------------------------------------------------------------------------------
 # Fascicle Filtering Parameters
 selected_filter = "hampel"
-hampel_window_size = 3  # 5
-hampel_num_dev = 1  # 3
+hampel_window_size = 5
+hampel_num_dev = 3

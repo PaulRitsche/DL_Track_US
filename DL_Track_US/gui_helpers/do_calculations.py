@@ -39,10 +39,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-# original import
-# from DL_Track_US.gui_helpers.curved_fascicles_functions import crop
-# Carla import
-from gui_helpers.curved_fascicles_functions import crop
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
 from skimage.transform import resize
@@ -206,10 +202,8 @@ def doCalculations(  # TODO adapt docstring
     w: int,
     calib_dist: int,
     spacing: int,
-    filename: str,
     model_apo,
     model_fasc,
-    scale_statement: str,
     dictionary: dict,
     filter_fasc: bool,
     image_callback=None,
@@ -249,17 +243,10 @@ def doCalculations(  # TODO adapt docstring
         between the two placed points by the user or the scaling bars
         present in the image. This can be 5, 10, 15 or 20 milimeter.
         Must be non-negative and non-zero.
-    filename : str
-        String value containing the name of the input image, not the
-        entire path.
     model_apo :
         Contains keras model for prediction of aponeuroses
     model_fasc :
         Contains keras model for prediction of fascicles
-    scale_statement : str
-        String variable containing a statement how many milimeter
-        correspond to how many pixels. If calib_dist is "None", scale statement
-        will also be "None"
     dictionary : dict
         Dictionary variable containing analysis parameters.
         These include must include apo_threshold, apo_length_tresh, fasc_threshold,
@@ -268,6 +255,8 @@ def doCalculations(  # TODO adapt docstring
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
+    image_callback:
+        Callback function to update the image display. If None, no callback is used.
 
     Returns
     -------
@@ -354,9 +343,6 @@ def doCalculations(  # TODO adapt docstring
     pred_fasc_t = resize(pred_fasc_t, (1, h, w, 1))
     fas_image = np.reshape(pred_fasc_t, (h, w))
     tf.keras.backend.clear_session()
-
-    # crop all three images in order that they don't have a frame
-    # original_image, fas_image, apo_image = crop(img_copy, fas_image, apo_image)
 
     fasc_l = []
     pennation = []

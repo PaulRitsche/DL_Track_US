@@ -1,41 +1,36 @@
-The next analysis type this tutorial covers is the manual image analysis. The
-images are evaluated manually by drawing the muscle thickness, fascicle length
-and pennation angles directly on the Image. For this type of analysis, single
+This page covers the manual image analysis.
+The images are evaluated manually by drawing the muscle thickness, fascicle length
+and pennation angles directly on the image. For this type of analysis, single
 images (not videos) are a prerequisite. These images should be
 contained in a single folder, like in the
 “DL_Track_US_example/images_manual” folder. 
 
 If you haven’t downloaded
-this folder, please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip
-the folder and put it somewhere accessible. We will make use of the
-included example file included in the DL_Track_US_examples folder
-extensively during this tutorial. In the next few pages, we will look at every
-required step to successfully perform manual image analysis with DL_Track_US.
+this folder yet, please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). 
+Unzip the folder and put it somewhere accessible.
 
 ## 1. Creating Image Directory
 
-All **images** to be analyzed should be in a single folder.
+- All images to be analyzed should be in a single folder.
+- The “DL_Track_US/image_manual“ folder contains <span style="color:#2eaf66;">**2 images**</span>.
 
 ![image folder](md_graphics\mia\image_folder.PNG)
 
-- The “DL_Track_US/image_manual“ folder contains <span style="color:#2eaf66;">**2 images**</span>.
 - In contrast to automated image analysis, you do not need a flip_flag.txt file nor do you need neural networks that do predictions. 
 - In manual image analysis, you are the neural network.
-- The next step is to specify the input directory in the GUI.
 
 ## 2. Specifying Input Directories in the GUI
 
-- You will begin with specifying the path to the folder containing the images to be analysed, the “DL_Track_US_example/images_manual” folder.
+- You will begin with specifying the path to the folder containing the images to be analysed.
+- In this case we use the “DL_Track_US_example/images_manual” folder.
 - By clicking on the <span style="color: #a34ba1;">**Inputs**</span> button in the GUI a selection window opens were you need to select the images folder.
 - Click **Select folder** to specify the path in the GUI.
 
 ![input button](md_graphics\mia\input_button.PNG)
 
-- Once that is done, the selected folder will be displayed below the **Inputs** field and you can start to specify the relevant parameters for the analysis.
-
 ## 3. Specifying Analysis Parameters
 
-Please select <span style="color: #a34ba1;">**image_manual**</span> from the dropdown-menu.
+First, please select <span style="color: #a34ba1;">**image_manual**</span> from the dropdown-menu.
 
 ![select image manual](md_graphics\mia\select_image_manual.PNG)
 
@@ -44,8 +39,8 @@ Next, you need to specify the **Image Type**.
 - The ending of the Image Type must match the ending of your images,
 otherwise no files are found by DL_Track_US.
 - You can either select a pre-specified ending from the dropdown list or
-type your own ending.
-- Please keep the formatting similar to those Image Types provided in the dropdown list.
+type in your own ending.
+- Please keep the formatting similar to the Image Types provided in the dropdown list.
 - All the images in the “DL_Track_US_example/images_manual” folder
 are of the Image Type **“.tif”**.
 - Thus, you should select the <span style="color: #a34ba1;">**“/*.tif”**</span> Image Type as shown below.
@@ -53,18 +48,17 @@ are of the Image Type **“.tif”**.
 ![image type](md_graphics\mia\image_type.PNG)
 
 - Once you have specified the Image Type, you can start with the
-analysis of the images contained in the
-“DL_Track_US_example/images_manual” folder.
+analysis.
 - You can start the analysis by clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI.
 
 ![run button](md_graphics\mia\run_button.PNG)
 
-- Take a look at the next chapter to see how to continue in the “Manual Analysis window” that pops up.
-
 ## 4. Manual Analysis of Image
 
 After clicking the Run button in the main GUI, the “Manual Analysis
-window” opens. Here is how it looks like:
+window” opens. 
+
+- Here is how it looks like:
 
 ![manual analysis window](md_graphics\mia\manual_analysis_window.PNG)
 

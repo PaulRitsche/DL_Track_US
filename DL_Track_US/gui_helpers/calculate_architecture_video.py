@@ -51,24 +51,17 @@ import glob
 import os
 import time
 import tkinter as tk
-import numpy as np
 
 import cv2
 import matplotlib.pyplot as plt
 from keras.models import load_model
 
-"""
-from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
-from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
-from DL_Track_US.gui_helpers.calculate_architecture import IoU, exportToExcel
-from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
-"""
 
-from gui_helpers.calculate_architecture import IoU, exportToExcel
-from gui_helpers.calibrate_video import calibrateDistanceManually
-from gui_helpers.do_calculations_video import doCalculationsVideo
-from gui_helpers.manual_tracing import ManualAnalysis
-from gui_helpers.filter_data import applyFilters, hampelFilterList
+from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
+from DL_Track_US.gui_helpers.calculate_architecture import exportToExcel
+from DL_Track_US.gui_helpers.model_training import IoU, dice_bce_loss, dice_score
+from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.filter_data import applyFilters, hampelFilterList
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
@@ -172,7 +165,6 @@ def calculateArchitectureVideo(
     filetype: str,
     scaling: str,
     flip: str,
-    spacing: int,
     step: int,
     filter_fasc: bool,
     settings: dict,
@@ -219,11 +211,6 @@ def calculateArchitectureVideo(
         - scaling = "No scaling" (video frames are not scaled.)
         Scaling is necessary to compute measurements in centimeter,
         if "no scaling" is chosen, the results are in pixel units.
-    spacing : int
-        Integer variable containing the distance (in milimeter) between
-        two scaling bars in the image.
-        This is needed to compute the pixel/cm ratio and therefore report
-        the results in centimeter rather than pixel units.
     step : int
         Integer variable containing the step for the range of video frames.
         If step != 1, frames are skipped according to the size of step.
@@ -260,7 +247,7 @@ def calculateArchitectureVideo(
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip="Flip", filetype="/**/*.avi, scaline="manual",
-                       spacing=10, filter_fasc=False
+                       filter_fasc=False
                        settings=settings,
                        gui=<__main__.DLTrack object at 0x000002BFA7528190>)
     """
@@ -310,20 +297,27 @@ def calculateArchitectureVideo(
 
             # load video
             imported = importVideo(video)
-            cap, vid_len, filename, vid_out = imported
+            cap, vid_len, gui.filename, vid_out = imported
 
-            calibrate_fn = calibrateDistanceManually
+            # calibrate_fn = calibrateDistanceManually
 
             # find length of the scaling line
             if scaling == "Manual":
-                calib_dist, _ = calibrate_fn(cap, spacing)
+                calib_dist = gui.calib_dist
             else:
                 calib_dist = None
 
             # predict apos and fasicles
             # Load models outside the loop
             model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-            model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
+            model_fasc = load_model(
+                fasc_modelpath,
+                custom_objects={
+                    "IoU": IoU,
+                    "dice_bce_loss": dice_bce_loss,
+                    "dice_score": dice_score,
+                },
+            )
             calculate = doCalculationsVideo
             (
                 fasc_l_all,
@@ -332,33 +326,54 @@ def calculateArchitectureVideo(
                 x_highs_all,
                 thickness_all,
             ) = calculate(
-                vid_len,
-                cap,
-                vid_out,
-                flip,
-                model_apo,
-                model_fasc,
-                calib_dist,
-                settings,
-                step,
-                filter_fasc,
-                gui,
-                display_frame,
+                vid_len=vid_len,
+                cap=cap,
+                vid_out=vid_out,
+                flip=flip,
+                apo_model=model_apo,
+                fasc_model=model_fasc,
+                calib_dist=calib_dist,
+                dic=settings,
+                step=step,
+                filter_fasc=filter_fasc,
+                gui=gui,
+                frame_callback=display_frame,
             )
 
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
 
+            print(settings)
+
             # Apply Hampel Filter to the results to avoid outliers
             # This is done here to loop over the final dataframe
-            fasc_l_all_filtered = [
-                hampelFilterList(fasc_l, win_size=4, num_dev=1)["filtered"]
-                for fasc_l in fasc_l_all
-            ]
-            pennation_all_filtered = [
-                hampelFilterList(pennation, win_size=4, num_dev=1)["filtered"]
-                for pennation in pennation_all
-            ]
+            if settings["selected_filter"] == "hampel":
+                fasc_l_all_filtered = [
+                    hampelFilterList(
+                        fasc_l,
+                        win_size=settings["hampel_window_size"],
+                        num_dev=settings["hampel_num_dev"],
+                    )["filtered"]
+                    for fasc_l in fasc_l_all
+                ]
+                pennation_all_filtered = [
+                    hampelFilterList(
+                        pennation,
+                        win_size=settings["hampel_window_size"],
+                        num_dev=settings["hampel_num_dev"],
+                    )["filtered"]
+                    for pennation in pennation_all
+                ]
+
+            else:
+                fasc_l_all_filtered = [
+                    applyFilters(fasc_l, filter_type=settings["selected_filter"])
+                    for fasc_l in fasc_l_all
+                ]
+                pennation_all_filtered = [
+                    applyFilters(pennation, filter_type=settings["selected_filter"])
+                    for pennation in pennation_all
+                ]
 
             # Save Results
             exportToExcel(
@@ -368,13 +383,10 @@ def calculateArchitectureVideo(
                 x_lows_all,
                 x_highs_all,
                 thickness_all,
-                filename,
+                gui.filename,
                 fasc_l_all_filtered,
                 pennation_all_filtered,
             )
-
-    # except ValueError:
-    #     pass
 
     except IndexError:
         tk.messagebox.showerror(

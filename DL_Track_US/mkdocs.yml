@@ -5,8 +5,8 @@ site_name: DL_Track_US
 #   All you need to know about openhdemg
 
 # # Repository
-# repo_name: DL_Track_US
-# repo_url: https://github.com/PaulRitsche/DL_Track_US
+repo_name: DL_Track_US
+repo_url: https://github.com/PaulRitsche/DL_Track_US
 
 # copyright: >
 #   Copyright &copy; 2022 - 2024. The openhdemg community -
@@ -14,6 +14,8 @@ site_name: DL_Track_US
 
 theme:
   name: material
+  palette:
+    primary: custom
   # custom_dir: docs/overrides
   logo: 
   favicon: 
@@ -31,7 +33,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-extra_css: [docs/overrides/custom.css]
+extra_css: 
+- docs/overrides/custom.css
 
 # Select a plugin to get the docs from docstrings and setup the numpy stile as
 # the default style.
@@ -57,21 +60,20 @@ plugins:
 # front of the filename whose title you want to change.
 nav:
   - Welcome: index.md
-  - About Us: about_us.md
   - Installation: installation.md
-  - Quick Start: quick_start.md
-  - Usage:
+  - Tutorials:
     - Autamated Image Analysis: automated_image_analysis.md
     - Manual Image Analysis: manual_image_analysis.md
     - Automated Video Analysis: automated_video_analysis.md
     - Manual Video Analysis: manual_video_analysis.md
-    - Training Your Own Networks: training_your_own_networks.md
   - Advanced Methods:
-    - Image Labels: image_labels.md
+    - Training Your Own Networks: training_your_own_networks.md
     - Inspecting Masks: inspecting_masks.md
     - Crop Video: crop_video.md
+    - Remove Video Parts: remove_video_parts.md
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
+  - About Us: about_us.md
 #   - About us: about-us.md
 #   - Quick-Start: quick-start.md
 #   - Tutorials:

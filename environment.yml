@@ -7,7 +7,6 @@ dependencies:
   - pip=22.2.2
   - pip:
     - customtkinter==5.2.2
-    - hampel==0.0.5
     - jupyter==1.0.0
     - Keras==2.10.0
     - matplotlib==3.6.1
@@ -16,6 +15,7 @@ dependencies:
     - openpyxl==3.0.10
     - orientationpy==0.2.0.4
     - pandas==1.5.1
+    - pandastable==0.13.1
     - Pillow==9.2.0
     - pre-commit==2.17.0
     - scikit-image==0.19.3

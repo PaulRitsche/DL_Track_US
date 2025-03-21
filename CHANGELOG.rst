@@ -1,4 +1,28 @@
 
+2025-03-11
+==========
+
+Added
+-----
+
+- Curved fascicle reconstruction to main UI
+
+- Video Cropping in UI advanced window
+- Video Part removal in UI advanced window
+- "Live" preview of the segmented video in the main UI.
+- Plotting operation of fascicles in the main UI.
+- Manual Scaling in main UI for images and video.
+
+Changed
+-------
+
+- UI to customtkinter finalisation
+- Dictionary handling
+- Settings.py file
+
+- Migrated whole UI to customtkinter
+- Manual Scaling in main UI for images and video.
+
 2024-05-07
 ==========
 

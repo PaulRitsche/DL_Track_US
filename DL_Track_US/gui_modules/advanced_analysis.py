@@ -1,10 +1,8 @@
-"""
-
-"""
+""" """
 
 import os
 import customtkinter as ctk
-from tkinter import ttk, W, E, N, S, StringVar, BooleanVar, filedialog
+from tkinter import ttk, W, E, N, S, StringVar, BooleanVar, filedialog, Canvas
 from DL_Track_US import gui_helpers
 import tkinter as tk
 import cv2
@@ -40,13 +38,29 @@ class AdvancedAnalysis:
         # if platform.startswith("win"):
         #     self.a_window.after(200, lambda: self.a_window.iconbitmap(iconpath))
 
+        # Configure resizing of user interface
+        for row in range(21):
+            self.advanced_window.rowconfigure(row, weight=1)
+        for column in range(4):
+            self.advanced_window.rowconfigure(column, weight=1)
+
+        self.advanced_window.columnconfigure(0, weight=1)
+        self.advanced_window.columnconfigure(1, weight=5)
+        self.advanced_window.rowconfigure(0, weight=1)
+        self.advanced_window.minsize(width=600, height=400)
+
         self.advanced_window.grab_set()
 
         ctk.CTkLabel(self.advanced_window, text="Select Method").grid(column=1, row=0)
 
         # Mask Option
         self.advanced_option = StringVar()
-        advanced_entry = ["Train Model", "Inspect Masks", "Crop Video"]
+        advanced_entry = [
+            "Train Model",
+            "Inspect Masks",
+            "Crop Video",
+            "Remove Video Parts",
+        ]
         advanced_entry = ctk.CTkComboBox(
             self.advanced_window,
             width=20,
@@ -415,7 +429,8 @@ class AdvancedAnalysis:
                     text="Browse",
                     command=lambda: self.output_path_var.set(
                         filedialog.asksaveasfilename(
-                            defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")]
+                            defaultextension=".mp4",
+                            filetypes=[("Video files", "*.mp4;*.avi;*.mov")],
                         )
                     ),
                 ).grid(column=1, row=5, sticky=(W, E))
@@ -424,6 +439,38 @@ class AdvancedAnalysis:
                     self.advanced_window_frame,
                     text="Crop Video",
                     command=self.crop_video,
+                ).grid(column=0, row=6, columnspan=2, sticky=(W, E))
+
+                # Add padding
+                for child in self.advanced_window_frame.winfo_children():
+                    child.grid_configure(padx=5, pady=5)
+
+            elif self.advanced_option.get() == "Remove Video Parts":
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Load Video",
+                    command=self.load_video,
+                ).grid(column=0, row=0, columnspan=2, sticky=(W, E))
+
+                ctk.CTkLabel(self.advanced_window_frame, text="Output Path").grid(
+                    column=0, row=5, sticky=W
+                )
+                self.output_path_var = StringVar()
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Browse",
+                    command=lambda: self.output_path_var.set(
+                        filedialog.asksaveasfilename(
+                            defaultextension=".mp4",
+                            filetypes=[("MP4 files", "*.mp4")],
+                        )
+                    ),
+                ).grid(column=1, row=5, sticky=(W, E))
+
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Remove Parts",
+                    command=self.remove_video_parts,
                 ).grid(column=0, row=6, columnspan=2, sticky=(W, E))
 
                 # Add padding
@@ -442,7 +489,7 @@ class AdvancedAnalysis:
         Loads a video and displays the first frame in the cropping interface.
         """
         self.video_path = filedialog.askopenfilename(
-            title="Open Video File", filetypes=[("Video Files", "*.mp4;*.avi;*.mov")]
+            title="Open Video File", filetypes=[("Video files", "*.mp4;*.avi;*.mov")]
         )
 
         if not self.video_path:
@@ -474,7 +521,13 @@ class AdvancedAnalysis:
         """
         frame = self.processed_frames[frame_index]
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_image = Image.fromarray(frame_rgb)
+
+        # Resize the frame to the desired dimensions
+        self.desired_width = 800
+        self.desired_height = 600
+        frame_resized = cv2.resize(frame_rgb, (self.desired_width, self.desired_height))
+
+        frame_image = Image.fromarray(frame_resized)
         frame_tk = ImageTk.PhotoImage(image=frame_image)
 
         if not hasattr(self, "video_canvas"):
@@ -483,6 +536,81 @@ class AdvancedAnalysis:
 
         self.video_canvas.imgtk = frame_tk
         self.video_canvas.configure(image=frame_tk)
+
+        # Allow user to make a selection on the first frame
+        if frame_index == 0:
+            self.selection = None
+            self.canvas = Canvas(
+                self.advanced_window_frame,
+                width=self.desired_width,
+                height=self.desired_height,
+            )
+            self.canvas.create_image(0, 0, anchor=tk.NW, image=frame_tk)
+            self.canvas.grid(column=0, row=1, columnspan=2, sticky=(W, E))
+            self.canvas.bind("<ButtonPress-1>", self.on_button_press)
+            self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
+            self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
+        else:
+            self.canvas.create_image(0, 0, anchor=tk.NW, image=frame_tk)
+            self.canvas.imgtk = frame_tk  # Keep a reference to avoid garbage collection
+
+    def on_button_press(self, event):
+        self.selection = (event.x, event.y, event.x, event.y)
+
+    def on_mouse_drag(self, event):
+        x0, y0, _, _ = self.selection
+        self.selection = (x0, y0, event.x, event.y)
+        self.canvas.delete("selection")
+        self.canvas.create_rectangle(
+            x0, y0, event.x, event.y, outline="red", tag="selection"
+        )
+
+    def on_button_release(self, event):
+        x0, y0, x1, y1 = self.selection
+        self.selection = (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
+
+    def remove_video_parts(
+        self,
+    ):
+        """
+        Removes the selected parts from the video and saves the modified video.
+        """
+        if not self.selection:
+            tk.messagebox.showerror("Error", "No selection made.")
+            return
+
+        output_path = self.output_path_var.get()
+        if not output_path:
+            tk.messagebox.showerror("Error", "No output path specified.")
+            return
+
+        x0, y0, x1, y1 = self.selection
+
+        cap = cv2.VideoCapture(self.video_path)
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        width = self.desired_width
+        height = self.desired_height
+
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+        frame_count = 0
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            resized_frame = cv2.resize(frame, (self.desired_width, self.desired_height))
+            resized_frame[y0:y1, x0:x1] = 0  # Black out the selected area
+            out.write(resized_frame)
+
+            frame_count += 1
+
+        cap.release()
+        out.release()
+
+        out.release()
+        tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
 
     def update_slider_range(self):
         """
@@ -511,9 +639,10 @@ class AdvancedAnalysis:
         """
         Triggered when the slider is moved. Displays the corresponding frame.
         """
-        self.current_frame_index = int(value)
-        self.display_frame(self.current_frame_index)
-        self.frame_slider.config(label=f"Frame: {self.current_frame_index}")
+        if 0 <= int(value) < len(self.processed_frames):
+            self.current_frame_index = int(value)
+            self.display_frame(int(value))
+            self.frame_slider.config(label=f"Frame: {self.current_frame_index}")
 
     # Methods used for model training
     def crop_video(self):
@@ -544,7 +673,10 @@ class AdvancedAnalysis:
                     break
 
                 if start_frame <= frame_count <= end_frame:
-                    out.write(frame)
+                    resized_frame = cv2.resize(
+                        frame, (self.desired_width, self.desired_height)
+                    )
+                    out.write(resized_frame)
 
                 frame_count += 1
                 if frame_count > end_frame:

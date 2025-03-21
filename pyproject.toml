@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "DL_Track_US"
-version = "0.2.1"
+version = "0.3.1"
 authors = [
   { name="Paul Ritsche", email="paul.ritsche@unibas.ch" },
   { name="Olivier Seynnes", email="oliviers@nih.no" },
@@ -21,18 +21,19 @@ classifiers = [
 ]
 dependencies = [
     "customtkinter==5.2.2",
-    "hampel==0.0.5",
     "Keras==2.10.0",
     "matplotlib==3.6.1",
     "numpy==1.23.4",
     "opencv-contrib-python==4.6.0.66",
     "openpyxl==3.0.10",
     "pandas==1.5.1",
+    "pandastable==0.13.1",
     "Pillow==9.2.0",
     "pre-commit==2.17.0",
     "scikit-image==0.19.3",
     "scikit-learn==1.1.2",
     "sewar==0.4.5",
+    "shapely==2.0.5",
     "tensorflow==2.10.0",
     "tqdm==4.64.1"
   ]
