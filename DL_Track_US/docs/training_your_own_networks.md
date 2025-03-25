@@ -1,5 +1,5 @@
 The DL_Track_US package GUI includes the possibility to train your own
-neural networks. We we will demonstrate how to do this, with a few notes at
+neural networks. We will demonstrate how to do this, with a few notes at
 the beginning:
 
 - It is advantageous to have a working GPU setup, otherwise model training
@@ -23,12 +23,6 @@ should then contain fascicles and fascicle labels.
 
 ## 1. Data Preparation and Image Labeling
 
-Your prepared <span style="color: #2eaf66;">**aponeurosis images**</span> 
-and <span style="color: #a34ba1;">**aponeurosis masks**</span> should be in
-different folders.
-
-![model training folder](md_graphics\training_your_own_networks\model_training_folder.png)
-
 - The «DL_Track_US_example/model_training” folder contains to subfolders,
 <span style="color: #2eaf66;">**apo_img_example**</span> and 
 <span style="color: #a34ba1;">**apo_mask_example**</span>.
@@ -37,6 +31,9 @@ different folders.
 folder.
 - We advise you to keep a similar folder structure when you train
 your own models outside of this tutorial.
+
+![model training folder](md_graphics\training_your_own_networks\model_training_folder.png)
+
 - Below you can see that the <span style="color: #2eaf66;">**original image**</span> and the 
 <span style="color: #a34ba1;">**corresponding masks**</span>
 have exactly the same name. This is **SUPER MEGA** important. Otherwise,
@@ -59,7 +56,7 @@ the model is trained using the wrong masks for the images.
 
 Firstly, select the “Image Directory”.
 
-- Click th button <span style="color: #a34ba1;">**Images**</span>.
+- Click the button <span style="color: #a34ba1;">**Images**</span>.
 - A selection window will appear and you can select the folder
 containing the original images.
 - Select the “DL_Track_US_example/model_training/apo_img_example”
@@ -86,6 +83,8 @@ calculation results and a graphic displaying plotting the training
 epochs against the loss values will be saved.
 - A selection window will appear and you can select any folder you
 like.
+
+<img src="\md_graphics\training_your_own_networks\output_button.png" width="400">
 
 ## 3. Image Augmentation
 
@@ -141,8 +140,6 @@ output directory.
 - The graphical representation of the training process as Training_Results.tif
 file.
 
-<!--- Bild noch nicht vorhanden weil Fehlermeldung -->
-
 ## 5. Using Your Own Networks
 
 How do you use you previously trained neural network?
@@ -179,3 +176,87 @@ their instructions to fix the error and run the analysis anew. In case an error
 occurs that is not caught by an error messagebox, don’t hesitate to report this
 in the Q&A section in the [DL_Track_US discussion forum](https://github.com/PaulRitsche/DL_Track_US/discussions/categories/q-a). 
 lease take a look [here](https://dltrack.readthedocs.io/en/latest/contribute.html) how do best do this.
+
+## 7. Image Labels
+
+When you train your own networks, you need to label your original
+ultrasonography images.
+
+- We provide an <span style="color: #a34ba1;">**automated script**</span> for image labellig.
+- This script does not automatically label the images, but automates the
+selection processes and image / mask saving.
+- The software you will perform the labelling in is called <span style="color: #299ed9;">**ImageJ / Fiji**</span>. You
+can download it [here](https://imagej.net/software/fiji/downloads).
+- The automated script “Image_Labeling_DL_Track_US.ijm” is located in
+the folder “DL_Track_US/docs/labeling/” in our [Github repository](https://github.com/PaulRitsche/DL_Track_US).
+- The easiest way to run the “Image_Labeling_DL_Track_US.ijm” script
+is by simply drag and drop it in the running Fiji / ImageJ window.
+
+<img src="\md_graphics\training_your_own_networks\fiji.png">
+<img src="\md_graphics\training_your_own_networks\labelling_file.png">
+
+Before you can start the labelling process:
+
+- Create four folders in an easily accessible place.
+- One folder containing the <span style="color: #a34ba1;">**original images**</span> you want to label.
+- Then create three more folders, one named <span style="color: #299ed9;">**“output_images”**</span>, the
+second called <span style="color: #f97e25;">**“fascicle_masks”**</span> and the third called
+<span style="color: #2eaf66;">**“aponeurosis_masks”**</span>.
+- In the “output_images” the original images are saved with an
+adapted name.
+- In the “fascicle_masks” and “aponeurosis_masks” folder the
+respective masks are saved with the same name as the corresponding
+image in “output_images”
+
+<img src="\md_graphics\training_your_own_networks\labelling_folder.png">
+
+When you have created all folders, press the <span style="color: #a34ba1;">**Run button**</span> in the Fiji /
+ImageJ API to start the “Image_labelling_DL_Track_US.ijm” script.
+
+<img src="\md_graphics\training_your_own_networks\run_button.png">
+
+Follow the instructions appearing in the messageboxes.
+
+- To begin with, you need to specify the four directories.
+- The first directory you need to select is the original image folder (called
+input dir).
+- The second folder is the “aponeurosis_masks” folder (called apo
+mask dir).
+- The third is the “fascicle_masks” folder (called fasc mask dir).
+- The last folder you need to specify is the “output_images” folder
+(called image dir).
+
+Subsequent to specifying the directories, you are required to create
+the masks.
+
+- First the aponeurosis mask, then the fascicle mask.
+- Firstly, draw the superficial aponeurosis using the selected polygon tool
+by following the instructions in the messagebox.
+- Draw around the superficial aponeurosis (double click to start drawing,
+click to add a segment, double click do stop drawing).
+- Once you are finished, click the OK button in the messagebox to
+proceed to the selection of the lower aponeurosis.
+- Please be careful to only include aponeurosis tissue in your selection
+and no surrounding tissue.
+- The result should look like this for the upper and lower aponeurosis:
+
+<img src="\md_graphics\training_your_own_networks\upper_aponeurosis.png">
+<img src="\md_graphics\training_your_own_networks\lower_aponeurosis.png">
+
+Once you have selected the lower aponeurosis, click the OK button in the
+messagebox to proceed to the fascicle labelling. Follow the instructions in the messagebox.
+
+- It is of utmost importance that you draw only over the actually visible
+parts of the fascicle segment.
+- Make sure that you only label bright fascicle tissue that is clearly visible.
+- Once you drew one fascicle with segmented line tool (double click to
+start drawing, click to add a segment, double click do stop drawing)
+click the OK button in the messagebox to proceed to the next fascicle
+segment.
+- Draw as many segments as are clearly visible on the image.
+- When you press the OK button in the messagebox without making a
+further selection, you will proceed to the next image in the original image
+folder and start again with the aponeurosis labelling.
+- The result of you labelling should look something like this:
+
+<img src="\md_graphics\training_your_own_networks\fascicles.png">

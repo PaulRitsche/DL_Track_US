@@ -1,30 +1,26 @@
-This section of the tutorial covers the automated video analysis. The videos
-are evaluated without user input and may be scaled. The videos should be
+On this page you get to know the automated video analysis.
+The videos are evaluated without user input and may be scaled. The videos should be
 contained in a single folder, like in the “DL_Track_US_example/videos” folder.
+
 If you haven’t downloaded this folder, please do so now (link:
-DL_Track_US - Examples & Models). Unzip the folder and put it
-somewhere accessible. We will make use of the included example files
-extensively during this tutorial. The automated video analysis is very
-similar to the automated image analysis. In fact, the inputted video is
-analysed frame by frame and each frame is therefore treated like
+[DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip the folder and put it
+somewhere accessible.
+
+The automated video analysis is very similar to the automated image analysis. 
+In fact, the inputted video is analysed frame by frame and each frame is therefore treated like
 an independent image. Moreover, only few analysis parameters are
-different between both analysis types. Once the analysis of the video file is
-finished, a „proc.avi“ file will be created at the directoy of the input video.
-The „proc.avi“ file can be openend with, i.e., VLC-Player on windows and
-Omni-Player on macOS. In the next few pages, we will look at every
-required step to successfully perform automated video analysis
-with DL_Track_US.
+different between both analysis types. 
+
+Once the analysis of the video file is finished, a „proc.avi“ file will be created at the directoy of the input video.
+The „proc.avi“ file can be openend with, i.e., VLC-Player on windows and Omni-Player on macOS.
 
 ## 1. Creating Video and Network Directories
 
 - In order for DL_Track_US to recognize your videos, they should best be
 in a single folder.
+- The “DL_Track_US_example/videos“ folder contains <span style="color: #2eaf66;">**one video**</span>.
 
 ![video folder](md_graphics\ava\video_folder.PNG)
-
-- The “DL_Track_US_example/videos“ folder contains <span style="color: #2eaf66;">**one video**</span>.
-- The pre-trained aponeurosis and fascicle neural networks are located in the “DL_Track_US_example/DL_Track_US_models” folder. 
-- You can make use of these neural networks later as well, when you analyse your own videos outside of this tutorial.
 
 ## 2. Specifying Input Directories in the GUI
 
@@ -63,10 +59,6 @@ models folder.
 ![fasc model button](md_graphics\ava\fasc_model_button.png)
 ![fasc model](md_graphics\ava\fasc_model.png)
 
-In the next section you will specify all relevant analysis parameters,
-including the analysis type. We will also explain what each parameter is used
-for.
-
 ## 3. Specifying Analysis Parameters
 
 As a first step, you will select the right analysis type in the GUI.
@@ -80,7 +72,7 @@ You now need to specify the **Video Type**.
 - The ending of the Video Type must match the ending of your videos,
 otherwise no files are found by DL_Track_US.
 - You can either select a pre-specified ending from the dropdown list or
-type your own ending.
+type in your own ending.
 - Please keep the formatting similar to those Video Type provided in the
 dropdown list.
 - The video in the “DL_Track_US_example/video” folder are of the Video
@@ -95,49 +87,43 @@ muscle architectural features are in centimetre units rather than pixel
 units.
 - There are two Scaling Types in the DL_Track_US package.
 - For this tutorial however, you will select the <span style="color: #a34ba1;">**“None”**</span> option as
-displayed below. We will explain the other Scaling Type on the next.
+displayed below.
 
 ![scaling type](md_graphics\ava\scaling_type.png)
 
-The other Scaling Types is “Manual”.
+The other Scaling Type is <span style="color: #a34ba1;">**“Manual”**</span>. This **Scaling Type** requires input from the user.
 
-- This Scaling Type requires input from the user.
-- When you choose <span style="color: #a34ba1;">**“Manual”**</span> as your Scaling type, you need to
-manually place <span style="color: #01dcd6;">**two points**</span> on the first video frame using the left mouse
-button.
-- This step is similar to the “Manual” scaling option for automated
-and manual image analysis.
+- Whenever you use “**Manual**” as your Scaling Type, make sure
+that the minimal distance between the scaling bars or the known
+distance between the manually specified points is represented in
+the <span style="color: #2eaf66;">**Spacing**</span> parameter.
+- Select the Spacing parameter from the dropdown list as 5, 10, 15 or 20
+millimetre. For this tutorial it is not necessary to select anything, as the
+Spacing parameter is not used during an analysis with Scaling Type “**None**”.
 
-![scaling type 2](md_graphics\ava\scaling_type_2.png)
+<img src="\md_graphics\ava\spacing_3.png" width="600">
 
-- Just click one time with your left mouse button to record the <span style="color: #01dcd6;">**first point**</span>
- (nothing will be displayed on the video frames during actual
-analysis).
-- Place the <span style="color: #01dcd6;">**second point**</span> at a known distance of either 5, 10, 15 or 20
+- When you choose “Manual” as your Scaling type, you need to manually place **two points** on
+the image using the left mouse button.
+- In order to do this, you need to click <span style="color: #a34ba1;">**Calibrate**</span>.
+
+<img src="\md_graphics\ava\calibrate_button.png" width="600">
+
+- Then, just click one time with your left mouse button to record the first point
+(a red dot will apear).
+- Place the second point at a known distance of either 5, 10, 15 or 20
 millimetre.
-- The distance you chose must be represented in the Scaling (see next
-page) parameter in the GUI
-- Whenever you use “Manual” as your Scaling Type, please make sure that
-the minimum distance between the scaling bars or the known distance
-between your manually specified points is represented in the <span style="color: #a34ba1;">**Spacing**</span>
-parameter.
+- Afterwards, click <span style="color: #a34ba1;">**Confirm**</span>.
 
-![spacing](md_graphics\ava\spacing.png)
+<img src="\md_graphics\ava\calibrate.png" width="600">
 
-- You can select the <span style="color: #a34ba1;">**Spacing**</span> parameter only from the dropdown list as 5,
-10, 15 or 20 millimetre. For this tutorial it is not necessary to select
-anything, as the Spacing parameter is not used during an analysis
-with Scaling Type “None”.
-- The minimal <span style="color: #01dcd6;">**distance**</span> is simply the distance in millimeter between the
-two nearest scaling bars in the frame. If you do not know this distance,
-please use “Manual” or “None” Scaling Type. For example in the
-frame from before, the distance between the nearest bars is 5 millimetre.
+After confirming a <span style="color: #299ed9;">**messagebox**</span> should appear with the distance of the spacing parameter in pixels.
 
-![spacing 2](md_graphics\ava\spacing_2.png)
+<img src="\md_graphics\ava\calibration_result.png" width="600">
 
 - In version 0.2.1 we introduced a new feature to DL_Track_US, called the **Filter Fascicle** option.
 - Here, you have two options, <span style="color: #a34ba1;">**“YES”**</span> or <span style="color: #a34ba1;">**“NO”**</span>.
-- Using “YES” all fascicles that overlap will be removed
+- Using **“YES”** all fascicles that overlap will be removed.
 
 ![filter fasciles](md_graphics\ava\filter_fascicles.png)
 
@@ -175,7 +161,7 @@ every video frame is analysed. With a Frame Step of 3, every 3rd
 frame is analysed. With a Frame Step of 10, every 10th frame an so
 on.
 - Although information is lost when you skip frames during the analysis, it
-also reducesthe overall analysis time.
+also reduces the overall analysis time.
 
 ![step size](md_graphics\ava\step_size.png)
 
@@ -212,22 +198,29 @@ detected fascicle segments to be included in the results.
 
 For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
 these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
-a small sample of your images prior to the actual analysis.
+a small sample of your images prior to the actual analysis. If you should somehow distruct the settings.py file there is a backup called _backup_settings.py.
 
 ## 5. Running / Breaking DL_Track_US
 
 - By clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI window, you can start the
 analysis.
-
-![running breaking](md_graphics\ava\running_breaking.png)
-
 - Moreover, you can see that there is a <span style="color: #299ed9;">**Break**</span> button placed in the GUI as
 well.
 - Clicking the <span style="color: #299ed9;">**Break**</span> button allows you to stop the analysis at any point.
 The currently evaluated image will be processed and then the
 analysis is terminated.
 
+![running breaking](md_graphics\ava\running_breaking.png)
 
+After running the analyis the three lines are displayed in the line graph:
+
+- Median Fascicle Length
+- Median Filtered Fascicle Length
+- Filtered Median Fascicle Length
+
+<!-- Beschreibung Paul -->
+
+<img src="\md_graphics\ava\plotted_results.png">
 
 Subsequently to clicking the Run button in the main GUI, navigate again to the
 “DL_Track_US_example/video”.

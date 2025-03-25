@@ -9,12 +9,11 @@ Olivier Seynnes and Taija Finni in [2020](https://arxiv.org/pdf/2009.04790.pdf).
 
 ## Why use DL_Track_US?
 
-
 Using the DL_Track_US python package to analyze muscle architectural parameters in human lower limb muscle ultrasonography images hase two main advantages. The analysis is objectified when using the automated analysis types for images and videos because no user input is required during the analysis process. Secondly, the required analysis time for image or video analysis is drastically reduced compared to manual analysis. Whereas an image or video frame manual analysis takes about one minute, DL_Track_US analyzes images and video frames in less than one second. This allows users to analyze large amounts of images without supervision during the analysis process in relatively short amounts of time.
 
 ## Good to know
 
-Before you start, here are some important tips:
+Before you get started, here are some important tips:
 
 - Test the algorithm first and train your own models if necessary, especially if 
 you plan to analyze images taken from different muscles.
@@ -32,6 +31,5 @@ train a separate model if necessary.
 ensure proper functionality on your computer.
 
 ## Limitations
-
 
 Currently, we have not provided unit testing for the functions and modules included in the DL_Track_US package. Moreover, the muscles included in the training data set are limited to the lower extremities. Although we included images from as many ultrasonography devices as possible, we were only able to include images from four different devices. Therefore, users aiming to analyze images from different muscles or different ultrasonography devices might be required to train their own models because the provided pre-trained models result in bad segmentations. The time required for image analysis compared to manual analysis is tremendously reduced. However, employing the networks for analysis of long videos containing many frames (>2000) may still require a few hours. Lastly, even though  DL_Track_US objectifies the analysis of ultrasonography images when using the automated analysis types, we labeled the images manually. Therefore, we introduced some subjectivity into the datasets.

@@ -3,16 +3,18 @@ The video frames are evaluated manually by drawing the muscle thickness,
 fascicle length and pennation angles directly on the Image. For this type of
 analysis, single videos are a prerequisite. These videos should be
 contained in a single folder, like in the
-“DL_Track_US_example/videos_manual” folder. If you haven’t downloaded this
+“DL_Track_US_example/videos_manual” folder. 
+
+If you haven’t downloaded this
 folder, please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip
-the folder and put it somewhere accessible. We will make use of the
-included example files extensively during this tutorial. The manual video
+the folder and put it somewhere accessible.
+
+The manual video
 analysis type is identical to the manual image analysis type. The only
 difference is that the absolute video path must be specified instead of the
 File Type. The video is first converted and all the contained frames are
 separately stored as single images. Then, each frame image is analysed
-separately. In the next few pages, we will look at every required step to
-successfully perform manual video analysis with DL_Track_US.
+separately.
 
 ## 1. Creating a Video Directory
 
