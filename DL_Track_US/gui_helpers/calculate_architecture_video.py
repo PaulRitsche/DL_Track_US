@@ -343,8 +343,6 @@ def calculateArchitectureVideo(
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
 
-            print(settings)
-
             # Apply Hampel Filter to the results to avoid outliers
             # This is done here to loop over the final dataframe
             if settings["selected_filter"] == "hampel":

@@ -88,6 +88,10 @@ tf.data.experimental.enable_debug_mode()
 # remove interactive plotting
 plt.ioff()
 
+# set matplotlib style
+# plt.rcParams["figure.figsize"] = [7.00, 3.50]
+# plt.rcParams["figure.autolayout"] = True
+
 
 class ImageProcessor:
     def __init__(
@@ -643,11 +647,6 @@ def calculateBatch(
     # Define count for index in .xlsx file
     count = 0
 
-    # Manual scaling here because only applied once on first image
-    if scaling == "Manual":
-        calib_dist = gui.calib_dist
-        scale_statement = f"10 mm corresponds to {calib_dist} pixels"
-
     # Open PDF for image segmentation saving
     with PdfPages(rootpath + "/ResultImages.pdf") as pdf:
 
@@ -695,6 +694,11 @@ def calculateBatch(
                             failed_files.append(fail)
                             warnings.warn("Image fails with StaticScalingError")
                             continue
+
+                    # Manual scaling here because only applied once on first image
+                    if scaling == "Manual":
+                        calib_dist = gui.calib_dist
+                        scale_statement = f"10 mm corresponds to {calib_dist} pixels"
 
                     # No sclaing option
                     else:
@@ -823,6 +827,7 @@ def calculateBatch(
                     thickness_all.append(midthick)
 
                     # Save figures of fascicles and apos to PDF
+                    fig.tight_layout()
                     pdf.savefig(fig)
                     plt.close(fig)
 

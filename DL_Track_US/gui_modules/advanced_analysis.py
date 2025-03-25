@@ -673,9 +673,7 @@ class AdvancedAnalysis:
                     break
 
                 if start_frame <= frame_count <= end_frame:
-                    resized_frame = cv2.resize(
-                        frame, (self.desired_width, self.desired_height)
-                    )
+                    resized_frame = cv2.resize(frame, (width, height))
                     out.write(resized_frame)
 
                 frame_count += 1

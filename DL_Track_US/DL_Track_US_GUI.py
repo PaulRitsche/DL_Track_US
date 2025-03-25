@@ -501,12 +501,24 @@ class DLTrack(ctk.CTk):
         self.results.grid(column=1, row=0, columnspan=3, sticky=(N, S, W, E))
         self.results.bind("<Button-1>", self.mclick)
 
+        self.gear_img = ImageTk.PhotoImage(Image.open(gear_path))
+
+        self.video_canvas = tk.Label(
+            self.results, bg="#2A484E", image=self.gear_img, border=3
+        )
+
+        self.video_canvas.grid(
+            column=0,
+            row=0,
+            columnspan=6,
+            rowspan=8,
+            sticky=(N, S, W, E),
+        )
+
         # Configure rows with a loop
         for row in range(5):
             self.results.rowconfigure(row, weight=1)
         self.results.columnconfigure(0, weight=1)
-
-        self.gear_img = ImageTk.PhotoImage(Image.open(gear_path))
 
         # Add a slider for frame navigation
         self.frame_slider = tk.Scale(
@@ -728,7 +740,6 @@ class DLTrack(ctk.CTk):
         # Load the results into the table after processing
         if hasattr(self, "filename") and self.filename:
 
-            print(self.filename)
             results_file_path = os.path.join(
                 self.input_dir, f"{self.filename}.xlsx"
             )  # taken from calculate_architecture.py
@@ -753,25 +764,10 @@ class DLTrack(ctk.CTk):
         except:
             print("No results file found.")
 
-        # reset slider
-        self.processed_frames = []
-
     def display_frame(self, item):
         """
         Display the current frame or figure on the GUI canvas.
         """
-
-        self.video_canvas = tk.Label(
-            self.results, bg="#2A484E", image=self.gear_img, border=3
-        )
-
-        self.video_canvas.grid(
-            column=0,
-            row=0,
-            columnspan=6,
-            rowspan=8,
-            sticky=(N, S, W, E),
-        )
 
         if item is None:
             print("No frame or figure to display.")
@@ -783,48 +779,47 @@ class DLTrack(ctk.CTk):
 
         # Check if the item is an OpenCV frame (NumPy array)
         if isinstance(item, np.ndarray):
+
+            if hasattr(self, "figure_canvas"):
+                self.figure_canvas.get_tk_widget().destroy()
+
             # Process and display the OpenCV frame
             frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
             frame_image = Image.fromarray(frame_rgb)
             frame_tk = ImageTk.PhotoImage(image=frame_image, size=(600, 800))
 
-            self.video_canvas.imgtk = frame_tk
-            self.video_canvas.configure(image=frame_tk)
-            self.video_canvas.grid(
-                column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
-            )
+            if not hasattr(self, "video_canvas"):
+                self.video_canvas = tk.Label(self.results, bg="#2A484E", border=3)
+                self.video_canvas.grid(
+                    column=0, row=0, columnspan=6, rowspan=8, sticky=(N, S, W, E)
+                )
 
-            # Configure UI resizing behavior
-            self.video_canvas.grid_columnconfigure(0, weight=1)
-            self.video_canvas.grid_rowconfigure(0, weight=1)
+            self.video_canvas.configure(image=frame_tk)
+            self.video_canvas.imgtk = frame_tk
 
             self.processed_frames.append(item)
 
         # Check if the item is a matplotlib figure
         elif isinstance(item, plt.Figure):
-            # Remove the existing figure if it exists
+            # Reuse the existing FigureCanvasTkAgg if it exists
             if hasattr(self, "figure_canvas"):
-                self.figure_canvas.get_tk_widget().destroy()
+                self.figure_canvas.figure = item
+                self.figure_canvas.draw()
+            else:
+                # Create a new FigureCanvasTkAgg
+                self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
+                self.figure_canvas.draw()
 
-            # Create a new FigureCanvasTkAgg
-            self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
-            self.figure_canvas.draw()
-
-            # Create a widget for the figure
-            figure_widget = self.figure_canvas.get_tk_widget()
-            figure_widget.grid(
-                column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
-            )
+                # Create a widget for the figure
+                figure_widget = self.figure_canvas.get_tk_widget()
+                figure_widget.grid(
+                    column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
+                )
 
             self.processed_frames.append(item)
 
         else:
             print("Unsupported item type for display.")
-
-    # Function to resize the figure dynamically
-    def resize_figure(self, event):
-        width, height = event.width, event.height
-        self.figure_canvas.get_tk_widget().config(width=width, height=height)
 
     def update_frame_by_slider(self, value):
         """
@@ -845,7 +840,7 @@ class DLTrack(ctk.CTk):
             self.frame_slider.destroy()
 
         self.frame_slider = tk.Scale(
-            self.video_canvas,
+            self.results,
             from_=0,
             to=num_items - 1,
             orient=tk.HORIZONTAL,
@@ -1171,6 +1166,10 @@ class DLTrack(ctk.CTk):
 
             # load settings
             self.load_settings()
+
+            # empty processed frames and reset slider
+            if hasattr(self, "processed_frames"):
+                self.processed_frames = []
 
             # Get input dir
             selected_input_dir = self.input_dir
