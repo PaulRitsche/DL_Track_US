@@ -2,6 +2,9 @@ customtkinter==5.2.2
 jupyter==1.0.0
 Keras==2.10.0
 matplotlib==3.6.1
+mkdocs-material==9.6.9
+mkdocs==1.6.1
+mkdocstrings==0.29.0
 numpy==1.23.4
 opencv-contrib-python==4.6.0.66
 openpyxl==3.0.10
