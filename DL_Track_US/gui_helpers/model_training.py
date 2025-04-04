@@ -466,6 +466,42 @@ def dice_bce_loss(y_true, y_pred, smooth=1):
     return Dice_BCE
 
 
+def tversky(y_true, y_pred):
+    # Ensure both y_true and y_pred are of the same type (float32)
+    y_true = K.cast(y_true, "float32")
+    y_pred = K.cast(y_pred, "float32")
+
+    axis = (1, 2, 3, 4)
+    P_foreground = y_pred[:, :, :, :, :1]
+    P_background = y_pred[:, :, :, :, 1:]
+    g_foreground = y_true[:, :, :, :, :1]
+    g_background = y_true[:, :, :, :, 1:]
+
+    # y_true_pos = K.flatten(y_true)
+    # y_pred_pos = K.flatten(y_pred)
+    true_pos = P_foreground * g_foreground
+    true_pos = tf.reduce_sum(true_pos, axis=axis)
+
+    false_pos = P_foreground * g_background
+    false_pos = tf.reduce_sum(false_pos, axis=axis)
+
+    false_neg = P_background * g_foreground
+    false_neg = 0.5 * tf.reduce_sum(false_neg, axis=axis)
+
+    alpha = 0.8
+    smooth = 1e-6
+
+    return (true_pos + smooth) / (
+        true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth
+    )
+
+
+def focal_tversky(y_true, y_pred):
+    pt_1 = tversky(y_true, y_pred)
+    gamma = 1.33  # 0.75
+    return K.pow((1 - pt_1), gamma)
+
+
 def loadImages(img_path: str, mask_path: str) -> list:
     """Function to load images and manually labeled masks from a specified
     directory.

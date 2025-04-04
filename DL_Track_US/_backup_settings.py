@@ -130,3 +130,7 @@ aponeurosis_distance_tolerance = 100
 selected_filter = "hampel"
 hampel_window_size = 5
 hampel_num_dev = 3
+
+# ------------------------------------------------------------------------------
+# Segmentation Mode Parameters
+segmentation_mode = "stacked"

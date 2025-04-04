@@ -268,7 +268,7 @@ def overlay_directory_images(image_dir, mask_dir, alpha=0.5, start_index=0):
     # Create an interactive plot
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(20 / 2.45, 15 / 2.54)
-    fig.set_facecolor("#808080")
+    fig.set_facecolor("#2A484E")
     current_idx = start_index
 
     # Function to handle delete button click

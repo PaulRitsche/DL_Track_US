@@ -250,8 +250,8 @@ class DLTrack(ctk.CTk):
             master_path + "/gui_helpers/gui_files/gui_color_theme.json"
         )
 
-        iconpath = master_path + "/gui_helpers/home_im.ico"
-        # root.iconbitmap(iconpath)
+        iconpath = master_path + "/gui_helpers/gui_files/DLTrack_logo.ico"
+        self.iconbitmap(iconpath)
 
         self.main = ctk.CTkFrame(self)
         self.main.grid(column=0, row=0, sticky=(N, S, W, E))
@@ -474,7 +474,7 @@ class DLTrack(ctk.CTk):
         )
 
         # Settings button
-        gear_path = master_path + "/gui_helpers/gui_files/gear.png"
+        gear_path = master_path + "/gui_helpers/gui_files/DLTrack_logo.png"
         self.gear = ctk.CTkImage(
             light_image=Image.open(gear_path),
             size=(30, 30),
@@ -1197,6 +1197,7 @@ class DLTrack(ctk.CTk):
                 "selected_filter": self.settings.selected_filter,
                 "hampel_window_size": self.settings.hampel_window_size,
                 "hampel_num_dev": self.settings.hampel_num_dev,
+                "segmentation_mode": self.settings.segmentation_mode,
             }
 
             # Start thread depending on Analysis type

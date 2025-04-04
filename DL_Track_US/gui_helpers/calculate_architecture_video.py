@@ -59,7 +59,12 @@ from keras.models import load_model
 
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
 from DL_Track_US.gui_helpers.calculate_architecture import exportToExcel
-from DL_Track_US.gui_helpers.model_training import IoU, dice_bce_loss, dice_score
+from DL_Track_US.gui_helpers.model_training import (
+    IoU,
+    dice_bce_loss,
+    dice_score,
+    focal_tversky,
+)
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 from DL_Track_US.gui_helpers.filter_data import applyFilters, hampelFilterList
 
@@ -225,6 +230,9 @@ def calculateArchitectureVideo(
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
         the calculation process after each image.
+    display_frame : bool
+        Boolean variable determining whether the current frame is displayed in main
+        UI.
 
     See Also
     --------
@@ -249,7 +257,8 @@ def calculateArchitectureVideo(
                        flip="Flip", filetype="/**/*.avi, scaline="manual",
                        filter_fasc=False
                        settings=settings,
-                       gui=<__main__.DLTrack object at 0x000002BFA7528190>)
+                       gui=<__main__.DLTrack object at 0x000002BFA7528190>,
+                       display_frame=True)
     """
     list_of_files = glob.glob(rootpath + filetype, recursive=True)
 
@@ -290,26 +299,20 @@ def calculateArchitectureVideo(
 
         start_time = time.time()
 
-        for video in list_of_files:
-            if gui.should_stop:
-                # there was an input to stop the calculations
-                break
+        # Load models outside the loop
+        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
 
-            # load video
-            imported = importVideo(video)
-            cap, vid_len, gui.filename, vid_out = imported
+        if settings["segmentation_mode"] == "stacked":
+            model_fasc = load_model(
+                fasc_modelpath,
+                custom_objects={
+                    "IoU": IoU,
+                    "focal_tversky": focal_tversky,
+                    "dice_score": dice_score,
+                },
+            )
 
-            # calibrate_fn = calibrateDistanceManually
-
-            # find length of the scaling line
-            if scaling == "Manual":
-                calib_dist = gui.calib_dist
-            else:
-                calib_dist = None
-
-            # predict apos and fasicles
-            # Load models outside the loop
-            model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+        else:
             model_fasc = load_model(
                 fasc_modelpath,
                 custom_objects={
@@ -318,6 +321,30 @@ def calculateArchitectureVideo(
                     "dice_score": dice_score,
                 },
             )
+
+        for video in list_of_files:
+            if gui.should_stop:
+                # there was an input to stop the calculations
+                break
+
+            # Check if result already exists to skip reprocessing
+            filename = os.path.splitext(os.path.basename(video))[0]
+            output_excel = os.path.join(rootpath, f"{filename}_results.xlsx")
+            if os.path.exists(output_excel):
+                print(f"Skipping {filename} — already processed.")
+                continue
+
+            # load video
+            imported = importVideo(video)
+            cap, vid_len, gui.filename, vid_out = imported
+
+            # find length of the scaling line
+            if scaling == "Manual":
+                calib_dist = gui.calib_dist
+            else:
+                calib_dist = None
+
+            # predict apos and fasicles
             calculate = doCalculationsVideo
             (
                 fasc_l_all,
@@ -337,6 +364,7 @@ def calculateArchitectureVideo(
                 step=step,
                 filter_fasc=filter_fasc,
                 gui=gui,
+                segmentation_mode=settings["segmentation_mode"],
                 frame_callback=display_frame,
             )
 
@@ -394,11 +422,11 @@ def calculateArchitectureVideo(
         gui.is_running = False
         gui.do_break()
 
-    # except:
-    #     tk.messagebox.showerror("Information", "Enter correct video type.")
-    #     gui.should_stop = False
-    #     gui.is_running = False
-    #     gui.do_break()
+    except:
+        tk.messagebox.showerror("Information", "Enter correct video type.")
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
 
     finally:
         # clean up

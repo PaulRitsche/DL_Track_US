@@ -101,22 +101,29 @@ The user must enter the number of standard deviations for outlier detection.
 Integer, must be non-zero and non-negative.
 The lower the number of standard deviations, the more data points are considered outliers.
 
+- segmentation_mode : str
+The user must enter a string variable containing the segmentation mode. This is used to
+determine the segmentation model used. Choose between "stacked" and
+and "single". When "stacked" is chosen, the frames are loaded in stacks of
+three to allow information flow between frames. When "single" is chosen, each frame
+is segmented individually.
+
 The parameters are set automatically at each run.
 """
 
 # ------------------------------------------------------------------------------
 # Prediction Parameters
-aponeurosis_detection_threshold = 0.15  # 0.2
+aponeurosis_detection_threshold = 0.1  # 0.2
 aponeurosis_length_threshold = 400  # 400
-fascicle_detection_threshold = 0.05  # 0.05
-fascicle_length_threshold = 60  # 40
+fascicle_detection_threshold = 0.6  # 0.05
+fascicle_length_threshold = 100  # 40
 minimal_muscle_width = 60  # 60
 
 
 # ------------------------------------------------------------------------------
 # Muscle Architecture Calculation Parameters
-minimal_pennation_angle = 10
-maximal_pennation_angle = 40
+minimal_pennation_angle = 15
+maximal_pennation_angle = 31
 fascicle_calculation_method = "linear_extrapolation"  # ONLY FOR IMAGES
 fascicle_contour_tolerance = 10  # 10
 aponeurosis_distance_tolerance = 100
@@ -126,3 +133,7 @@ aponeurosis_distance_tolerance = 100
 selected_filter = "hampel"
 hampel_window_size = 3  # 5
 hampel_num_dev = 1  # 3
+
+# ------------------------------------------------------------------------------
+# Segmentation Mode Parameters
+segmentation_mode = "stacked"  # "single"

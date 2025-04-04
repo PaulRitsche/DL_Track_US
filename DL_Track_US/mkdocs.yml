@@ -8,17 +8,17 @@ site_name: DL_Track_US
 repo_name: DL_Track_US
 repo_url: https://github.com/PaulRitsche/DL_Track_US
 
-# copyright: >
-#   Copyright &copy; 2022 - 2024. The openhdemg community -
-#   <a href="#__consent">Change cookie settings</a>
+copyright: >
+  Copyright &copy; 2022 - 2025. DL_Track_US -
+  <a href="#__consent">Change cookie settings</a>
 
 theme:
   name: material
   palette:
     primary: custom
-  #custom_dir: docs/overrides
-  # logo: 
-  favicon: 
+    custom_dir: docs/overrides
+  logo: md_graphics/DLTrack_logo.png
+  favicon: md_graphics/DLTrack_logo.png
   # features:
   palette:
     # Palette toggle for light mode
@@ -34,7 +34,7 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
 extra_css: 
-- docs/overrides/custom.css
+- overrides/custom.css
 
 # Select a plugin to get the docs from docstrings and setup the numpy stile as
 # the default style.
@@ -74,29 +74,10 @@ nav:
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
   - About Us: about_us.md
-#   - About us: about-us.md
-#   - Quick-Start: quick-start.md
-#   - Tutorials:
-#     #- Overview on the tutorials: Tutorials.md
-#     - For new users:
-#       - Setup working environment: tutorials/setup_working_env.md
-#     - Basics of openhdemg:
-#       - Structure of the emgfile: tutorials/emgfile_structure.md
-#       - Import from other software: tutorials/import_from_other_software.md
-#     - Move to newer versions:
-#       - Convert old .json files: tutorials/convert_old_json_files.md
-#   - Graphical Interface:
-#     - Intro: gui_intro.md
-#     - Basics: gui_basics.md
-#     - Advanced: gui_advanced.md
-#     - Settings: gui_settings.md
-#   - Releases:
-#     - Release notes: what's-new.md
-#     - Browse versions: https://www.giacomovalli.com/openhdemg/versions/
-#   - Contacts: contacts.md
-#   - Cite us: cite-us.md
-#   - Contribute: contribute.md
-#   - ISEK-JEK Tutorials: isek_jek_tutorials.md
+  - API Reference:
+    - DL_Track_US: api_index.md
+
+
 #   - API Reference:
 #     - openfiles: api_openfiles.md
 #     - plotemg: api_plotemg.md
