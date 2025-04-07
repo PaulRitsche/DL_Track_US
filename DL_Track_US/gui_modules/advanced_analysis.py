@@ -2,6 +2,8 @@
 
 import os
 import customtkinter as ctk
+from CTkToolTip import *
+
 from tkinter import ttk, W, E, N, S, StringVar, BooleanVar, filedialog, Canvas
 from DL_Track_US import gui_helpers
 import tkinter as tk
@@ -467,11 +469,20 @@ class AdvancedAnalysis:
                     ),
                 ).grid(column=1, row=5, sticky=(W, E))
 
-                ctk.CTkButton(
+                remove_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Remove Parts",
                     command=self.remove_video_parts,
-                ).grid(column=0, row=6, columnspan=2, sticky=(W, E))
+                )
+                remove_button.grid(column=0, row=6, columnspan=2, sticky=(W, E))
+                tooltip_remove = CTkToolTip(
+                    remove_button,
+                    message="Select region to be cropped with mouse drag. \nSelect new region to remove old region. \nPress button to save the video. Remember to specify output path.",
+                    delay=0.5,
+                    bg_color="#A8D8CD",
+                    text_color="#000000",
+                    alpha=0.7,
+                )
 
                 # Add padding
                 for child in self.advanced_window_frame.winfo_children():
@@ -575,42 +586,45 @@ class AdvancedAnalysis:
         """
         Removes the selected parts from the video and saves the modified video.
         """
-        if not self.selection:
-            tk.messagebox.showerror("Error", "No selection made.")
-            return
-
         output_path = self.output_path_var.get()
         if not output_path:
             tk.messagebox.showerror("Error", "No output path specified.")
             return
+        try:
+            x0, y0, x1, y1 = self.selection
 
-        x0, y0, x1, y1 = self.selection
+            cap = cv2.VideoCapture(self.video_path)
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+            width = self.desired_width
+            height = self.desired_height
 
-        cap = cv2.VideoCapture(self.video_path)
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        fps = int(cap.get(cv2.CAP_PROP_FPS))
-        width = self.desired_width
-        height = self.desired_height
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            frame_count = 0
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
 
-        frame_count = 0
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
+                resized_frame = cv2.resize(
+                    frame, (self.desired_width, self.desired_height)
+                )
+                resized_frame[y0:y1, x0:x1] = 0  # Black out the selected area
+                out.write(resized_frame)
 
-            resized_frame = cv2.resize(frame, (self.desired_width, self.desired_height))
-            resized_frame[y0:y1, x0:x1] = 0  # Black out the selected area
-            out.write(resized_frame)
+                frame_count += 1
 
-            frame_count += 1
+            cap.release()
+            out.release()
 
-        cap.release()
-        out.release()
+            out.release()
+            tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
 
-        out.release()
-        tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
+        except AttributeError:
+            tk.messagebox.showerror("Error", "No video loaded.")
+        except TypeError:
+            tk.messagebox.showerror("Error", "No selection made.")
 
     def update_slider_range(self):
         """

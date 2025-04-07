@@ -665,8 +665,8 @@ class ManualAnalysis:
             the segments drawn on the canvas by the user. Only the angle
             smaller than 180 degrees is returned.
 
-        Example
-        -------
+        Examples
+        --------
         >>> getAngle(a=[904.0, 41.0], b=[450,380], c=[670,385])
         25.6
         """
@@ -707,8 +707,8 @@ class ManualAnalysis:
             difference of the y-coordinates of the two points. If multiple
             segments are drawn, multiple thickness values are outputted.
 
-        Example
-        -------
+        Examples
+        --------
         >>> calculateThickness(thick_list=[[450, 41.0], [459, 200]])
         [159]
         """
@@ -753,8 +753,8 @@ class ManualAnalysis:
             each drawn fascicle segment. If multiple fascicles are drawn,
             multiple fascicle length values are outputted.
 
-        Example
-        -------
+        Examples
+        --------
         >>> calculateFascicles(fasc_list=[[392.0, 622.0], [632.0, 544.0],
                                           [632.0, 544.0],
                                           [1090.0, 415.0], [1090.0, 415.0],
@@ -822,8 +822,8 @@ class ManualAnalysis:
         --------
         self.getAngle()
 
-        Example
-        -------
+        Examples
+        --------
         >>> calculateFascicles(pen_list=[[760.0, 579.0], [620.0, 629.0],
                                          [620.0, 629.0],
                                          [780.0, 631.0], [533.0, 571.0],

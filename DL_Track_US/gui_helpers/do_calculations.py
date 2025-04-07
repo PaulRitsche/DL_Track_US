@@ -166,8 +166,8 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         A DataFrame with the fascicles that do not intersect with their neighbors.
 
-    Example
-    -------
+    ExampleS
+    --------
     >>> data = {'x_low': [1, 3, 5], 'y_low': [1, 2, 3], 'x_high': [4, 6, 7], 'y_high': [4, 5, 6]}
     >>> df = pd.DataFrame(data)
     >>> print(filter_fascicles(df))

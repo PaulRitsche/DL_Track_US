@@ -311,7 +311,7 @@ def doCalculationsVideo(
         determine the segmentation model used. Choose between "stacked" and
         and "None". When "stacked" is chosen, the frames are loaded in stacks of
         three.
-    display_frame : bool
+    frame_callback : bool
         Boolean variable determining whether the current frame is displayed in main
         UI.
 

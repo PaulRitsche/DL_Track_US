@@ -108,8 +108,8 @@ def curve_polyfitting(
          Figure including the input ultrasound image, the segmented aponeuroses and
          the found fascicles extrapolated between the two aponeuroses.
 
-    Example
-    -------
+    Examples
+    --------
     >>> curve_polyfitting(contours_sorted=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36], dtype=int32), array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32), ...], ex_x_LA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, -254.9757951590318, ...], ex_y_LA=[203.6459743268554, 203.64809836232556, 203.65022013210233, 203.6523396361857, ...], ex_x_UA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, ...], ex_y_UA=[45.83649948451378, 45.829729965913046, 45.82296488688939, 45.81620424744281, 45.80944804757331, ...], original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True)
     """
 
@@ -435,15 +435,16 @@ def curve_connect(
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
     approach: str
-        Can either be curve_connect_linear or curve_connect_poly. If curve_connect_linear is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used. If curve_connect_poly is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
+        Can either be curve_connect_linear or curve_connect_poly. If curve_connect_linear is used, a linear extrapolation between the lower aponeurosis and the first fascicle contour is used.
+        If curve_connect_poly is used, a seconde order polynomial extrapolation between the lower and aponeurosis and the first fascicle contour is used; if the curvature exceeds a specified range, a linear fit is used instead.
 
     Returns
     -------
     data : dict
         Dictionary containing the fascicle length and pennation angle for each fascicle.
 
-    Example
-    ------
+    Examples
+    --------
     >>> curve_connect(contours_sorted=[array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36], dtype=int32), array([166, 166, 166, 165, 165, 165, 164, 164, 164, 163, 163, 163, 162, 162, 162, 161, 161, 161, 160, 160, 160, 159, 159, 159, 158, 158, 158, 157, 157, 157, 156, 156], dtype=int32), ...], ex_x_LA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, -254.9757951590318, ...], ex_y_LA=[203.6459743268554, 203.64809836232556, 203.65022013210233, 203.6523396361857, ...], ex_x_UA=[-256.0, -255.79515903180635, -255.59031806361273, -255.38547709541908, -255.18063612722545, ...], ex_y_UA=[45.83649948451378, 45.829729965913046, 45.82296488688939, 45.81620424744281, 45.80944804757331, ...], original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), parameters={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, approach="curve_connect_linear")
     """
 
@@ -785,8 +786,6 @@ def orientation_map(
 
     Parameters
     ----------
-    original_image : np.ndarray
-        Ultrasound image to be analysed
     fas_image : np.ndarray
         Mask of fascicles
     apo_image: np.ndarray
@@ -803,8 +802,8 @@ def orientation_map(
     fig : matplot.figure
         Figure showing the estimated slope at different points in the region between the two aponeuroses as a heat map
 
-    Example
-    ------
+    Examples
+    --------
     >>> orientation_map(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), g=poly1d([ 0.   , -0.006, 40.841]), h=poly1d([ -0.   ,  -0.003, 204.533]))
     """
 
@@ -1114,8 +1113,8 @@ def doCalculations_curved(
     -----
     For more detailed documentation, see the respective functions documentation.
 
-    Example
-    ------
+    Examples
+    --------
     >>> doCalculations_curved(original_image=array([[[160, 160, 160],[159, 159, 159],[158, 158, 158],...[158, 158, 158],[147, 147, 147],[  1,   1,   1]],...,[[  0,   0,   0],[  0,   0,   0],[  0,   0,   0],...,[  4,   4,   4],[  3,   3,   3],[  3,   3,   3]]], dtype=uint8), fas_image = array([[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],...,[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0],[0, 0, 0, ..., 0, 0, 0]], dtype=uint8), apo_image = array([[[0, 0, 0],[0, 0, 0],[0, 0, 0],...,[0, 0, 0],[0, 0, 0],[0, 0, 0]]], dtype=uint8), dic={apo_length_thresh=600, fasc_cont_thresh=5, min_width=60, max_pennation=40,min_pennation=5, tolerance=10, tolerance_to_apo=100}, filter_fascicles=True, calib_dist = None, spacing = 10, approach = "curve_polyfitting")
     """
 

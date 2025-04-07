@@ -285,8 +285,8 @@ def getFlipFlagsList(flip_flag_path: str, gui) -> list:
         A list variable containing all flip flags included in the
         specified .txt file
 
-    Example
-    -------
+    Examples
+    --------
     >>> getFlipFlagsList(flip_flag_path="C:/Desktop/Test/FlipFlags/flags.txt")
     [1, 0, 1, 0, 1, 1, 1]
     """
@@ -545,11 +545,11 @@ def calculateBatch(
     fasc_modelpath : str
         String variable containing the absolute path to the fascicle
         neural network.
-    flip_flag_path : str
+    flip_file_path : str
         String variabel containing the absolute path to the flip flag
         .txt file containing the flip flags. Flipping is necessary as the
         models were trained on images of with specific fascicle orientation.
-    filetype : str
+    file_type : str
         String variable containg the respective type of the images.
         This is needed to select only the relevant image files
         in the root directory.
@@ -596,8 +596,8 @@ def calculateBatch(
     >>> calculateBatch(rootpath="C:/Users/admin/Dokuments/images",
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
-                       flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
-                       filetype="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
+                       flip_file_path="C:/Users/admin/Dokuments/flip_flags.txt",
+                       file_type="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
                        settings=settings,
                        gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     """

@@ -76,6 +76,9 @@ nav:
   - About Us: about_us.md
   - API Reference:
     - DL_Track_US: api_index.md
+    - Advanced Functions: api_advanced_analysis.md
+    - Model Training: api_model_training.md
+    - GUI helpers: api_helpers.md
 
 
 #   - API Reference:

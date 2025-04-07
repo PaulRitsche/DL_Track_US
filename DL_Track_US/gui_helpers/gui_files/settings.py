@@ -123,7 +123,7 @@ minimal_muscle_width = 60  # 60
 # ------------------------------------------------------------------------------
 # Muscle Architecture Calculation Parameters
 minimal_pennation_angle = 15
-maximal_pennation_angle = 31
+maximal_pennation_angle = 20
 fascicle_calculation_method = "linear_extrapolation"  # ONLY FOR IMAGES
 fascicle_contour_tolerance = 10  # 10
 aponeurosis_distance_tolerance = 100

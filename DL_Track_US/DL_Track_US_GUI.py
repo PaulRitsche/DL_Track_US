@@ -41,11 +41,14 @@ import os
 import subprocess
 import sys
 import glob
+import webbrowser
+
 import tkinter as tk
 from threading import Lock, Thread
 from tkinter import E, N, S, StringVar, W, filedialog, ttk
 
 import customtkinter as ctk
+from CTkToolTip import *
 
 # Carla imports
 # import gui_helpers
@@ -54,8 +57,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# import settings
-# from gui_modules import AdvancedAnalysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageTk
 import cv2
@@ -64,11 +65,13 @@ import pandas as pd
 
 # original imports
 from DL_Track_US import gui_helpers
-from DL_Track_US import settings
+from DL_Track_US.gui_helpers.gui_files import settings
 from DL_Track_US.gui_modules import AdvancedAnalysis
 
 # disable interactive backend
 plt.ioff()
+
+# TODO fix setting import
 
 
 class DLTrack(ctk.CTk):
@@ -247,10 +250,10 @@ class DLTrack(ctk.CTk):
         self.title("DL_Track_US")
         master_path = os.path.dirname(os.path.abspath(__file__))
         ctk.set_default_color_theme(
-            master_path + "/gui_helpers/gui_files/gui_color_theme.json"
+            self.resource_path("gui_helpers/gui_files/gui_color_theme.json")
         )
 
-        iconpath = master_path + "/gui_helpers/gui_files/DLTrack_logo.ico"
+        iconpath = self.resource_path("gui_helpers/gui_files/DLTrack_logo.ico")
         self.iconbitmap(iconpath)
 
         self.main = ctk.CTkFrame(self)
@@ -267,7 +270,64 @@ class DLTrack(ctk.CTk):
         self.rowconfigure(0, weight=1)
         self.minsize(width=600, height=400)
 
-        # Buttons
+        # Docs reference button
+        info_path = self.resource_path("gui_helpers/gui_files/Info.png")
+        # Get info button path
+        self.info = ctk.CTkImage(
+            light_image=Image.open(info_path),
+            size=(30, 30),
+        )
+        info_button = ctk.CTkButton(
+            self.main,
+            image=self.info,
+            text="Documentation",
+            width=30,
+            height=30,
+            bg_color="#2A484E",
+            fg_color="#2A484E",
+            border_width=0,
+            command=lambda: (
+                (webbrowser.open("https://paulritsche.github.io/DL_Track_US/"))
+            ),
+        )
+        info_button.grid(
+            row=1,
+            column=0,
+            sticky=(
+                W,
+                E,
+            ),
+        )
+
+        # citation button
+        cite_path = self.resource_path("gui_helpers/gui_files/Cite.png")
+        # Get info button path
+        self.info = ctk.CTkImage(
+            light_image=Image.open(cite_path),
+            size=(30, 30),
+        )
+        cite_button = ctk.CTkButton(
+            self.main,
+            image=self.info,
+            text="Cite us",
+            width=30,
+            height=30,
+            bg_color="#2A484E",
+            fg_color="#2A484E",
+            border_width=0,
+            command=lambda: (
+                (webbrowser.open("https://joss.theoj.org/papers/10.21105/joss.05206"))
+            ),
+        )
+        cite_button.grid(
+            row=1,
+            column=1,
+            sticky=(
+                W,
+                E,
+            ),
+        )
+
         # Input directory
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
             column=0, row=3, columnspan=9, sticky=(W, E)
@@ -280,17 +340,42 @@ class DLTrack(ctk.CTk):
         )
         input_button.grid(column=0, row=4, sticky=E)
 
+        tooltip_input = CTkToolTip(
+            input_button,
+            message="Select the directory containing the input images/videos. \nFiles must be of the type specified in the image/video type entry.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
+
         # Apo model path
         apo_model_button = ctk.CTkButton(
             self.main, text="Apo Model", command=self.get_apo_model_path
         )
         apo_model_button.grid(column=1, row=4, sticky=(W, E))
+        tooltip_apo = CTkToolTip(
+            apo_model_button,
+            message="Select the path to an aponeurosis segmentation model. \nThis should be a .h5 file.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
 
         # Fasc model path
         fasc_model_button = ctk.CTkButton(
             self.main, text="Fasc Model", command=self.get_fasc_model_path
         )
         fasc_model_button.grid(column=2, row=4, sticky=W)
+        tooltip_fasc = CTkToolTip(
+            fasc_model_button,
+            message="Select the path to an fascicle segmentation model. \nThis should be a .h5 file.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
 
         # Analysis Type
         # Separators
@@ -316,9 +401,18 @@ class DLTrack(ctk.CTk):
         self.analysis_type.trace_add("write", self.change_analysis_type)
         self.analysis_type.set("...")
 
+        tooltip_fasc = CTkToolTip(
+            fasc_model_button,
+            message="Select an analysis option. \nAvailable analysis parameters will change depending on the analysis type.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
+
         # Image Type Label
         self.image_type_label = ctk.CTkLabel(self.main, text="Image Type")
-        self.image_type_label.grid(column=0, row=13)
+        self.image_type_label.grid(column=0, row=11)
 
         # Filetype
         self.filetype = StringVar()
@@ -337,12 +431,12 @@ class DLTrack(ctk.CTk):
             values=filetype_values,
             state="disabled",
         )
-        self.filetype_entry.grid(column=1, row=13, sticky=(W, E))
+        self.filetype_entry.grid(column=1, row=11, sticky=(W, E))
         self.filetype.set("/*.tiff")
 
         # Scaling label
         self.scaling_label = ctk.CTkLabel(self.main, text="Scaling Type")
-        self.scaling_label.grid(column=0, row=14)
+        self.scaling_label.grid(column=0, row=12)
 
         self.scaling = StringVar()
         scaling_values = [
@@ -357,13 +451,13 @@ class DLTrack(ctk.CTk):
             values=scaling_values,
             state="disabled",
         )
-        self.scaling_entry.grid(column=1, row=14, sticky=(W, E))
+        self.scaling_entry.grid(column=1, row=12, sticky=(W, E))
         self.scaling.set("Bar")
         self.scaling.trace_add("write", self.change_spacing)
 
         # Spacing label
         self.spacing_label = ctk.CTkLabel(self.main, text="Spacing (mm)")
-        self.spacing_label.grid(column=0, row=15)
+        self.spacing_label.grid(column=0, row=13)
 
         # Spacing Combobox
         self.spacing = StringVar()
@@ -375,7 +469,7 @@ class DLTrack(ctk.CTk):
             values=spacing_values,
             state="disabled",
         )
-        self.spacing_entry.grid(column=1, row=15, sticky=(W, E))
+        self.spacing_entry.grid(column=1, row=13, sticky=(W, E))
         self.spacing.set("10")
 
         # Flipfile button
@@ -385,11 +479,20 @@ class DLTrack(ctk.CTk):
             command=self.calibrateDistanceManually,
             state="disabled",
         )
-        self.spacing_button.grid(column=2, row=15, sticky=W)
+        self.spacing_button.grid(column=2, row=13, sticky=W)
+
+        tooltip_calibrate = CTkToolTip(
+            self.spacing_button,
+            message="Determine pixel/cm ratio manually. \nClick on two points (with spacing distance apart) \nin the image to calibrate.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
 
         # Filter Fascicle label
         self.filter_label = ctk.CTkLabel(self.main, text="Filter Fascicles")
-        self.filter_label.grid(column=0, row=16)
+        self.filter_label.grid(column=0, row=14)
 
         # Fascicle filter buttons
         self.filter_fasc = StringVar()
@@ -400,7 +503,7 @@ class DLTrack(ctk.CTk):
             value=True,
             state="disabled",
         )
-        self.filter_yes.grid(column=1, row=16, sticky=(W, E))
+        self.filter_yes.grid(column=1, row=14, sticky=(W, E))
         self.filter_no = ctk.CTkRadioButton(
             self.main,
             text="No",
@@ -408,12 +511,12 @@ class DLTrack(ctk.CTk):
             value=False,
             state="disabled",
         )
-        self.filter_no.grid(column=2, row=16, sticky=(W, E))
+        self.filter_no.grid(column=2, row=14, sticky=(W, E))
         self.filter_fasc.set(False)
 
         # Image Flipping
         self.flip_label = ctk.CTkLabel(self.main, text="Flip File Path")
-        self.flip_label.grid(column=0, row=17)
+        self.flip_label.grid(column=0, row=15)
 
         # Flipfile button
         self.flipfile_button = ctk.CTkButton(
@@ -422,7 +525,7 @@ class DLTrack(ctk.CTk):
             command=self.get_flipfile_path,
             state="disabled",
         )
-        self.flipfile_button.grid(column=2, row=17, sticky=W)
+        self.flipfile_button.grid(column=2, row=15, sticky=W)
 
         # Flip Combobox for Videos
         self.flip = StringVar()
@@ -432,11 +535,11 @@ class DLTrack(ctk.CTk):
             values=["flip", "no_flip"],
             state="disabled",
         )
-        self.flip_entry.grid(column=1, row=17, sticky=(W, E))
+        self.flip_entry.grid(column=1, row=15, sticky=(W, E))
 
         # Stepsize label for Videos
         self.steps_label = ctk.CTkLabel(self.main, text="Step Size")
-        self.steps_label.grid(column=0, row=18)
+        self.steps_label.grid(column=0, row=16)
 
         # Step Combobox
         self.step = StringVar()
@@ -448,16 +551,16 @@ class DLTrack(ctk.CTk):
             variable=self.step,
             state="disabled",
         )
-        self.step_entry.grid(column=1, row=18, sticky=(W, E))
+        self.step_entry.grid(column=1, row=16, sticky=(W, E))
         self.step.set("1")
 
         # Break button
         break_button = ctk.CTkButton(self.main, text="Break", command=self.do_break)
-        break_button.grid(column=0, row=20, sticky=(W, E))
+        break_button.grid(column=0, row=18, sticky=(W, E))
 
         # Run button
         run_button = ctk.CTkButton(self.main, text="Run", command=self.run_code)
-        run_button.grid(column=1, row=20, sticky=(W, E))
+        run_button.grid(column=1, row=18, sticky=(W, E))
 
         advanced_button = ctk.CTkButton(
             self.main,
@@ -467,14 +570,14 @@ class DLTrack(ctk.CTk):
             text_color="#FFFFFF",
             border_color="yellow3",
         )
-        advanced_button.grid(column=2, row=20, sticky=E)
+        advanced_button.grid(column=2, row=18, sticky=E)
 
         ttk.Separator(self.main, orient="horizontal", style="TSeparator").grid(
-            column=0, row=19, columnspan=9, sticky=(W, E)
+            column=0, row=17, columnspan=9, sticky=(W, E)
         )
 
         # Settings button
-        gear_path = master_path + "/gui_helpers/gui_files/DLTrack_logo.png"
+        gear_path = self.resource_path("gui_helpers/gui_files/gear.png")
         self.gear = ctk.CTkImage(
             light_image=Image.open(gear_path),
             size=(30, 30),
@@ -493,6 +596,15 @@ class DLTrack(ctk.CTk):
         )
         settings_b.grid(column=2, row=9, sticky=W, pady=(0, 20))
 
+        tooltip_settings = CTkToolTip(
+            settings_b,
+            message="Open and change analysis settings.\n Save changes.",
+            delay=0.5,
+            bg_color="#A8D8CD",
+            text_color="#000000",
+            alpha=0.7,
+        )
+
         for child in self.main.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
@@ -501,10 +613,11 @@ class DLTrack(ctk.CTk):
         self.results.grid(column=1, row=0, columnspan=3, sticky=(N, S, W, E))
         self.results.bind("<Button-1>", self.mclick)
 
-        self.gear_img = ImageTk.PhotoImage(Image.open(gear_path))
+        logo_path = self.resource_path("gui_helpers/gui_files/DLTrack_logo.png")
+        self.logo_img = ImageTk.PhotoImage(Image.open(logo_path))
 
         self.video_canvas = tk.Label(
-            self.results, bg="#2A484E", image=self.gear_img, border=3
+            self.results, bg="#2A484E", image=self.logo_img, border=3
         )
 
         self.video_canvas.grid(
@@ -554,6 +667,14 @@ class DLTrack(ctk.CTk):
             padx=10,
             sticky=(N, S, W, E),
         )
+
+    def resource_path(self, relative_path):
+        """Get absolute path to resource (for dev and PyInstaller)"""
+        try:
+            base_path = sys._MEIPASS
+        except AttributeError:
+            base_path = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_path, relative_path)
 
     def mclick(self, event):
         """Instance method to detect mouse click coordinates in image."""
@@ -878,7 +999,8 @@ class DLTrack(ctk.CTk):
         variables that users should be able to customize.
         """
         # Determine relative filepath
-        file_path = os.path.dirname(os.path.abspath(__file__)) + "/settings.py"
+        # file_path = self.resource_path("gui_helpers/settings.py")
+        file_path = filedialog.askopenfilename(title="Open settings file.")
 
         # Check for operating system and open in default editor
         if sys.platform.startswith("darwin"):  # macOS

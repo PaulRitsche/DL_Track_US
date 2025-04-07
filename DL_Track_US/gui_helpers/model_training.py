@@ -161,8 +161,8 @@ def conv_block(inputs, num_filters: int):
         function or the upsampling but this will change the model training.
         The number of filters is halfed.
 
-    Example
-    -------
+    Examples
+    --------
     >>> conv_block(inputs=KerasTensor(type_spec=TensorSpec(shape=(None, 256, 256, 128),
                    dtype=tf.float32, name=None),
                    num_filters=128)
@@ -218,8 +218,8 @@ def decoder_block(inputs, skip_features, num_filters):
         The Tensor can be altered by adapting the input paramenters to the
         function or the upsampling but this will change the model training.
 
-    Example
-    -------
+    Examples
+    --------
     >>> decoder_block(inputs=KerasTensor(type_spec=TensorSpec(shape=(None, 64, 64, 512),
                       skip_features=KerasTensor(type_spec=TensorSpec(shape=(None, 64, 64, 512),
                       dtype=tf.float32, name=None)),
@@ -534,8 +534,8 @@ def loadImages(img_path: str, mask_path: str) -> list:
     See labelling instruction for correct masks creation and use,
     if needed, the supplied ImageJ script to label your images.
 
-    Example
-    -------
+    Examples
+    --------
     >>> loadImages(img_path = "C:/Users/admin/Dokuments/images",
                    mask_path = "C:/Users/admin/Dokuments/masks")
     train_imgs([[[[0.22414216 0.19730392 0.22414216] ... [0.22414216 0.19730392 0.22414216]]])
