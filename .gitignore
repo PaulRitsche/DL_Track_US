@@ -1,6 +1,7 @@
 docs/build
 dist/
 DL_Track_US/__pycache__
+DL_Track_US/build/
 DL_Track_US/gui_helpers/__pycache__
 .sync_journal.db
 .sync_journal.db-shm

@@ -133,4 +133,4 @@ hampel_num_dev = 3
 
 # ------------------------------------------------------------------------------
 # Segmentation Mode Parameters
-segmentation_mode = "stacked"
+segmentation_mode = "stacked" 

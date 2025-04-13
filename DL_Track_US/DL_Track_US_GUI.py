@@ -42,6 +42,7 @@ import subprocess
 import sys
 import glob
 import webbrowser
+import json
 
 import tkinter as tk
 from threading import Lock, Thread
@@ -65,7 +66,8 @@ import pandas as pd
 
 # original imports
 from DL_Track_US import gui_helpers
-from DL_Track_US.gui_helpers.gui_files import settings
+
+# from DL_Track_US.gui_helpers.gui_files import settings
 from DL_Track_US.gui_modules import AdvancedAnalysis
 
 # disable interactive backend
@@ -987,8 +989,12 @@ class DLTrack(ctk.CTk):
         to the code and used.
         """
         # If not previously imported, just import it
-        global settings
-        self.settings = importlib.reload(settings)
+        # global settings
+        # self.settings = importlib.reload(settings)
+
+        with open(self.resource_path("gui_helpers/gui_files/settings.json"), "r") as f:
+            settings = json.load(f)
+            self.settings = settings
 
     def open_settings(self):
         """
@@ -999,8 +1005,8 @@ class DLTrack(ctk.CTk):
         variables that users should be able to customize.
         """
         # Determine relative filepath
-        # file_path = self.resource_path("gui_helpers/settings.py")
-        file_path = filedialog.askopenfilename(title="Open settings file.")
+        file_path = self.resource_path("gui_helpers/gui_files/settings.json")
+        # file_path = filedialog.askopenfilename(title="Open settings file.")
 
         # Check for operating system and open in default editor
         if sys.platform.startswith("darwin"):  # macOS
@@ -1305,22 +1311,22 @@ class DLTrack(ctk.CTk):
                 return
 
             # Define dictionary containing settings
-            settings = {
-                "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
-                "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
-                "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
-                "fascicle_length_threshold": self.settings.fascicle_length_threshold,
-                "minimal_muscle_width": self.settings.minimal_muscle_width,
-                "minimal_pennation_angle": self.settings.minimal_pennation_angle,
-                "maximal_pennation_angle": self.settings.maximal_pennation_angle,
-                "fascicle_calculation_method": self.settings.fascicle_calculation_method,
-                "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
-                "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
-                "selected_filter": self.settings.selected_filter,
-                "hampel_window_size": self.settings.hampel_window_size,
-                "hampel_num_dev": self.settings.hampel_num_dev,
-                "segmentation_mode": self.settings.segmentation_mode,
-            }
+            # settings = {
+            #     "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
+            #     "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
+            #     "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
+            #     "fascicle_length_threshold": self.settings.fascicle_length_threshold,
+            #     "minimal_muscle_width": self.settings.minimal_muscle_width,
+            #     "minimal_pennation_angle": self.settings.minimal_pennation_angle,
+            #     "maximal_pennation_angle": self.settings.maximal_pennation_angle,
+            #     "fascicle_calculation_method": self.settings.fascicle_calculation_method,
+            #     "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
+            #     "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
+            #     "selected_filter": self.settings.selected_filter,
+            #     "hampel_window_size": self.settings.hampel_window_size,
+            #     "hampel_num_dev": self.settings.hampel_num_dev,
+            #     "segmentation_mode": self.settings.segmentation_mode,
+            # }
 
             # Start thread depending on Analysis type
             if self.analysis_type.get() == "image":
@@ -1357,7 +1363,7 @@ class DLTrack(ctk.CTk):
                         selected_scaling,
                         int(selected_spacing),
                         int(selected_filter_fasc),
-                        settings,
+                        self.settings,
                         self,
                         self.display_frame,
                     ),
@@ -1409,7 +1415,7 @@ class DLTrack(ctk.CTk):
                         selected_flip,
                         int(selected_step),
                         int(selected_filter_fasc),
-                        settings,
+                        self.settings,
                         self,
                         self.display_frame,
                     ),
