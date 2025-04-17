@@ -71,6 +71,11 @@ nav:
     - Inspecting Masks: inspecting_masks.md
     - Crop Video: crop_video.md
     - Remove Video Parts: remove_video_parts.md
+  - Tests:
+    - Automated Image Analysis Test: automated_image_analysis_test.md
+    - Manual Img/Vid Analysis Test: manual_image_video_analysis_test.md
+    - Automated Video Analysis Test: automated_video_analysis_test.md
+    - Model Training Test: model_training_test.md
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
   - About Us: about_us.md
