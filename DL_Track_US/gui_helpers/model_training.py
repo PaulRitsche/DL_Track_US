@@ -43,11 +43,14 @@ Notes
 Additional information and usage examples can be found at the respective
 functions documentations.
 """
+
 import os
 import tkinter as tk
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 from keras import backend as K
 from keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.layers import Activation, BatchNormalization, Input
@@ -56,13 +59,72 @@ from keras.optimizers import Adam
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.applications import VGG16
-from tensorflow.keras.layers import (
-    Concatenate,
-    Conv2D,
-    Conv2DTranspose,
-)
+from tensorflow.keras.layers import Concatenate, Conv2D, Conv2DTranspose
 from tensorflow.keras.utils import img_to_array, load_img
 from tqdm import tqdm
+from tensorflow.keras.callbacks import Callback
+
+
+class StopTrainingCallback(Callback):
+    """
+    A custom Keras callback to stop training early based on a GUI signal.
+
+    This callback checks the `should_stop` attribute of a GUI instance at the
+    beginning of each epoch and stops training if the flag is set to `True`.
+
+    Parameters
+    ----------
+    gui_instance : object
+        The GUI instance that contains the `should_stop` attribute.
+        It should be set to `True` when the user requests training to stop.
+
+    Attributes
+    ----------
+    gui_instance : object
+        Reference to the GUI instance for checking the stopping condition.
+
+    Methods
+    -------
+    on_epoch_begin(epoch, logs=None)
+        Checks if `should_stop` is set to `True` and stops training if necessary.
+
+    Examples
+    --------
+    >>> from tensorflow.keras.models import Sequential
+    >>> from tensorflow.keras.layers import Dense
+    >>> model = Sequential([Dense(10, activation='relu', input_shape=(20,))])
+    >>> model.compile(optimizer='adam', loss='mse')
+    >>> gui_instance.should_stop = False  # Simulating a GUI stop flag
+    >>> stop_callback = StopTrainingCallback(gui_instance)
+    >>> model.fit(X_train, y_train, epochs=100, callbacks=[stop_callback])
+    """
+
+    def __init__(self, gui_instance):
+        """
+        Initializes the StopTrainingCallback with a reference to the GUI instance.
+
+        Parameters
+        ----------
+        gui_instance : object
+            The GUI instance containing the `should_stop` attribute.
+        """
+        super().__init__()
+        self.gui_instance = gui_instance
+
+    def on_epoch_begin(self, epoch, logs=None):
+        """
+        Called at the beginning of each epoch. Checks if training should stop.
+
+        Parameters
+        ----------
+        epoch : int
+            The index of the current epoch.
+        logs : dict, optional
+            Dictionary containing training metrics (default is None).
+        """
+        if self.gui_instance.should_stop:
+            print(f"Stopping training at epoch {epoch}")
+            self.model.stop_training = True
 
 
 def conv_block(inputs, num_filters: int):
@@ -100,8 +162,8 @@ def conv_block(inputs, num_filters: int):
         function or the upsampling but this will change the model training.
         The number of filters is halfed.
 
-    Example
-    -------
+    Examples
+    --------
     >>> conv_block(inputs=KerasTensor(type_spec=TensorSpec(shape=(None, 256, 256, 128),
                    dtype=tf.float32, name=None),
                    num_filters=128)
@@ -113,7 +175,7 @@ def conv_block(inputs, num_filters: int):
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
     # Define second Conv2D layer witch Batchnor and Activation relu
-    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)
+    x = Conv2D(filters=num_filters, kernel_size=3, padding="same")(inputs)  # TODO (x)
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
 
@@ -157,8 +219,8 @@ def decoder_block(inputs, skip_features, num_filters):
         The Tensor can be altered by adapting the input paramenters to the
         function or the upsampling but this will change the model training.
 
-    Example
-    -------
+    Examples
+    --------
     >>> decoder_block(inputs=KerasTensor(type_spec=TensorSpec(shape=(None, 64, 64, 512),
                       skip_features=KerasTensor(type_spec=TensorSpec(shape=(None, 64, 64, 512),
                       dtype=tf.float32, name=None)),
@@ -385,6 +447,108 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
     return f_loss
 
 
+def dice_loss(y_true, y_pred):
+    smooth = 1
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = y_true_f * y_pred_f
+    score = (2.0 * K.sum(intersection) + smooth) / (
+        K.sum(y_true_f) + K.sum(y_pred_f) + smooth
+    )
+    return 1 - score
+
+
+def dice_bce_loss(y_true, y_pred, smooth=1):
+
+    Dice_BCE = 0.8 * K.binary_crossentropy(y_true, y_pred) + 0.2 * dice_loss(
+        y_true, y_pred
+    )
+
+    return Dice_BCE
+
+
+def tversky(y_true, y_pred):
+    # Ensure both y_true and y_pred are of the same type (float32)
+    y_true = K.cast(y_true, "float32")
+    y_pred = K.cast(y_pred, "float32")
+
+    axis = (1, 2, 3, 4)
+    P_foreground = y_pred[:, :, :, :, :1]
+    P_background = y_pred[:, :, :, :, 1:]
+    g_foreground = y_true[:, :, :, :, :1]
+    g_background = y_true[:, :, :, :, 1:]
+
+    # y_true_pos = K.flatten(y_true)
+    # y_pred_pos = K.flatten(y_pred)
+    true_pos = P_foreground * g_foreground
+    true_pos = tf.reduce_sum(true_pos, axis=axis)
+
+    false_pos = P_foreground * g_background
+    false_pos = tf.reduce_sum(false_pos, axis=axis)
+
+    false_neg = P_background * g_foreground
+    false_neg = 0.5 * tf.reduce_sum(false_neg, axis=axis)
+
+    alpha = 0.8
+    smooth = 1e-6
+
+    return (true_pos + smooth) / (
+        true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth
+    )
+
+
+def focal_tversky(y_true, y_pred):
+    pt_1 = tversky(y_true, y_pred)
+    gamma = 1.33  # 0.75
+    return K.pow((1 - pt_1), gamma)
+
+
+def tversky_loss(y_true, y_pred):
+    # Ensure both y_true and y_pred are of the same type (float32)
+    y_true = K.cast(y_true, "float32")
+    y_pred = K.cast(y_pred, "float32")
+
+    axis = (1, 2, 3, 4)
+    P_foreground = y_pred[:, :, :, :, :1]
+    P_background = y_pred[:, :, :, :, 1:]
+    g_foreground = y_true[:, :, :, :, :1]
+    g_background = y_true[:, :, :, :, 1:]
+
+    # y_true_pos = K.flatten(y_true)
+    # y_pred_pos = K.flatten(y_pred)
+    true_pos = P_foreground * g_foreground
+    true_pos = tf.reduce_sum(true_pos, axis=axis)
+
+    false_pos = P_foreground * g_background
+    false_pos = tf.reduce_sum(false_pos, axis=axis)
+
+    false_neg = P_background * g_foreground
+    false_neg = 0.5 * tf.reduce_sum(false_neg, axis=axis)
+
+    alpha = 0.8
+    smooth = 1e-6
+
+    tversky_index = (true_pos + smooth) / (
+        true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth
+    )
+    return 1 - tversky_index
+
+
+def hybrid_loss(y_true, y_pred, tversky_weight=0.5, dice_weight=0.5, bce_weight=0.0):
+    loss = 0.0
+
+    if tversky_weight > 0:
+        loss += tversky_weight * tversky_loss(y_true, y_pred)
+
+    if dice_weight > 0:
+        loss += dice_weight * dice_loss(y_true, y_pred)
+
+    if bce_weight > 0:
+        bce = tf.keras.losses.binary_crossentropy(y_true, y_pred)
+        bce = tf.reduce_mean(bce)
+        loss += bce_weight * bce
+
+
 def loadImages(img_path: str, mask_path: str) -> list:
     """Function to load images and manually labeled masks from a specified
     directory.
@@ -417,8 +581,8 @@ def loadImages(img_path: str, mask_path: str) -> list:
     See labelling instruction for correct masks creation and use,
     if needed, the supplied ImageJ script to label your images.
 
-    Example
-    -------
+    Examples
+    --------
     >>> loadImages(img_path = "C:/Users/admin/Dokuments/images",
                    mask_path = "C:/Users/admin/Dokuments/masks")
     train_imgs([[[[0.22414216 0.19730392 0.22414216] ... [0.22414216 0.19730392 0.22414216]]])
@@ -434,8 +598,7 @@ def loadImages(img_path: str, mask_path: str) -> list:
 
     # Create empty numpy arrays
     train_imgs = np.zeros((len(ids), im_height, im_width, 3), dtype=np.float32)
-    train_masks = np.zeros((len(ids), im_height, im_width, 1),
-                           dtype=np.float32)
+    train_masks = np.zeros((len(ids), im_height, im_width, 1), dtype=np.float32)
 
     # ´Loop through list of ids found in img_path and mask_path
     for n, id_ in enumerate(tqdm(ids)):
@@ -449,8 +612,7 @@ def loadImages(img_path: str, mask_path: str) -> list:
         # Load and resize mask
         mask = img_to_array(load_img(mask_path + id_, color_mode="grayscale"))
         mask = resize(
-            mask, (im_width, im_height, 1), mode="constant",
-            preserve_range=True
+            mask, (im_width, im_height, 1), mode="constant", preserve_range=True
         )
 
         # Normalize image & mask and insert in array
@@ -534,8 +696,7 @@ def trainModel(
     if batch_size <= 0 or learning_rate <= 0 or epochs <= 0:
         # Make sure some kind of filetype is specified.
         tk.messagebox.showerror(
-            "Information", "Training parameters must be non-zero" +
-            " and non-negative."
+            "Information", "Training parameters must be non-zero" + " and non-negative."
         )
         gui.should_stop = False
         gui.is_running = False
@@ -554,14 +715,12 @@ def trainModel(
 
     try:
         # Load images
-        train_imgs, train_masks = loadImages(img_path=img_path,
-                                             mask_path=mask_path)
+        train_imgs, train_masks = loadImages(img_path=img_path, mask_path=mask_path)
 
         # Inform user in GUI
         cont = tk.messagebox.askokcancel(
             "Information",
-            "Images & Masks were successfully loaded!" +
-            "\nDou you wish to proceed?",
+            "Images & Masks were successfully loaded!" + "\nDou you wish to proceed?",
         )
         if cont is True:
 
@@ -585,13 +744,11 @@ def trainModel(
                 )
             elif loss == "Dice":
                 model_apo.compile(
-                    optimizer=Adam(), loss=dice_score,
-                    metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=dice_score, metrics=["accuracy", IoU]
                 )
             elif loss == "FL":
                 model_apo.compile(
-                    optimizer=Adam(), loss=focal_loss,
-                    metrics=["accuracy", IoU]
+                    optimizer=Adam(), loss=focal_loss, metrics=["accuracy", IoU]
                 )
             else:
                 raise TypeError("Specify correct loss metric.")
@@ -600,6 +757,9 @@ def trainModel(
             model_apo.summary()
 
             # VGG16
+            # Create the stop callback
+            stop_callback = StopTrainingCallback(gui)
+
             # Set some training parameters
             callbacks = [
                 EarlyStopping(patience=8, verbose=1),
@@ -612,15 +772,14 @@ def trainModel(
                     save_best_only=True,
                     save_weights_only=False,
                 ),  # Give the model a name (the .h5 part)
-                CSVLogger(out_path + "Trained_model.csv", separator=",",
-                          append=False),
+                CSVLogger(out_path + "Trained_model.csv", separator=",", append=False),
+                stop_callback,
             ]
 
             # Inform user in GUI
             cont2 = tk.messagebox.askokcancel(
                 "Information",
-                "Model was successfully compiled!" +
-                "\nDo you wish to proceed?",
+                "Model was successfully compiled!" + "\nDo you wish to proceed?",
             )
             # User chose to continue
             if cont2 is True:
@@ -635,20 +794,24 @@ def trainModel(
                 )
 
                 # Inform user in GUI
-                tk.messagebox.showinfo(
-                    "Information",
-                    "Model was successfully trained"
-                    + "\nResults are saved to specified output path.",
-                )
+                if gui.is_running:
+                    tk.messagebox.showinfo(
+                        "Information",
+                        "Model was successfully trained"
+                        + "\nResults are saved to specified output path.",
+                    )
+                else:
+                    tk.messagebox.showinfo(
+                        "Information",
+                        "Model training was stopped by user.",
+                    )
 
                 # Variables stored in results.history: val_loss, val_acc,
                 # val_IoU, loss, acc, IoU, lr
                 matplotlib.use("Agg")
                 fig, ax = plt.subplots(1, 2, figsize=(7, 7))
-                ax[0].plot(results.history["loss"],
-                           label="Training loss")
-                ax[0].plot(results.history["val_loss"],
-                           label="Validation loss")
+                ax[0].plot(results.history["loss"], label="Training loss")
+                ax[0].plot(results.history["val_loss"], label="Validation loss")
                 ax[0].set_title("Learning curve")
                 ax[0].plot(
                     np.argmin(results.history["val_loss"]),

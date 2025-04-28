@@ -1,0 +1,167 @@
+# Define the skeleton of the website/documentation
+site_name: DL_Track_US
+# site_description: >-
+#   All you need to know about openhdemg
+
+# # Repository
+repo_name: DL_Track_US
+repo_url: https://github.com/PaulRitsche/DL_Track_US
+
+copyright: >
+  Copyright &copy; 2022 - 2025. DL_Track_US -
+  <a href="#__consent">Change cookie settings</a>
+
+theme:
+  name: material
+  palette:
+    primary: custom
+    custom_dir: docs/overrides
+  logo: md_graphics/DLTrack_logo.png
+  favicon: md_graphics/DLTrack_logo.png
+  # features:
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+extra_css: 
+- overrides/custom.css
+
+# Select a plugin to get the docs from docstrings and setup the numpy stile as
+# the default style.
+# In order change the docstring_style we need to access:
+# mkdocstrings/python/src/mkdocstrings_handlers/python/handler.py
+plugins:
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          docstring_style: 'numpy'
+          docstring_section_style: 'spacy'
+          show_source: false
+          docstring_options:
+            ignore_init_summary: True
+- search:
+    lang: en
+    separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+- tags:
+- git-revision-date-localized:
+    enable_creation_date: true
+    fallback_to_build_date: true
+    type: date  # (or 'timeago' for "3 days ago")
+    timezone: Europe/Zurich  # or your preferred timezone
+    locale: en
+
+
+# Specify custom pages-menu order.
+# If you don’t like a page’s title, you can optionally add another element in
+# front of the filename whose title you want to change.
+nav:
+  - Welcome: index.md
+  - News: news.md
+  - Installation: installation.md
+  - Tutorials:
+    - Automated Image Analysis: automated_image_analysis.md
+    - Manual Image Analysis: manual_image_analysis.md
+    - Automated Video Analysis: automated_video_analysis.md
+    - Manual Video Analysis: manual_video_analysis.md
+  - Advanced Methods:
+    - Training Your Own Networks: training_your_own_networks.md
+    - Inspecting Masks: inspecting_masks.md
+    - Crop Video: crop_video.md
+    - Remove Video Parts: remove_video_parts.md
+    - Resize Video: resize_video.md
+  - Tests:
+    - Automated Image Analysis Test: automated_image_analysis_test.md
+    - Manual Img/Vid Analysis Test: manual_image_video_analysis_test.md
+    - Automated Video Analysis Test: automated_video_analysis_test.md
+    - Model Training Test: model_training_test.md
+  - Contributing: contributing.md
+  - Code of Conduct: code_of_conduct.md
+  - About Us: about_us.md
+  - API Reference:
+    - DL_Track_US: api_index.md
+    - Advanced Functions: api_advanced_analysis.md
+    - Model Training: api_model_training.md
+    - GUI helpers: api_helpers.md
+    
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      title: On this page
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: GiacomoValliPhD
+      repo: openhdemg
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# # Modify extra tools.
+# extra:
+#   generator: false # Remove 'Made with Material for MkDocs' in the footer.
+#   social:
+#     - icon: fontawesome/brands/github 
+#       link: https://github.com/GiacomoValliPhD/openhdemg
+#     - icon: fontawesome/brands/twitter 
+#       link: https://twitter.com/openhdemg
+#     - icon: fontawesome/brands/youtube 
+#       link: https://www.youtube.com/@openhdemg
+#   consent:
+#     title: Cookie consent
+#     description: >- 
+#       We use only the minimum cookies required by GitHub to ensure our website functions smoothly.
+#       You can disable them anytime, because your privacy is our priority!
+#     actions:
+#       - accept
+#       - manage
+#       # - reject
+
+# # Need to have or pip install:
+# # mkdocs
+# # mkdocs-autorefs
+# # mkdocs-material
+# # mkdocs-material-extensions
+# # mkdocstrings
+# # mkdocstrings-python
+# # mkdocs-git-revision-date-localized-plugin

@@ -44,25 +44,30 @@ See Also
 --------
 calculate_architecture.py
 """
+
 from __future__ import division
 
 import glob
 import os
 import time
 import tkinter as tk
-from keras.models import load_model
-
 
 import cv2
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from pandas import ExcelWriter
+from keras.models import load_model
 
-from DL_Track_US.gui_helpers.calibrate_video import calibrateDistanceManually
+
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
-from DL_Track_US.gui_helpers.calculate_architecture import IoU
+from DL_Track_US.gui_helpers.calculate_architecture import exportToExcel
+from DL_Track_US.gui_helpers.model_training import (
+    IoU,
+    dice_bce_loss,
+    dice_score,
+    focal_tversky,
+    hybrid_loss,
+)
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
+from DL_Track_US.gui_helpers.filter_data import applyFilters, hampelFilterList
 
 plt.style.use("ggplot")
 plt.switch_backend("agg")
@@ -110,8 +115,7 @@ def importVideo(vpath: str):
     filename = os.path.splitext(os.path.basename(vpath))[0]
     outpath = str(vpath[0:-4] + "_proc" + ".avi")
     vid_out = cv2.VideoWriter(
-        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps,
-        (vid_width, vid_height)
+        outpath, cv2.VideoWriter_fourcc(*"MPEG"), vid_fps, (vid_width, vid_height)
     )
 
     return cap, vid_len, filename, vid_out
@@ -160,105 +164,6 @@ def importVideoManual(vpath: str):
     return cap, vid_len, filename
 
 
-def exportToEcxel(
-    path: str,
-    filename: str,
-    fasc_l_all: list,
-    pennation_all: list,
-    x_lows_all: list,
-    x_highs_all: list,
-    thickness_all: list,
-):
-    """Function to save the analysis results to a .xlsx file.
-
-    A list of each variable to be saved must be inputted. The inputs are
-    inculded in a dataframe and saved to an .xlsx file.
-    The .xlsx file is saved to the specified rootpath containing
-    each analyzed frame. Estimates or fascicle length, pennation angle,
-    muscle thickness and intersections of fascicles with aponeuroses
-    are saved.
-
-    Parameters
-    ----------
-    path : str
-        String variable containing the path to where the .xlsx file
-        should be saved.
-     filename : str
-        String value containing the name of the input video, not the
-        entire path. The .xlsx file is named accordingly.
-    fasc_l_all : list
-        List variable containing all fascicle estimates from
-        a single frame that was analyzed.
-    pennation_all : list
-        List variable containing all pennation angle estimates from
-        a single frame that was analyzed.
-    x_lows_all : list
-        List variable containing all x-coordinate estimates from
-        intersection of the fascicle with the the lower aponeurosiis
-        of a single frame that was analyzed.
-    x_highs_all : list
-        List variable containing all x-coordinate estimates from
-        the intersection of the fascicle with the upper aponeurosiis
-        of a single frame that was analyzed.
-    thickness_all : list
-        List variable containing all muscle thickness estimates from
-        a single frame that was analyzed.
-
-    Examples
-    --------
-    >>> exportToExcel(path = "C:/Users/admin/Dokuments/videos",
-                             filename="video1.avi",
-                             fasc_l_all=[7.8,, 6.4, 9.1],
-                             pennation_all=[20, 21.1, 24],
-                             x_lows_all=[749, 51, 39],
-                             x_highs_all=[54, 739, 811],
-                             thickness_all=[1.85])
-    """
-    # Create empty arrays
-    fl = np.zeros([len(fasc_l_all),
-                   len(max(fasc_l_all, key=lambda x: len(x)))])
-    pe = np.zeros([len(pennation_all),
-                   len(max(pennation_all, key=lambda x: len(x)))])
-    xl = np.zeros([len(x_lows_all),
-                   len(max(x_lows_all, key=lambda x: len(x)))])
-    xh = np.zeros([len(x_highs_all),
-                   len(max(x_highs_all, key=lambda x: len(x)))])
-
-    # Add respective values to the respecive array
-    for i, j in enumerate(fasc_l_all):
-        fl[i][0: len(j)] = j  # fascicle length
-    fl[fl == 0] = np.nan
-    for i, j in enumerate(pennation_all):
-        pe[i][0: len(j)] = j  # pennation angle
-    pe[pe == 0] = np.nan
-    for i, j in enumerate(x_lows_all):
-        xl[i][0: len(j)] = j  # lower intersection
-    xl[xl == 0] = np.nan
-    for i, j in enumerate(x_highs_all):
-        xh[i][0: len(j)] = j  # upper intersection
-    xh[xh == 0] = np.nan
-
-    # Create dataframes with values
-    df1 = pd.DataFrame(data=fl)
-    df2 = pd.DataFrame(data=pe)
-    df3 = pd.DataFrame(data=xl)
-    df4 = pd.DataFrame(data=xh)
-    df5 = pd.DataFrame(data=thickness_all)
-
-    # Create a pandas Excel
-    writer = ExcelWriter(path + "/" + filename + ".xlsx")
-
-    # Write each dataframe to a different worksheet.
-    df1.to_excel(writer, sheet_name="Fasc_length")
-    df2.to_excel(writer, sheet_name="Pennation")
-    df3.to_excel(writer, sheet_name="X_low")
-    df4.to_excel(writer, sheet_name="X_high")
-    df5.to_excel(writer, sheet_name="Thickness")
-
-    # Close the Pandas Excel writer and output the Excel file
-    writer.close()
-
-
 def calculateArchitectureVideo(
     rootpath: str,
     apo_modelpath: str,
@@ -266,17 +171,11 @@ def calculateArchitectureVideo(
     filetype: str,
     scaling: str,
     flip: str,
-    spacing: int,
     step: int,
     filter_fasc: bool,
-    apo_treshold: float,
-    apo_length_thresh: int,
-    fasc_threshold: float,
-    fasc_cont_thresh: int,
-    min_width: int,
-    min_pennation: int,
-    max_pennation: int,
+    settings: dict,
     gui,
+    display_frame,
 ):
     """Function to calculate muscle architecture in longitudinal
     ultrasonography videos of human lower limb muscles. The values
@@ -318,64 +217,23 @@ def calculateArchitectureVideo(
         - scaling = "No scaling" (video frames are not scaled.)
         Scaling is necessary to compute measurements in centimeter,
         if "no scaling" is chosen, the results are in pixel units.
-    spacing : int
-        Integer variable containing the distance (in milimeter) between
-        two scaling bars in the image.
-        This is needed to compute the pixel/cm ratio and therefore report
-        the results in centimeter rather than pixel units.
     step : int
         Integer variable containing the step for the range of video frames.
         If step != 1, frames are skipped according to the size of step.
         This might decrease processing time but also accuracy.
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
-        This may reduce number of totally detected fascicles. 
-    apo_threshold : float
-        Float variable containing the threshold applied to predicted
-        aponeurosis pixels by our neural networks. By varying this
-        threshold, different structures will be classified as aponeurosis
-        as the threshold for classifying a pixel as aponeurosis is changed.
-        Must be non-zero and non-negative.
-    apo_length_tresh : int
-        Integer variable containing the threshold applied to predicted
-        aponeurosis length in pixels. By varying this
-        threshold, different structures will be classified as
-        aponeurosis depending on their length. Must be non-zero and
-        non-negative.
-    fasc_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for
-        classifying a pixel as fascicle is changed. Must be non-zero and
-        non-negative.
-    fasc_cont_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer
-        fascicle segments will be considered, by lowering shorter segments.
-        Must be non-zero and non-negative.
-    min_width : int
-        Integer variable containing the minimal distance between aponeuroses
-        to be detected. The aponeuroses must be at least this distance apart
-        to be detected. The distance is specified in pixels. Must be non-zero
-        and non-negative.
-    min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles with
-        lower pennation angles will be excluded. The pennation angle is
-        calculated as the angle of insertion between extrapolated fascicle
-        and detected aponeurosis. Must be non-negative.
-    max_pennation : int
-        Integer variable containing the maximal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles with
-        higher pennation angles will be excluded. The pennation angle is
-        calculated as the angle of insertion between extrapolated fascicle and
-        detected aponeurosis. Must be non-negative and larger than
-        min_pennation.
+        This may reduce number of totally detected fascicles.
+    settings : dict
+        Dictionary containing the settings of the GUI. These specify the
+        prediction parameters for the neural networks.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
         the calculation process after each image.
+    display_frame : bool
+        Boolean variable determining whether the current frame is displayed in main
+        UI.
 
     See Also
     --------
@@ -398,70 +256,97 @@ def calculateArchitectureVideo(
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        flip="Flip", filetype="/**/*.avi, scaline="manual",
-                       spacing=10, filter_fasc=False
-                       apo_threshold=0.1, fasc_threshold=0.05,
-                       fasc_cont_thres=40,
-                       curvature=3, min_pennation=10, max_pennation=35,
-                       gui=<__main__.DLTrack object at 0x000002BFA7528190>)
+                       filter_fasc=False
+                       settings=settings,
+                       gui=<__main__.DLTrack object at 0x000002BFA7528190>,
+                       display_frame=True)
     """
     list_of_files = glob.glob(rootpath + filetype, recursive=True)
 
     if len(list_of_files) == 0:
         tk.messagebox.showerror(
             "Information",
-            "No video files found." +
-            "\nCheck specified video type or input directory",
+            "No video files found." + "\nCheck specified video type or input directory",
         )
         gui.do_break()
         gui.should_stop = False
         gui.is_running = False
 
-    dic = {
-        "apo_treshold": apo_treshold,
-        "fasc_threshold": fasc_threshold,
-        "fasc_cont_thresh": fasc_cont_thresh,
-        "min_width": min_width,
-        "min_pennation": min_pennation,
-        "max_pennation": max_pennation,
-        "apo_length_thresh": apo_length_thresh
-    }
-
     # Check analysis parameters for positive values
-    for _, value in dic.items():
-        if float(value) <= 0:
-            tk.messagebox.showerror(
-                "Information", "Analysis parameters must be non-zero and non-negative"
-            )
-            gui.should_stop = False
-            gui.is_running = False
-            gui.do_break()
-            return
+    for _, value in settings.items():
+        # Ensure value is not empty or zero
+        if isinstance(value, str):
+            if not value.strip():  # Check if string is empty or whitespace
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+        else:
+            if float(value) <= 0:  # Check if numeric value is <= 0
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
     try:
 
         start_time = time.time()
+
+        # Load models outside the loop
+        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+
+        if settings["segmentation_mode"] == "stacked":
+            model_fasc = load_model(
+                fasc_modelpath,
+                custom_objects={
+                    "IoU": IoU,
+                    "focal_tversky": focal_tversky,
+                    "dice_score": dice_score,
+                    "hybrid_loss": hybrid_loss,
+                },
+            )
+
+        else:
+            model_fasc = load_model(
+                fasc_modelpath,
+                custom_objects={
+                    "IoU": IoU,
+                    "dice_bce_loss": dice_bce_loss,
+                    "dice_score": dice_score,
+                },
+            )
 
         for video in list_of_files:
             if gui.should_stop:
                 # there was an input to stop the calculations
                 break
 
+            # Check if result already exists to skip reprocessing
+            filename = os.path.splitext(os.path.basename(video))[0]
+            output_excel = os.path.join(rootpath, f"{filename}_results.xlsx")
+            if os.path.exists(output_excel):
+                print(f"Skipping {filename} — already processed.")
+                continue
+
             # load video
             imported = importVideo(video)
-            cap, vid_len, filename, vid_out = imported
-
-            calibrate_fn = calibrateDistanceManually
+            cap, vid_len, gui.filename, vid_out = imported
 
             # find length of the scaling line
             if scaling == "Manual":
-                calib_dist, _ = calibrate_fn(cap, spacing)
+                calib_dist = gui.calib_dist
             else:
                 calib_dist = None
 
             # predict apos and fasicles
-            # Load models outside the loop
-            model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-            model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
             calculate = doCalculationsVideo
             (
                 fasc_l_all,
@@ -470,46 +355,80 @@ def calculateArchitectureVideo(
                 x_highs_all,
                 thickness_all,
             ) = calculate(
-                vid_len,
-                cap,
-                vid_out,
-                flip,
-                model_apo,
-                model_fasc,
-                calib_dist,
-                dic,
-                step,
-                filter_fasc,
-                gui,
+                vid_len=vid_len,
+                cap=cap,
+                vid_out=vid_out,
+                flip=flip,
+                apo_model=model_apo,
+                fasc_model=model_fasc,
+                calib_dist=calib_dist,
+                dic=settings,
+                step=step,
+                filter_fasc=filter_fasc,
+                gui=gui,
+                segmentation_mode=settings["segmentation_mode"],
+                frame_callback=display_frame,
             )
 
             duration = time.time() - start_time
             print(f"Video duration: {duration}")
+
+            # Apply Hampel Filter to the results to avoid outliers
+            # This is done here to loop over the final dataframe
+            if settings["selected_filter"] == "hampel":
+                fasc_l_all_filtered = [
+                    hampelFilterList(
+                        fasc_l,
+                        win_size=settings["hampel_window_size"],
+                        num_dev=settings["hampel_num_dev"],
+                    )["filtered"]
+                    for fasc_l in fasc_l_all
+                ]
+                pennation_all_filtered = [
+                    hampelFilterList(
+                        pennation,
+                        win_size=settings["hampel_window_size"],
+                        num_dev=settings["hampel_num_dev"],
+                    )["filtered"]
+                    for pennation in pennation_all
+                ]
+
+            else:
+                fasc_l_all_filtered = [
+                    applyFilters(fasc_l, filter_type=settings["selected_filter"])
+                    for fasc_l in fasc_l_all
+                ]
+                pennation_all_filtered = [
+                    applyFilters(pennation, filter_type=settings["selected_filter"])
+                    for pennation in pennation_all
+                ]
+
             # Save Results
-            exportToEcxel(
+            exportToExcel(
                 rootpath,
-                filename,
                 fasc_l_all,
                 pennation_all,
                 x_lows_all,
                 x_highs_all,
                 thickness_all,
+                gui.filename,
+                fasc_l_all_filtered,
+                pennation_all_filtered,
             )
 
-    except ValueError:
-        pass
-
-    except IndexError:
+    except IndexError as e:
         tk.messagebox.showerror(
             "Information",
-            "No Aponeurosis detected. Change aponeurosis threshold."
+            f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
         )
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
 
-    # except:
-    #     tk.messagebox.showerror("Information", "Enter correct video type.")
+    # except Exception as e:
+    #     error_message = f"An error occurred:\n{str(e)}"
+    #     print(error_message)
+    #     tk.messagebox.showerror("Error", error_message)
     #     gui.should_stop = False
     #     gui.is_running = False
     #     gui.do_break()
@@ -627,8 +546,7 @@ def calculateArchitectureVideoManual(videopath: str, gui):
         man_analysis.calculateBatchManual()
 
     except IndexError:
-        tk.messagebox.showerror("Information",
-                                "Make sure to select a video file.")
+        tk.messagebox.showerror("Information", "Make sure to select a video file.")
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()

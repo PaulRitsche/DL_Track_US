@@ -55,12 +55,10 @@ def image_augmentation(input_img_folder, input_mask_folder, gui):
       filenames prefixed with numbers representing the index of the original images.
     - The function will display information to the user in the specified tkinter GUI.
 
-    Example
-    -------
+    Examples
+    --------
     >>> root = tk.Tk()
-    >>> image_augmentation("data/images/", "data/masks/", root)
-    # The function will apply data augmentation to images and masks in the specified directories
-    # and display information in the tkinter GUI when the operation is completed.
+    >>> image_augmentation("data/images/", "data/masks/", root
     """
     # Adapt folder paths
     # This is necessary to concattenate id to path
@@ -122,13 +120,6 @@ def image_augmentation(input_img_folder, input_mask_folder, gui):
             for i in range(num_aug_images):
                 next(aug_image)[0].astype(np.uint8)
                 next(aug_mask)[0].astype(np.uint8)
-
-        # Inform user in GUI
-        tk.messagebox.showinfo(
-            "Information",
-            "Data augmentation successful."
-            + "\nResults are saved to specified input paths.",
-        )
 
     # Error handling
     except ValueError:
