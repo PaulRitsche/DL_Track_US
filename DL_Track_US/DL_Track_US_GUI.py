@@ -1394,8 +1394,14 @@ class DLTrack(ctk.CTk):
                     self.do_break()
                     return
 
-                if self.scaling.get() == "Manual":
-                    self.calibrateDistanceManually()
+                if self.scaling.get() == "Manual" and not hasattr(self, "calib_canvas"):
+                    tk.messagebox.showinfo(
+                        "Manual Calibration",
+                        "You selected manual calibration. Please do this using the calibration button before the analysis.",
+                    )
+                    self.should_stop = False
+                    self.is_running = False
+                    return
 
                 selected_flip = self.flip.get()
                 selected_apo_model_path = self.apo_model

@@ -80,7 +80,7 @@ The value is specifing the permissible range in pixels in the positive and negat
 contour can be located to still be considered a part of the extrapolated fascicle.
 This is not used when the linear_extrapolation method is used.
 
-- aponneurosis_distannce_tolerance:
+- aponneurosis_distance_tolerance:
 The user must enter a positive value to specify the tolerance for the distance of fascicle fragments to be away from the aponeurosis.
 The lower this value, the nearer a fascicle fragment must be to the aponeurosis. This increases certainty of pennation angle calculation and extrapolation.
 This is not used when the linear extrapolation method is used.
@@ -104,6 +104,11 @@ The larger the window size, the more data points are considered in the filter.
 The user must enter the number of standard deviations for outlier detection.
 Integer, must be non-zero and non-negative.
 The lower the number of standard deviations, the more data points are considered outliers.
+
+- segmentation_mode:
+The user must select the segmentation mode. Options are: "none" or "stacked".
+"none" means that images are segmented seperately. "stacked" means that three images are stacked and the
+information from the previous and next image is used to segment the image. This is only used for videos.
 
 The parameters are set automatically at each run.
 """
@@ -133,4 +138,4 @@ hampel_num_dev = 3
 
 # ------------------------------------------------------------------------------
 # Segmentation Mode Parameters
-segmentation_mode = "stacked" 
+segmentation_mode = "stacked"  # ONLY FOR VIDEOS

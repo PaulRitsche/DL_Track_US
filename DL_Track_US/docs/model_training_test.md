@@ -1,43 +1,62 @@
-This page explains how to test the model training using the GUI.
+# 🧪 Testing Model Training
 
-- It is advantageous for model training testing to have a working GPU setup,
-otherwise model training takes much longer.
-- How to setup your GUI for DL_Track_US is described in the installation
-guidelines of our Github repository.
-- The test training images and masks you must use for this test are located at
-“DL_Track_US_example/tests/model_training” folder.
+This page explains how to **test the model training** using the DL_Track_US GUI.
 
-For this test make sure that the files used and parameters specified are exactly
-as demonstrated below.
+---
 
-- Click on Advanced Methods and select “Train Model” in the dropdown-menu.
-- Since you will only make use of the “Model Training window” you can
-disregard the main GUI.
-- Make sure to use the right training <span style="color: #2eaf66;">**images**</span>
-(“DL_Track_US_example/tests/model_training/apo_img_example”)
-- Make sure to use the right training <span style="color: #a34ba1;">**masks**</span>
-(“DL_Track_US_example/tests/model_training/apo_mask_example”).
-- Keep the pre-specified <span style="color: #299ed9;">**parameter settings**</span>
-as they are shown below.
-- Especially make sure that the number of <span style="color: #f97e25;">**Epochs is 3**</span> (otherwise training for
-test purposes takes to long).
-- Click the Start Training button to start the training process.
+## 1. Before You Start
+
+- A **working GPU** is highly recommended; otherwise, model training will take significantly longer.
+- Instructions to setup the GUI and environment are found in the [Installation Guidelines](https://github.com/PaulRitsche/DL_Track_US).
+
+- The **test training images and masks** you need are located in:
+  - `DL_Track_US_example/tests/model_training/`
+
+---
+
+## 2. Important Setup Instructions
+
+For this test, ensure the following:
+
+- Click on <span style="color: #a34ba1;">**Advanced Methods**</span> and select **"Train Model"** in the dropdown menu.
+- Ignore the main GUI window for now — you will only use the **Model Training window**.
+- Use the correct training **<span style="color: #2eaf66;">images</span>**:
+  - `DL_Track_US_example/tests/model_training/apo_img_example`
+- Use the correct training **<span style="color: #a34ba1;">masks</span>**:
+  - `DL_Track_US_example/tests/model_training/apo_mask_example`
+- Keep the **<span style="color: #299ed9;">parameter settings</span>** exactly as shown.
+- **Critical:** Set the number of <span style="color: #f97e25;">**Epochs to 3**</span> (for quick test training).
 
 <img src="\md_graphics\model_training_test\test_setup.png" width="600">
 
-Several messageboxes will appear during the training process. Always click
-“OK”. The messageboxes simply tell you that the images and masks have
-successfully been loaded, the model was successfully compiled and that the
-analysis was successfully completed.
+---
 
-When the analysis is complete, three new files were created in the specified
-output folder.
+## 3. Starting the Training
 
-- The **Test_apo.xlsx** file
-- The **Test_apo.h5** file
-- The **Training_results.tif** file
+- After setting all parameters, click <span style="color: #a34ba1;">**Start Training**</span>.
 
-Since each training process results in slightly different models, we cannot
-directly compare your results to ours. However, if the three files were
-created in the “DL_Track_US_example/tests/model_training” folder, the
-DL_Track_US package works properly for model training!
+- During the process, you will encounter **several messageboxes**:
+  - Confirm each by clicking **OK**.
+  - These confirm that:
+    - Images and masks have been loaded.
+    - Model compilation was successful.
+    - Training completed successfully.
+
+---
+
+## 4. After Training
+
+Once training finishes, you should find **three new files** in your selected **output folder**:
+
+- 📄 **Test_apo.xlsx** — Training summary file
+- 📄 **Test_apo.h5** — The trained model
+- 📄 **Training_results.tif** — A plot of the loss curve over epochs
+
+---
+
+> 📝 **Note:**  
+> Because neural network training includes uncertainty, your results (e.g., final loss values) may slightly differ from ours.  
+>  
+> If the three files are generated correctly, it means your DL_Track_US installation **works properly for model training**!
+
+---

@@ -1,6 +1,5 @@
 # Define the skeleton of the website/documentation
 site_name: DL_Track_US
-# site_author: Giacomo Valli & Paul Ritsche
 # site_description: >-
 #   All you need to know about openhdemg
 
@@ -54,12 +53,20 @@ plugins:
     lang: en
     separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
 - tags:
+- git-revision-date-localized:
+    enable_creation_date: true
+    fallback_to_build_date: true
+    type: date  # (or 'timeago' for "3 days ago")
+    timezone: Europe/Zurich  # or your preferred timezone
+    locale: en
+
 
 # Specify custom pages-menu order.
 # If you don’t like a page’s title, you can optionally add another element in
 # front of the filename whose title you want to change.
 nav:
   - Welcome: index.md
+  - News: news.md
   - Installation: installation.md
   - Tutorials:
     - Automated Image Analysis: automated_image_analysis.md
@@ -71,6 +78,7 @@ nav:
     - Inspecting Masks: inspecting_masks.md
     - Crop Video: crop_video.md
     - Remove Video Parts: remove_video_parts.md
+    - Resize Video: resize_video.md
   - Tests:
     - Automated Image Analysis Test: automated_image_analysis_test.md
     - Manual Img/Vid Analysis Test: manual_image_video_analysis_test.md
@@ -84,64 +92,50 @@ nav:
     - Advanced Functions: api_advanced_analysis.md
     - Model Training: api_model_training.md
     - GUI helpers: api_helpers.md
-
-
-#   - API Reference:
-#     - openfiles: api_openfiles.md
-#     - plotemg: api_plotemg.md
-#     - analysis: api_analysis.md
-#     - pic: api_pic.md
-#     - tools: api_tools.md
-#     - mathtools: api_mathtools.md
-#     - muap: api_muap.md
-#     - electrodes: api_electrodes.md
-#     - info: api_info.md
-#     - compatibility: api_compatibility.md
-
     
-# # Extensions
-# markdown_extensions:
-#   - abbr
-#   - admonition
-#   - attr_list
-#   - def_list
-#   - footnotes
-#   - md_in_html
-#   - toc:
-#       permalink: true
-#       title: On this page
-#       toc_depth: 3
-#   - pymdownx.arithmatex:
-#       generic: true
-#   - pymdownx.betterem:
-#       smart_enable: all
-#   - pymdownx.caret
-#   - pymdownx.details
-#   - pymdownx.emoji:
-#       emoji_index: !!python/name:material.extensions.emoji.twemoji
-#       emoji_generator: !!python/name:material.extensions.emoji.to_svg
-#   - pymdownx.highlight:
-#       anchor_linenums: true
-#       line_spans: __span
-#       pygments_lang_class: true
-#   - pymdownx.inlinehilite
-#   - pymdownx.keys
-#   - pymdownx.magiclink:
-#       repo_url_shorthand: true
-#       user: GiacomoValliPhD
-#       repo: openhdemg
-#   - pymdownx.mark
-#   - pymdownx.smartsymbols
-#   - pymdownx.superfences:
-#       custom_fences:
-#         - name: mermaid
-#           class: mermaid
-#           format: !!python/name:pymdownx.superfences.fence_code_format
-#   - pymdownx.tabbed:
-#       alternate_style: true
-#   - pymdownx.tasklist:
-#       custom_checkbox: true
-#   - pymdownx.tilde
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      title: On this page
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: GiacomoValliPhD
+      repo: openhdemg
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
 
 # # Modify extra tools.
 # extra:
@@ -170,3 +164,4 @@ nav:
 # # mkdocs-material-extensions
 # # mkdocstrings
 # # mkdocstrings-python
+# # mkdocs-git-revision-date-localized-plugin

@@ -64,6 +64,7 @@ from DL_Track_US.gui_helpers.model_training import (
     dice_bce_loss,
     dice_score,
     focal_tversky,
+    hybrid_loss,
 )
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 from DL_Track_US.gui_helpers.filter_data import applyFilters, hampelFilterList
@@ -309,6 +310,7 @@ def calculateArchitectureVideo(
                     "IoU": IoU,
                     "focal_tversky": focal_tversky,
                     "dice_score": dice_score,
+                    "hybrid_loss": hybrid_loss,
                 },
             )
 
@@ -414,19 +416,22 @@ def calculateArchitectureVideo(
                 pennation_all_filtered,
             )
 
-    except IndexError:
+    except IndexError as e:
         tk.messagebox.showerror(
-            "Information", "No Aponeurosis detected. Change aponeurosis threshold."
+            "Information",
+            f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
         )
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
 
-    except:
-        tk.messagebox.showerror("Information", "Enter correct video type.")
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
+    # except Exception as e:
+    #     error_message = f"An error occurred:\n{str(e)}"
+    #     print(error_message)
+    #     tk.messagebox.showerror("Error", error_message)
+    #     gui.should_stop = False
+    #     gui.is_running = False
+    #     gui.do_break()
 
     finally:
         # clean up

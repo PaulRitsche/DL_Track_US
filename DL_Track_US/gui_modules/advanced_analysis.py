@@ -62,6 +62,7 @@ class AdvancedAnalysis:
             "Inspect Masks",
             "Crop Video",
             "Remove Video Parts",
+            "Resize Video",
         ]
         advanced_entry = ctk.CTkComboBox(
             self.advanced_window,
@@ -488,6 +489,47 @@ class AdvancedAnalysis:
                 for child in self.advanced_window_frame.winfo_children():
                     child.grid_configure(padx=5, pady=5)
 
+            elif self.advanced_option.get() == "Resize Video":
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Load Video",
+                    command=self.load_video,
+                ).grid(column=0, row=0, columnspan=2, sticky=(W, E))
+
+                ctk.CTkLabel(self.advanced_window_frame, text="Output Path").grid(
+                    column=0, row=5, sticky=W
+                )
+                self.output_path_var = StringVar()
+                ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Browse",
+                    command=lambda: self.output_path_var.set(
+                        filedialog.asksaveasfilename(
+                            defaultextension=".mp4",
+                            filetypes=[("MP4 files", "*.mp4")],
+                        )
+                    ),
+                ).grid(column=1, row=5, sticky=(W, E))
+
+                resize_button = ctk.CTkButton(
+                    self.advanced_window_frame,
+                    text="Resize Frames",
+                    command=self.resize_video,
+                )
+                resize_button.grid(column=0, row=6, columnspan=2, sticky=(W, E))
+                tooltip_remove = CTkToolTip(
+                    resize_button,
+                    message="Select region to be cropped with mouse drag. \nSelect new region to remove old region. \nPress button to save the video. Remember to specify output path.",
+                    delay=0.5,
+                    bg_color="#A8D8CD",
+                    text_color="#000000",
+                    alpha=0.7,
+                )
+
+                # Add padding
+                for child in self.advanced_window_frame.winfo_children():
+                    child.grid_configure(padx=5, pady=5)
+
         except FileNotFoundError:
             tk.messagebox.showerror("Information", "Enter the correct folder path!")
 
@@ -620,6 +662,61 @@ class AdvancedAnalysis:
 
             out.release()
             tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
+
+        except AttributeError:
+            tk.messagebox.showerror("Error", "No video loaded.")
+        except TypeError:
+            tk.messagebox.showerror("Error", "No selection made.")
+
+    def resize_video(self):
+        """
+        Crops the selected area from the video and saves the cropped video.
+        """
+        output_path = self.output_path_var.get()
+        if not output_path:
+            tk.messagebox.showerror("Error", "No output path specified.")
+            return
+        try:
+            x0, y0, x1, y1 = self.selection
+
+            # x0, x1 = sorted([x0, x1])
+            # y0, y1 = sorted([y0, y1])
+
+            cap = cv2.VideoCapture(self.video_path)
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+            # Calculate width and height of the cropped region
+            cropped_width = x1 - x0
+            cropped_height = y1 - y0
+
+            out = cv2.VideoWriter(
+                output_path, fourcc, fps, (cropped_width, cropped_height)
+            )
+
+            frame_count = 0
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                resized_frame = cv2.resize(
+                    frame, (self.desired_width, self.desired_height)
+                )
+
+                # Crop the frame to the selected area
+                cropped_frame = resized_frame[y0:y1, x0:x1]
+
+                out.write(cropped_frame)
+                print(
+                    f"Processing frame {frame_count + 1}/{len(self.processed_frames)}"
+                )
+                frame_count += 1
+
+            cap.release()
+            out.release()
+
+            tk.messagebox.showinfo("Success", f"Cropped video saved to {output_path}")
 
         except AttributeError:
             tk.messagebox.showerror("Error", "No video loaded.")

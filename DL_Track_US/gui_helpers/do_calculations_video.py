@@ -620,9 +620,9 @@ def doCalculationsVideo(
                         cv2.drawContours(maskF, [contour], 0, 255, -1)
 
                 # Only include fascicles within the region of the 2 aponeuroses
-                # mask_Fi = maskF & ex_mask
+                mask_Fi = maskF & ex_mask
                 contoursF3, hierarchy = cv2.findContours(  # contoursF2
-                    maskF, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+                    mask_Fi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
                 )
 
                 # Define lists to store analysis parameters
@@ -735,7 +735,7 @@ def doCalculationsVideo(
                         "Fascicle length: "
                         + str("%.2f" % np.median(fasc_l_all[-1]) + " mm")
                     ),
-                    (125, 380),
+                    (125, 410),
                     cv2.FONT_HERSHEY_DUPLEX,
                     0.75,
                     (249, 249, 249),
@@ -743,7 +743,7 @@ def doCalculationsVideo(
                 cv2.putText(
                     comb,
                     ("Thickness at centre: " + str("%.1f" % thickness_all[-1]) + " mm"),
-                    (125, 410),
+                    (125, 470),
                     cv2.FONT_HERSHEY_DUPLEX,
                     0.75,
                     (249, 249, 249),

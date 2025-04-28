@@ -1,45 +1,78 @@
-This page explains how to test the manual image / video analysis.
+# 🧪 Testing Manual Image / Video Analysis
 
-- For this test, single images (not videos) are a prerequisite.
-- The test image you must use for this test is located in the
-“DL_Track_US_example/tests/test_images_manual” folder.
-- The analysis types manual image analysis and manual video analysis make
-use of the same python class (called “ManualAnalysis” and located in the
-manual_tracing.py file).
-- In our opinion, it is thus not necessary to test both analysis types.
+This page explains how to test the **manual image** and **manual video analysis** modes.
 
-For this test make sure that the files used and parameters specified are exactly
-as demonstrated below.
+- For this test, **single images** (not videos) are a prerequisite.
+- The test image you must use is located in the `DL_Track_US_example/tests/test_images_manual` folder.
+- Both **manual image analysis** and **manual video analysis** use the **same Python class** (`ManualAnalysis` located in `manual_tracing.py`).
+- Therefore, **testing one** (manual image analysis) is sufficient.
 
-- Make sure to use the right <span style="color: #2eaf66;">**image**</span>
-(“DL_Track_US_example/tests/test_image_manual”).
-- Click the Run button to start the analysis.
+---
+
+## Test Preparation
+
+Before starting:
+
+- Make sure to use the correct <span style="color: #2eaf66;">**image**</span>:  
+  `DL_Track_US_example/tests/test_image_manual`.
+- Click the **Run** button to start the analysis.
 
 <img src="\md_graphics\miva_test\test_setup.png">
 
-The “Manual Analysis window” should pop up containing the image as
-demonstrated below.
+---
+
+## Running the Test
+
+After clicking **Run**:
+
+- The **Manual Analysis window** should pop up containing the test image.
 
 <img src="\md_graphics\miva_test\reanalysing.png">
 
-For testing the DL_Track_US manual image / video analysis, simply reanalyse
-the drawn lines.
+---
 
-- First, <span style="color: #299ed9;">**scale the image**</span> by following the one centimetre long scaling line in the
-left of the image.
-- Then, redraw the superficial and deep <span style="color: #2eaf66;">**aponeurosis extension lines**</span>.
-- Subsequently, re-analyse the <span style="color: #a34ba1;">**three vertical muscle thickness lines**</span> using one
-segment each, the <span style="color: #f97e25;">**three diagonal fascicle lines**</span> using three segments each
-and the <span style="color: #e61d25;">**three pennation angles**</span> using two segments each.
-- Always choose the Radiobutton corresponding to the parameter you are
-analysing.
-- Once you have re-analysed all the lines image, click on the Save Results
-button to save your analysis results.
+## Reanalysing the Test Image
 
-One new file was created in the
-“DL_Track_US_example/tests/test_image_manual”, the **Manual_Results.xlsx**
-file. Open the file and compare the analysis results to the
-ones demonstrated below. If the results are similar, the DL_Track_US package
-works properly for manual image / video analysis!
+Follow these steps:
+
+1. **Scale the image**  
+   - Follow the **one-centimetre long scaling line** shown on the left of the image.  
+   - <span style="color: #299ed9;">**Scale the image accordingly.**</span>
+
+2. **Draw Aponeuroses**  
+   - Redraw the superficial and deep <span style="color: #2eaf66;">**aponeurosis extension lines**</span>.
+
+3. **Measure Muscle Thickness**  
+   - Redraw the <span style="color: #a34ba1;">**three vertical muscle thickness lines**</span> using **one segment each**.
+
+4. **Trace Fascicles**  
+   - Redraw the <span style="color: #f97e25;">**three diagonal fascicle lines**</span> using **three segments each**.
+
+5. **Measure Pennation Angles**  
+   - Redraw the <span style="color: #e61d25;">**three pennation angles**</span> using **two segments each**.
+
+> ⚡ **Important:**  
+> Always select the **correct Radiobutton** corresponding to the parameter you are analyzing.
+
+---
+
+After reanalyzing all lines:
+
+- Click the <span style="color: #a34ba1;">**Save Results**</span> button to save your analysis.
+
+A new file will be created:
+
+- `Manual_Results.xlsx` inside the `DL_Track_US_example/tests/test_image_manual` folder.
+
+---
+
+## Validating the Results
+
+- Open the newly created `Manual_Results.xlsx` file.
+- Compare the analysis results to the expected results shown below.
+
+If the results are similar, **DL_Track_US works properly** for manual image and video analysis!
 
 <img src="\md_graphics\miva_test\results.png">
+
+---

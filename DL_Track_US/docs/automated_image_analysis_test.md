@@ -1,33 +1,53 @@
-This page explains how to test the automated image analysis.
+# 🧪 Testing Automated Image Analysis
 
-- The images are evaluated without user input.
-- For this test, single images (not videos) are a prerequisite.
-- The test images and the flip_flag.txt file you must use for this test are
-located in the “DL_Track_US_example/tests/test_images_automatic” folder.
+This page explains how to test the **automated image analysis** in DL_Track_US.
 
-For this test make sure that the files used and parameters specified are exactly
-as demonstrated below.
+---
 
-- Make sure to use the right <span style="color: #2eaf66;">**images**</span>
-(“DL_Track_US_example/tests/test_images_automated”).
-- Make sure to use the provided pre-trained <span style="color: #f97e25;">**models**</span>
-(“DL_Track_US_example/DLTrack_models”).
-- Keep the pre-specified parameter settings in the settings.py file (accessible through the <span style="color: #e61d25;">**Settings Wheel**</span>) as they are.
-- **In v0.2.1 of the GUI, select “NO” in the “Filter Fascicles” option.**
-- Make sure to use the right <span style="color: #299ed9;">**flip_flag.txt**</span> file
-(“DL_Track_US_example/tests/test_images_automated/flip_flags.txt”).
-- Click the Run button to start the analysis.
+## Test Preparation
+
+Before starting:
+
+- **Images** are evaluated **without user input**.
+- Only **single images** (not videos) are required.
+- Test data is located at:  
+  `DL_Track_US_example/tests/test_images_automatic`
+
+Make sure the following are correct:
+
+- Use the correct <span style="color: #2eaf66;">**images**</span>:  
+  `DL_Track_US_example/tests/test_images_automated`
+- Use the provided pre-trained <span style="color: #f97e25;">**models**</span>:  
+  `DL_Track_US_example/DLTrack_models`
+- Keep all parameter settings in `settings.py` (accessible via the <span style="color: #e61d25;">**Settings Wheel**</span>) as they are.
+- **In v0.2.1**, select <span style="color: #a34ba1;">**NO**</span> for the **Filter Fascicles** option.
+- Use the correct <span style="color: #299ed9;">**flip_flag.txt**</span> file:  
+  `DL_Track_US_example/tests/test_images_automated/flip_flags.txt`
+- Then click the **Run** button to start the analysis.
 
 <img src="\md_graphics\aia_test\test_setup.png">
 
-Once the analysis is complete, two new files were created in the
-“DL_Track_US_example/tests/test_images_automated” folder.
+---
 
-- The **ResultImages.pdf** file
-- The **Results.xlsx** file
+## After Running the Test
 
-Open the Results.xlsx file and compare the analysis results to the ones
-demonstrated below. If the results are similar, the DL_Track_US package works properly for
-automated images analysis!
+After running the analysis, two new files will be created:
+
+- <span style="color: #f97e25;">**ResultImages.pdf**</span>  
+- <span style="color: #2eaf66;">**Results.xlsx**</span>  
+
+Both will appear in:  
+`DL_Track_US_example/tests/test_images_automated`
+
+---
+
+## Validating the Results
+
+- Open the <span style="color: #2eaf66;">**Results.xlsx**</span> file.
+- Compare the analysis results to the expected outputs shown below.
+
+If the results are similar, **DL_Track_US works properly** for automated image analysis!
 
 <img src="\md_graphics\aia_test\results.png">
+
+---

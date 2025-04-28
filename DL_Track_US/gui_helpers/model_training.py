@@ -50,6 +50,7 @@ import tkinter as tk
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 from keras import backend as K
 from keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.layers import Activation, BatchNormalization, Input
@@ -500,6 +501,52 @@ def focal_tversky(y_true, y_pred):
     pt_1 = tversky(y_true, y_pred)
     gamma = 1.33  # 0.75
     return K.pow((1 - pt_1), gamma)
+
+
+def tversky_loss(y_true, y_pred):
+    # Ensure both y_true and y_pred are of the same type (float32)
+    y_true = K.cast(y_true, "float32")
+    y_pred = K.cast(y_pred, "float32")
+
+    axis = (1, 2, 3, 4)
+    P_foreground = y_pred[:, :, :, :, :1]
+    P_background = y_pred[:, :, :, :, 1:]
+    g_foreground = y_true[:, :, :, :, :1]
+    g_background = y_true[:, :, :, :, 1:]
+
+    # y_true_pos = K.flatten(y_true)
+    # y_pred_pos = K.flatten(y_pred)
+    true_pos = P_foreground * g_foreground
+    true_pos = tf.reduce_sum(true_pos, axis=axis)
+
+    false_pos = P_foreground * g_background
+    false_pos = tf.reduce_sum(false_pos, axis=axis)
+
+    false_neg = P_background * g_foreground
+    false_neg = 0.5 * tf.reduce_sum(false_neg, axis=axis)
+
+    alpha = 0.8
+    smooth = 1e-6
+
+    tversky_index = (true_pos + smooth) / (
+        true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth
+    )
+    return 1 - tversky_index
+
+
+def hybrid_loss(y_true, y_pred, tversky_weight=0.5, dice_weight=0.5, bce_weight=0.0):
+    loss = 0.0
+
+    if tversky_weight > 0:
+        loss += tversky_weight * tversky_loss(y_true, y_pred)
+
+    if dice_weight > 0:
+        loss += dice_weight * dice_loss(y_true, y_pred)
+
+    if bce_weight > 0:
+        bce = tf.keras.losses.binary_crossentropy(y_true, y_pred)
+        bce = tf.reduce_mean(bce)
+        loss += bce_weight * bce
 
 
 def loadImages(img_path: str, mask_path: str) -> list:

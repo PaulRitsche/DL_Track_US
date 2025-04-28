@@ -1,61 +1,75 @@
-The next and last analysis type this tutorial covers is the manual video analysis.
-The video frames are evaluated manually by drawing the muscle thickness,
-fascicle length and pennation angles directly on the Image. For this type of
-analysis, single videos are a prerequisite. These videos should be
-contained in a single folder, like in the
-“DL_Track_US_example/videos_manual” folder. 
+# 🎥 Manual Video Analysis
 
-If you haven’t downloaded this
-folder, please do so now (link: [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip
-the folder and put it somewhere accessible.
+The next and last analysis type this tutorial covers is **manual video analysis**.  
+In this mode, video frames are evaluated manually by **drawing muscle thickness, fascicle length, and pennation angles** directly onto the images.
 
-The manual video
-analysis type is identical to the manual image analysis type. The only
-difference is that the absolute video path must be specified instead of the
-File Type. The video is first converted and all the contained frames are
-separately stored as single images. Then, each frame image is analysed
-separately.
+**Important:**  
+Manual video analysis is applicable only for **single videos**.  
+All videos must be contained in a single folder, e.g., `DL_Track_US_example/videos_manual`.
+
+If you have not downloaded the example folder yet, please do so:  
+[DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=).
+
+> 📦 Unzip the folder and save it somewhere easily accessible.
+
+---
+
+The **manual video analysis** type is identical to **manual image analysis**.  
+The **only difference**:  
+You specify the **absolute video path** instead of a file type.
+
+- The video is first **converted** into individual frames.
+- Each frame image is then analyzed separately.
+
+---
 
 ## 1. Creating a Video Directory
 
-All videos to be analyzed should be in a single folder.
+- Place all videos into a **single folder**.
+- The `DL_Track_US_example/video_manual` folder contains one <span style="color: #2eaf66;">**video file**</span>.
 
-- The “DL_Track_US_example/video_manual“ folder contains one <span style="color: #2eaf66;">**video file**</span>.
+![video folder](md_graphics/mva/video_folder.PNG)
 
-![video folder](md_graphics\mva\video_folder.PNG)
+---
 
 ## 2. Specifying Input Directory in the GUI
 
-- Please select  <span style="color: #a34ba1;">**video_manual**</span> from the dropdown-menu.
+- Select <span style="color: #a34ba1;">**video_manual**</span> from the dropdown menu.
 
-![analysis type video manual](md_graphics\mva\analysis_type_video_manual.png)
+![analysis type video manual](md_graphics/mva/analysis_type_video_manual.png)
 
-Next, you need to specify the absolute File Path of the video file to be
-analysed.
+Next, specify the **absolute file path** of the video file to be analyzed:
 
-- The example video file is placed in the
-“DL_Track_US_example/video_manual” folder.
-- By clicking on the <span style="color: #a34ba1;">**Video Path**</span> button in the GUI, a selection window
-opens were you need to select the example video file in the
-video_manual.
-- Click open to specify the path to the video file in the GUI.
+- The example video file is placed in the `DL_Track_US_example/video_manual` folder.
+- Click the <span style="color: #a34ba1;">**Video Path**</span> button in the GUI to open a selection window.
+- Select the video file.
+- Click **Open** to confirm.
 
-![video path](md_graphics\mva\video_path.png)
+![video path](md_graphics/mva/video_path.png)
 
-You can start the analysis by clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI
+Finally, start the analysis:
 
-![run button](md_graphics\mva\run_button.png)
+- Click the <span style="color: #a34ba1;">**Run**</span> button in the main GUI.
 
-- Once you clicked the Run button, the “Manual Analysis window” will pop
-up.
-- From here, all further steps are identical with the manual image analysis.
-- The only difference though is that in the folder of the inputted video, a
-new folder is created containing all the single image frames.
-- The scaling of the image, extending of the aponeuroses, single segment
-muscle thickness measurements, three segment muscle fascicle
-measurement and two segment pennation angle measurement are
-identical.
-- Saving the results (with the very important button), continuing to
-the next image frame, terminating the analysis process and error
-handling is identical.
-- Therefore, we kindly refer you to the [Manual Image Analysis](manual_image_analysis.md) to see how all the architectural parameters are analysed.
+![run button](md_graphics/mva/run_button.png)
+
+---
+
+Once you click **Run**:
+
+- The **Manual Analysis window** will open.
+- From here, **all further steps** are identical to **manual image analysis**.
+
+**Differences to Manual Image Analysis:**
+
+- A new **folder** is created next to your input video.
+- This new folder contains **all extracted single frame images**.
+
+All operations — scaling, aponeurosis drawing, muscle thickness measurement, fascicle measurement, pennation angle measurement — work exactly as in manual image analysis.
+
+Saving results, moving to the next frame, terminating analysis, and error handling are also identical.
+
+> 📚 For detailed instructions,  
+> please refer to the [Manual Image Analysis](manual_image_analysis.md) page.
+
+---

@@ -1,34 +1,46 @@
-This page explains how to test the automated video analysis.
+# 🖼 Testing Automated Video Analysis
 
-- Single video frames are evaluated automatically without user input.
-- For this test, videos are a prerequisite.
-- The test video you must use for this test is located in the
-“DL_Track_US_example/tests/test_video_automated” folder.
+This page explains how to test the **automated video analysis** functionality in DL_Track_US.
 
-For this test make sure that the files used and parameters specified are exactly
-as demonstrated below
+- Single video frames are evaluated **automatically** without user input.
+- For this test, **videos** are required.
+- The test video is located in:  
+  `DL_Track_US_example/tests/test_video_automated`.
 
-- Make sure to use the right <span style="color: #2eaf66;">**video**</span>
-(“DL_Track_US_example/tests/test_video_automated”).
-- Make sure to use the provided pre-trained <span style="color: #f97e25;">**models**</span>.
-- Keep the pre-specified <span style="color: #e61d25;">**parameter settings**</span> in the settings.py file as they are.
-- Click the Run button to start the analysis.
+---
 
-<img src="\md_graphics\ava_test\test_setup.png">
+Before running the test, ensure that:
 
-When the analysis is complete, two new files were created in the
-“DL_Track_US_example/tests/test_video_automated” folder.
+- You are using the correct <span style="color: #2eaf66;">**video**</span> located at `DL_Track_US_example/tests/test_video_automated`.
+- You are using the provided pre-trained <span style="color: #f97e25;">**models**</span>.
+- You have kept the default <span style="color: #e61d25;">**parameter settings**</span> in the `settings.py` file unchanged.
+- You click the <span style="color: #a34ba1;">**Run**</span> button in the GUI to start the analysis.
 
-- The **calf_raise_proc.avi** file
-- The **calf_raise.xlsx** file
+<img src="\md_graphics/ava_test/test_setup.png">
 
-Open the calf_raise.xlsx file.
+---
 
-- Take the average value from all calculated fascicle length values in all
-frames, all calculated pennation angles in all frames, all calculated muscle
-thickness values in all frames and all calculated upper (x_high) and lower
-(x_low) aponeuroses edge coordinates in all frames.
-- If the results are similar to those demonstrated below, the DL_Track_US
-package works properly for automated images analysis!
+When the analysis is complete, two new files will appear in the `DL_Track_US_example/tests/test_video_automated` folder:
 
-<img src="\md_graphics\ava_test\results.png">
+- **calf_raise_proc.avi** (processed video with predictions)
+- **calf_raise.xlsx** (results file)
+
+---
+
+### How to verify the results:
+
+1. Open the `calf_raise.xlsx` file.
+2. For all frames, calculate the **average** values for:
+   - Fascicle length
+   - Pennation angle
+   - Muscle thickness
+   - Upper aponeurosis edge coordinates (`x_high`)
+   - Lower aponeurosis edge coordinates (`x_low`)
+
+3. Compare your results to the reference results shown below:
+
+<img src="\md_graphics/ava_test/results.png">
+
+---
+
+✅ If your values are similar, DL_Track_US is working correctly for **automated video analysis**!

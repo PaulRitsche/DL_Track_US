@@ -1,253 +1,208 @@
-On this page you get to know the automated video analysis.
-The videos are evaluated without user input and may be scaled. The videos should be
-contained in a single folder, like in the “DL_Track_US_example/videos” folder.
+# 🎥 Automated Video Analysis
 
-If you haven’t downloaded this folder, please do so now (link:
-[DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=)). Unzip the folder and put it
-somewhere accessible.
+This page introduces the **automated video analysis** in DL_Track_US.
 
-The automated video analysis is very similar to the automated image analysis. 
-In fact, the inputted video is analysed frame by frame and each frame is therefore treated like
-an independent image. Moreover, only few analysis parameters are
-different between both analysis types. 
+- Videos are evaluated **without user input**.
+- Videos must be contained in a single folder, e.g., `DL_Track_US_example/videos`.
 
-Once the analysis of the video file is finished, a „proc.avi“ file will be created at the directoy of the input video.
-The „proc.avi“ file can be openend with, i.e., VLC-Player on windows and Omni-Player on macOS.
+If you have not downloaded the example folder yet, please do so:  
+[DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=).
+
+> 📦 Unzip the folder and save it somewhere easily accessible.
+
+---
+
+The automated video analysis is very similar to automated image analysis:  
+Only a few analysis parameters differ between the two types.
+
+After the analysis, a `proc.avi` file will be created in the input video directory.  
+It can be opened with VLC Player (Windows) or OmniPlayer (macOS).
+
+---
 
 ## 1. Creating Video and Network Directories
 
-- In order for DL_Track_US to recognize your videos, they should best be
-in a single folder.
-- The “DL_Track_US_example/videos“ folder contains <span style="color: #2eaf66;">**one video**</span>.
+- Videos should be stored in a **single folder**.
+- The `DL_Track_US_example/videos` folder contains <span style="color: #2eaf66;">**one video**</span>.
 
-![video folder](md_graphics\ava\video_folder.PNG)
+![video folder](md_graphics/ava/video_folder.PNG)
+
+---
 
 ## 2. Specifying Input Directories in the GUI
 
-Once the GUI is openend, the first step of every analysis type in DL_Track_US
-is to specify the input directories in the graphical user interface (GUI).
+Once the GUI is open:
 
-- Start the analysis with specifying the path to the folder containing the video to be analysed.
-- Remember this was the folder "DL_Track_US_example/video". By clicking on the <span style="color: #a34ba1;">**Inputs**</span> button in the GUI a selection window opens were you need to select the images folder.
-- Click **select folder** to specify the path in the GUI.
+- Click the <span style="color: #a34ba1;">**Inputs**</span> button to specify the folder containing your video.
+- Select the `DL_Track_US_example/videos` folder and click **Select folder**.
 
-![inputs button](md_graphics\ava\inputs_button.PNG)
+![inputs button](md_graphics/ava/inputs_button.PNG)
 
-Now, you will specify the absolute path to the aponeurosis neural
-network.
+---
 
-- Remember that the model is in the “DL_Track_US_example/models”
-folder.
-- By clicking on the <span style="color: #a34ba1;">**Apo Model button**</span> in the GUI a selection window
-opens were you need to select the aponeurosis neural network in the
-models folder.
-- Click <span style="color: #299ed9;">**open**</span> to specify the path to the aponeurosis neural network in the
-GUI
+Next, specify the aponeurosis model:
 
-![apo model button](md_graphics\ava\apo_model_button.png)
-![apo model](md_graphics\ava\apo_model.png)
+- Click the <span style="color: #a34ba1;">**Apo Model**</span> button.
+- Select the aponeurosis neural network file from `DL_Track_US_example/models`.
+- Click <span style="color: #299ed9;">**Open**</span>.
 
-Next, you will specify the absolute path to the fascicle neural
-network.
+![apo model button](md_graphics/ava/apo_model_button.png)
+![apo model](md_graphics/ava/apo_model.png)
 
-- The model is in the “DL_Track_US_example/models” folder.
-- By clicking on the <span style="color: #a34ba1;">**Fasc Model button**</span> in the GUI a selection window
-opens were you need to select the fascicle neural network in the
-models folder.
-- Click <span style="color: #299ed9;">**open**</span> to specify the path to the fascicle neural network in the GUI.
+---
 
-![fasc model button](md_graphics\ava\fasc_model_button.png)
-![fasc model](md_graphics\ava\fasc_model.png)
+Then, specify the fascicle model:
+
+- Click the <span style="color: #a34ba1;">**Fasc Model**</span> button.
+- Select the fascicle neural network file from `DL_Track_US_example/models`.
+- Click <span style="color: #299ed9;">**Open**</span>.
+
+![fasc model button](md_graphics/ava/fasc_model_button.png)
+![fasc model](md_graphics/ava/fasc_model.png)
+
+---
 
 ## 3. Specifying Analysis Parameters
 
-As a first step, you will select the right analysis type in the GUI.
+### 3.1 Selecting the Analysis Type
 
-- Please select <span style="color: #a34ba1;">**Video**</span> from the dropdown-menu.
+- Choose <span style="color: #a34ba1;">**Video**</span> from the dropdown menu.
 
-![analysis type video](md_graphics\ava\analysis_type_video.png)
+![analysis type video](md_graphics/ava/analysis_type_video.png)
 
-You now need to specify the **Video Type**.
+---
 
-- The ending of the Video Type must match the ending of your videos,
-otherwise no files are found by DL_Track_US.
-- You can either select a pre-specified ending from the dropdown list or
-type in your own ending.
-- Please keep the formatting similar to those Video Type provided in the
-dropdown list.
-- The video in the “DL_Track_US_example/video” folder are of the Video
-Type “.mp4”. Thus, you should select the <span style="color: #a34ba1;">**“/*.mp4”**</span> Video Type.
+### 3.2 Setting the Video Type
 
-![video type](md_graphics\ava\video_type.png)
+- The file extension must match your videos (e.g., `.mp4`).
+- Select or type <span style="color: #a34ba1;">**/*.mp4**</span>.
 
-Subsequently, you need to specify the video **Scaling Type**.
+![video type](md_graphics/ava/video_type.png)
 
-- Scaling in general has the advantage that the resulting estimated
-muscle architectural features are in centimetre units rather than pixel
-units.
-- There are two Scaling Types in the DL_Track_US package.
-- For this tutorial however, you will select the <span style="color: #a34ba1;">**“None”**</span> option as
-displayed below.
+---
 
-![scaling type](md_graphics\ava\scaling_type.png)
+### 3.3 Choosing the Scaling Type
 
-The other Scaling Type is <span style="color: #a34ba1;">**“Manual”**</span>. This **Scaling Type** requires input from the user.
+- Select <span style="color: #a34ba1;">**None**</span> for this tutorial.
 
-- Whenever you use “**Manual**” as your Scaling Type, make sure
-that the minimal distance between the scaling bars or the known
-distance between the manually specified points is represented in
-the <span style="color: #2eaf66;">**Spacing**</span> parameter.
-- Select the Spacing parameter from the dropdown list as 5, 10, 15 or 20
-millimetre. For this tutorial it is not necessary to select anything, as the
-Spacing parameter is not used during an analysis with Scaling Type “**None**”.
+![scaling type](md_graphics/ava/scaling_type.png)
 
-<img src="\md_graphics\ava\spacing_3.png" width="600">
+Alternatively, you could use <span style="color: #a34ba1;">**Manual**</span> scaling:
 
-- When you choose “Manual” as your Scaling type, you need to manually place **two points** on
-the image using the left mouse button.
-- In order to do this, you need to click <span style="color: #a34ba1;">**Calibrate**</span>.
+- Place two points on a known distance (5, 10, 15, or 20 mm).
+- Click <span style="color: #a34ba1;">**Calibrate**</span>.
 
-<img src="\md_graphics\ava\calibrate_button.png" width="600">
+<img src="\md_graphics/ava/calibrate_button.png" width="600">
+<img src="\md_graphics/ava/calibrate.png" width="600">
 
-- Then, just click one time with your left mouse button to record the first point
-(a red dot will apear).
-- Place the second point at a known distance of either 5, 10, 15 or 20
-millimetre.
-- Afterwards, click <span style="color: #a34ba1;">**Confirm**</span>.
+After calibration, a <span style="color: #299ed9;">**messagebox**</span> shows the pixel distance:
 
-<img src="\md_graphics\ava\calibrate.png" width="600">
+<img src="\md_graphics/ava/calibration_result.png" width="600">
 
-After confirming a <span style="color: #299ed9;">**messagebox**</span> should appear with the distance of the spacing parameter in pixels.
+---
 
-<img src="\md_graphics\ava\calibration_result.png" width="600">
+### 3.4 Filtering Fascicles
 
-- In version 0.2.1 we introduced a new feature to DL_Track_US, called the **Filter Fascicle** option.
-- Here, you have two options, <span style="color: #a34ba1;">**“YES”**</span> or <span style="color: #a34ba1;">**“NO”**</span>.
-- Using **“YES”** all fascicles that overlap will be removed.
+- Select <span style="color: #a34ba1;">**YES**</span> to remove overlapping fascicles.
 
-![filter fasciles](md_graphics\ava\filter_fascicles.png)
+![filter fasciles](md_graphics/ava/filter_fascicles.png)
 
-Here are some results demonstrating the difference in an image, for video
-frames the effect would be similar.
+Example difference between filtered and unfiltered:
 
-![difference filter fasciles](md_graphics\ava\difference_filter_fascicles.png)
+![difference filter fasciles](md_graphics/ava/difference_filter_fascicles.png)
 
-Another parameter that you need to specify is the <span style="color: #a34ba1;">**Flip Options**</span> parameters.
+---
 
-- The Flip Options parameter determines if the whole video is flipped
-along the vertical axis. “Flip” stands for flipping the video, whereas
-“Don’t Flip” means please do not flip the video.
-- The example video must be flipped.
-- Its fascicle orientation is incorrect, with fascicles originating at the
-bottom right and inserting on the top left.
-- Below is a visual representation of a correct fascicle orientation.
-- The fascicles are originating at the bottom left and are inserting on the top
-right.
-- Note that all videos in the specified input folder, in this case the
-DL_Track_US_example/video” folder, MUST have the same fascicle
-orientation, since the Flip Option is applied to all of them.
+### 3.5 Setting Flip Options
 
-![flip option](md_graphics\ava\flip_option.png)
-![flip option 2](md_graphics\ava\flip_option_2.png)
+- Choose the appropriate flip setting:
+  - **Flip** to flip the video vertically,
+  - **Don’t Flip** otherwise.
 
-The next step is to specify the <span style="color: #a34ba1;">**Frame Steps**</span>.
+![flip option](md_graphics/ava/flip_option.png)
+![flip option 2](md_graphics/ava/flip_option_2.png)
 
-- You can either select a pre-specified Frame Step from the dropdown list
-or type your Frame Step.
-- The Frame Step is used during the analysis as a step size while iterating
-through all the frames in a video.
-- In this tutorial you should specify a Frame Step of 1. This means that
-every video frame is analysed. With a Frame Step of 3, every 3rd
-frame is analysed. With a Frame Step of 10, every 10th frame an so
-on.
-- Although information is lost when you skip frames during the analysis, it
-also reduces the overall analysis time.
+For the example video, flipping is required to correct fascicle orientation.
 
-![step size](md_graphics\ava\step_size.png)
+---
+
+### 3.6 Setting Frame Steps
+
+- Set Frame Step to **1** (every frame analyzed).
+- Larger steps (e.g., 3, 10) reduce computation time but skip frames.
+
+![step size](md_graphics/ava/step_size.png)
+
+---
 
 ## 4. Adjusting Settings
 
-As a last step, you need to adjust the settings for the
-aponeurosis and fascicle neural networks. If you click on the <span style="color: #a34ba1;">**settings wheel**</span> a 
-python script with the name "settings.py" opens up in your default text editor. On this page, all parameters used by the aponeurosis and
-fascicles neural networks during inference are specified. The default values are always listed on the right hand side of the parameters. The settings are explained in detail at the top of the settings.py file.
+Open the settings by clicking the <span style="color: #a34ba1;">**Settings Wheel**</span>.
 
-![analysis parameters](md_graphics\ava\analysis_parameters.PNG)
-![settings.py](md_graphics\ava\settings_py.PNG)
+- A txt script `settings.txt` opens in your default editor.
+- Default values are listed; detailed descriptions are available at the top of the file.
 
-- The **aponeurosis detection threshold** determines the threshold of the minimal
-acceptable probability by which a pixel is predicted as aponeurosis. The lower,
-the more pixels will be classified as aponeurosis.
+![analysis parameters](md_graphics/ava/analysis_parameters.PNG)
+![settings.py](md_graphics/ava/settings_py.PNG)
 
-- Changing the **aponeurosis length threshold** will result in longer or shorter structures
-detected as aponeurosis.
+You can find an explanation on all setting in [this chapter](LINK).
 
-- The **fascicle detection threshold** and the fascicle lenght threshold are the same thing, just for the fasicles.
-
-- The **minimal muscle width** determines the minimal acceptable distance between superficial and deep aponeurosis.
-
-- **Minimal and Maximal Pennation** describe the respective minimal and maximal
-pennation angle that is physiologically possible in the analysed image/muscle.
-
-- The **fascile calculation method** determines the approach by which the fascile length is calculated. This can either be linear_extrapolation, curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.
-
-- The lower the **fascile contour tolerance**, the shorter the minimal acceptable length of
-detected fascicle segments to be included in the results.
-
-- The lower the **aponeurosis distance tolerance**, the nearer a fascicle fragment must be to the aponeurosis. This increases certainty of pennation angle calculation and extrapolation.
-
-For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
-these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
-a small sample of your images prior to the actual analysis. If you should somehow distruct the settings.py file there is a backup called _backup_settings.py.
+---
 
 ## 5. Running / Breaking DL_Track_US
 
-- By clicking the <span style="color: #a34ba1;">**Run**</span> button in the main GUI window, you can start the
-analysis.
-- Moreover, you can see that there is a <span style="color: #299ed9;">**Break**</span> button placed in the GUI as
-well.
-- Clicking the <span style="color: #299ed9;">**Break**</span> button allows you to stop the analysis at any point.
-The currently evaluated image will be processed and then the
-analysis is terminated.
+- Click the <span style="color: #a34ba1;">**Run**</span> button to start analysis.
+- Use the <span style="color: #299ed9;">**Break**</span> button if you need to stop the analysis.
 
-![running breaking](md_graphics\ava\running_breaking.png)
+![running breaking](md_graphics/ava/running_breaking.png)
 
-After running the analyis the three lines are displayed in the line graph:
+---
+
+Once analysis completes, navigate back to `DL_Track_US_example/videos`.
+
+You will find two new files:
+
+- <span style="color: #299ed9;">**calf_raise_proc.avi**</span>:
+  - Video showing overlaid segmentation results.
+
+- <span style="color: #2eaf66;">**calf_raise.xlsx**</span>:
+  - Excel file containing estimated muscle parameters (fascicle length, pennation angle, muscle thickness).
+
+<img src="\md_graphics/ava/video_folder_after.png">
+
+---
+
+Line graph results include:
 
 - Median Fascicle Length
 - Median Filtered Fascicle Length
-- Filtered Median Fascicle Length
+- Filtered Median Fascicle Length (based on chosen filter)
 
-<!-- Beschreibung Paul -->
+<img src="\md_graphics/ava/plotted_results.png">
 
-<img src="\md_graphics\ava\plotted_results.png">
-
-Subsequently to clicking the Run button in the main GUI, navigate again to the
-“DL_Track_US_example/video”.
-
-- You will see that two files will be / have been created, <span style="color: #299ed9;">**calf_raise_proc.avi**</span> 
-and <span style="color: #2eaf66;">**calf_raise.xlsx**</span>.
-- The calf_raise_proc.avi file contains each the input video with overlaid
-segmented fascicles and aponeurosis. This file allows you to visually
-inspect the model outputs.
-- The calf_raise.xlsx file contains the actual architectural parameter
-estimates for each video frame. There, all detected muscle fascicle
-lengths and pennation angles as well a the calculated muscle thickness will
-be displayed. Each video frame is displayed in a separate row.
-- Note that the calf_raise_proc.avi file can be opened only after the
-calf_raise.xlsx. was created.
-
-![video folder after](md_graphics\ava\video_folder_after.png)
+---
 
 ## 6. Error Handling
 
-Whenever an error occurs during the analysis process, the DL_Track_US GUI
-will open a <span style="color: #299ed9;">**messagebox**</span>. This looks always similar to this:
+If an error occurs:
 
-![error](md_graphics\aia\error.PNG)
+- A <span style="color: #299ed9;">**messagebox**</span> will open to explain the issue.
 
-We tried to formulate these messageboxes as concise as possible. Just
-follow their instructions to fix the error and run the analysis anew. In case
-an error occurs that is not caught by an error messagebox, don’t hesitate to
-report this in the Q&A section in the [DL_Track_US discussion forum](https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a).
-Please take a look here how do best do this.
+![error](md_graphics/aia/error.PNG)
+
+We have tried to make all error messages as **concise** and **informative** as possible.  
+Simply follow the instructions in the error box and restart the analysis after resolving the issue.
+
+> 💬 **Note:**  
+> If an unexpected error occurs that is not caught by a message box,  
+> please report it in the [DL_Track_US Discussion Forum - Q&A Section](https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a).
+
+When reporting an issue:
+
+- Please include a description of the problem,
+- Steps to reproduce the issue,
+- And (if possible) screenshots of the GUI and error message.
+
+---
+
+By following these guidelines, we can continuously improve DL_Track_US.
