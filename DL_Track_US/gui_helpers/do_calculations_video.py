@@ -41,6 +41,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from PIL import Image
 
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
@@ -48,11 +49,14 @@ from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 import tensorflow as tf
 
+
 from DL_Track_US.gui_helpers.do_calculations import (
     contourEdge,
     sortContours,
     filter_fascicles,
 )
+
+print("TF devices:", tf.config.list_physical_devices("GPU"))
 
 
 def optimize_fascicle_loop(
@@ -381,7 +385,6 @@ def doCalculationsVideo(
     [[725, 568, 725, 556, 444], [926, 572, 516, 508], [971, 565, 502], [739, 578, 474], [554, 766, 603, 475], [1049, 755, 567, 430], [954, 934, 568], [968, 574]]
     [23.484416057267826, 22.465452189555794, 21.646971767045816, 21.602856412413924, 21.501286239714894, 21.331137350026623, 21.02446763240188, 21.250352548097883]
     """
-
     try:
 
         # Extract dictionary parameters
@@ -478,7 +481,6 @@ def doCalculationsVideo(
                 pred_fasc = np.array(pred_fasc[:, 1, :, :, 0])  # take only middle frame
                 pred_fasc = np.expand_dims(pred_fasc, axis=-1)
 
-            # Threshold predictions
             pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)
             pred_fasc = resize(pred_fasc[0], (h, w), preserve_range=True)
             pred_fasc_t = resize(pred_fasc_t[0], (h, w), preserve_range=True)
