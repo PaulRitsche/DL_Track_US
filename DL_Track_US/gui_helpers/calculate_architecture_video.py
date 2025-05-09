@@ -416,14 +416,14 @@ def calculateArchitectureVideo(
                 pennation_all_filtered,
             )
 
-    except IndexError as e:
-        tk.messagebox.showerror(
-            "Information",
-            f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
-        )
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
+    # except IndexError as e:
+    #     tk.messagebox.showerror(
+    #         "Information",
+    #         f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
+    #     )
+    #     gui.should_stop = False
+    #     gui.is_running = False
+    #     gui.do_break()
 
     # except Exception as e:
     #     error_message = f"An error occurred:\n{str(e)}"

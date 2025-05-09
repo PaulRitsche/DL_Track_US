@@ -1409,17 +1409,19 @@ def doCalculations_curved(
             fasc_l = list(data["fascicle_length"])
             pennation = list(data["pennation_angle"])
 
+            unit = "pix"
             # scale data
             if calib_dist:
                 fasc_l = fasc_l / (calib_dist / int(spacing))
                 midthick = midthick / (calib_dist / int(spacing))
+                unit = "mm"
 
             # Add annotations
             xplot, yplot = 50, img_copy.shape[0] - 150
             ax.text(
                 xplot,
                 yplot,
-                f"Median Fascicle Length: {np.median(fasc_l):.2f} mm",
+                f"Median Fascicle Length: {np.median(fasc_l):.2f} {unit}",
                 fontsize=12,
                 color="white",
             )
@@ -1433,7 +1435,7 @@ def doCalculations_curved(
             ax.text(
                 xplot,
                 yplot + 60,
-                f"Thickness at Centre: {midthick:.1f} mm",
+                f"Thickness at Centre: {midthick:.1f} {unit}",
                 fontsize=12,
                 color="white",
             )

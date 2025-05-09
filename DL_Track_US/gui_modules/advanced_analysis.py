@@ -700,12 +700,13 @@ class AdvancedAnalysis:
                 if not ret:
                     break
 
-                resized_frame = cv2.resize(
-                    frame, (self.desired_width, self.desired_height)
-                )
+                # resized_frame = cv2.resize(
+                #     frame, (self.desired_width, self.desired_height)
+                # )
 
                 # Crop the frame to the selected area
-                cropped_frame = resized_frame[y0:y1, x0:x1]
+                # cropped_frame = resized_frame[y0:y1, x0:x1]
+                cropped_frame = frame[y0:y1, x0:x1]
 
                 out.write(cropped_frame)
                 print(

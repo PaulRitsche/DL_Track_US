@@ -47,33 +47,24 @@ import json
 import tkinter as tk
 from threading import Lock, Thread
 from tkinter import E, N, S, StringVar, W, filedialog, ttk
-
 import customtkinter as ctk
 from CTkToolTip import *
 
-# Carla imports
-# import gui_helpers
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from PIL import Image, ImageTk
 import cv2
 import numpy as np
 import pandas as pd
 
-# original imports
 from DL_Track_US import gui_helpers
-
-# from DL_Track_US.gui_helpers.gui_files import settings
 from DL_Track_US.gui_modules import AdvancedAnalysis
 
 # disable interactive backend
 plt.ioff()
-
-# TODO fix setting import
 
 
 class DLTrack(ctk.CTk):
@@ -1079,6 +1070,7 @@ class DLTrack(ctk.CTk):
                     "/*.jpg",
                 ],
             )
+            self.filetype.set("/*.tiff")
             self.image_type_label.configure(text="Image Type")
             self.scaling_entry.configure(state="readonly")
             self.spacing_entry.configure(state="normal")
@@ -1100,12 +1092,13 @@ class DLTrack(ctk.CTk):
             """
             self.image_type_label.configure(text="Video Type")
             self.filetype_entry.configure(state="normal", values=["/*.avi", "/*.mp4"])
+            self.filetype.set("/*.mp4")
             self.scaling_entry.configure(values=["Manual", "None"], state="normal")
+            self.scaling.set("None")
             # Reset flipping variable for Video
             self.flip_label.configure(text="Flip Option")
             self.flip_entry.configure(state="normal")
             self.flipfile_button.configure(state="disabled")
-            self.scaling_entry.configure(values=["Manual", "None"], state="normal")
             self.step_entry.configure(state="normal")
             self.filter_no.configure(state="normal")
             self.filter_yes.configure(state="normal")

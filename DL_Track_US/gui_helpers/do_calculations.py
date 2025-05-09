@@ -484,9 +484,9 @@ def doCalculations(  # TODO adapt docstring
                     mindist = dist
 
         # Compute functions to approximate the shape of the aponeuroses
-        zUA = np.polyfit(upp_x, upp_y_new, 1)
+        zUA = np.polyfit(upp_x, upp_y_new, 2)
         g = np.poly1d(zUA)
-        zLA = np.polyfit(low_x, low_y_new, 1)
+        zLA = np.polyfit(low_x, low_y_new, 2)
         h = np.poly1d(zLA)
 
         mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
@@ -692,17 +692,19 @@ def doCalculations(  # TODO adapt docstring
         fasc_l = list(data["fasc_l"])
         pennation = list(data["penn_a"])
 
+        unit = "pix"
         # scale data
         if calib_dist:
             fasc_l = fasc_l / (calib_dist / int(spacing))
             midthick = midthick / (calib_dist / int(spacing))
+            unit = "mm"
 
         # Add annotations
         xplot, yplot = 50, img_copy.shape[0] - 150
         ax.text(
             xplot,
             yplot,
-            f"Median Fascicle Length: {np.median(fasc_l):.2f} mm",
+            f"Median Fascicle Length: {np.median(fasc_l):.2f} {unit}",
             fontsize=12,
             color="white",
         )
@@ -716,7 +718,7 @@ def doCalculations(  # TODO adapt docstring
         ax.text(
             xplot,
             yplot + 60,
-            f"Thickness at Centre: {midthick:.1f} mm",
+            f"Thickness at Centre: {midthick:.1f} {unit}",
             fontsize=12,
             color="white",
         )
