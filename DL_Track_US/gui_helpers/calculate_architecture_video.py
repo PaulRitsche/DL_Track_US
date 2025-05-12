@@ -65,6 +65,7 @@ from DL_Track_US.gui_helpers.model_training import (
     dice_score,
     focal_tversky,
     hybrid_loss,
+    deep_supervised_loss,
 )
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 from DL_Track_US.gui_helpers.filter_data import applyFilters, hampelFilterList
@@ -321,6 +322,7 @@ def calculateArchitectureVideo(
                     "IoU": IoU,
                     "dice_bce_loss": dice_bce_loss,
                     "dice_score": dice_score,
+                    "deep_supervised_loss": deep_supervised_loss,
                 },
             )
 
@@ -416,22 +418,22 @@ def calculateArchitectureVideo(
                 pennation_all_filtered,
             )
 
-    # except IndexError as e:
-    #     tk.messagebox.showerror(
-    #         "Information",
-    #         f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
-    #     )
-    #     gui.should_stop = False
-    #     gui.is_running = False
-    #     gui.do_break()
+    except IndexError as e:
+        tk.messagebox.showerror(
+            "Information",
+            f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
 
-    # except Exception as e:
-    #     error_message = f"An error occurred:\n{str(e)}"
-    #     print(error_message)
-    #     tk.messagebox.showerror("Error", error_message)
-    #     gui.should_stop = False
-    #     gui.is_running = False
-    #     gui.do_break()
+    except Exception as e:
+        error_message = f"An error occurred:\n{str(e)}"
+        print(error_message)
+        tk.messagebox.showerror("Error", error_message)
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
 
     finally:
         # clean up

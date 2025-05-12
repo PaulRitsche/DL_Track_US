@@ -467,6 +467,20 @@ def dice_bce_loss(y_true, y_pred, smooth=1):
     return Dice_BCE
 
 
+def deep_supervised_loss(y_true, y_preds):
+    # y_preds is a list of tensors from deep supervision outputs
+    if not isinstance(y_preds, (list, tuple)):
+        y_preds = [y_preds]
+
+    # Broadcast y_true to each prediction and compute the loss
+    losses = []
+    for y_pred in y_preds:
+        loss = dice_bce_loss(y_true, y_pred)
+        losses.append(loss)
+
+    return tf.reduce_mean(losses)
+
+
 def tversky(y_true, y_pred):
     # Ensure both y_true and y_pred are of the same type (float32)
     y_true = K.cast(y_true, "float32")

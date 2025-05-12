@@ -48,15 +48,11 @@ from skimage.morphology import skeletonize
 from skimage.transform import resize
 from tensorflow.keras.utils import img_to_array
 import tensorflow as tf
-
-
 from DL_Track_US.gui_helpers.do_calculations import (
     contourEdge,
     sortContours,
     filter_fascicles,
 )
-
-print("TF devices:", tf.config.list_physical_devices("GPU"))
 
 
 def optimize_fascicle_loop(
@@ -413,6 +409,7 @@ def doCalculationsVideo(
 
         height, width = 512, 512
         frames_single = []
+        frames_single_resized = []
         frames_stacked = []
         original_frames = []
 
@@ -433,6 +430,15 @@ def doCalculationsVideo(
             img_normalized = img / 255.0
             img_input = np.expand_dims(img_normalized, axis=0)
             frames_single.append(img_input)
+
+            # resize frames for 3dunet
+            img = img_to_array(frame)
+            if i % step == 0:  # store only used frames
+                original_frames.append(img.copy())
+            img = resize(img, (256, 256, 3))
+            img_normalized = img / 255.0
+            img_input = np.expand_dims(img_normalized, axis=0)
+            frames_single_resized.append(img_input)
 
             # stacked frames for IFSS
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -474,8 +480,8 @@ def doCalculationsVideo(
                 pred_fasc = tf.clip_by_value(pred_fasc, 0, 1).numpy()
 
             else:
-                fasc_input = frames_single[a]
-                pred_fasc = fasc_model.predict(fasc_input)
+                fasc_input = frames_single_resized[a]
+                pred_fasc = fasc_model.predict(fasc_input)[0]
 
             if segmentation_mode == "stacked":
                 pred_fasc = np.array(pred_fasc[:, 1, :, :, 0])  # take only middle frame
@@ -623,9 +629,9 @@ def doCalculationsVideo(
                 imgT = np.zeros((h, w, 3), np.uint8)
 
                 # Compute functions to approximate the shape of the aponeuroses
-                zUA = np.polyfit(upp_x, upp_y_new, 1)  # 1st order polynomial
+                zUA = np.polyfit(upp_x, upp_y_new, 2)  # 1st order polynomial
                 gx = np.poly1d(zUA)
-                zLA = np.polyfit(low_x, low_y_new, 1)
+                zLA = np.polyfit(low_x, low_y_new, 2)
                 hx = np.poly1d(zLA)
 
                 mid = (low_x[-1] - low_x[0]) / 2 + low_x[
