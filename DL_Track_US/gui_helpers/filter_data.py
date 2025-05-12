@@ -24,9 +24,16 @@ def applyFilters(data, filter_type="median", **kwargs):
     list of lists
         The filtered data.
     """
+    # If input is a flat list of numbers, wrap it in another list
+    if isinstance(data, (list, np.ndarray)) and all(
+        isinstance(x, (int, float, np.floating)) for x in data
+    ):
+        data = [data]
+
     filtered_data = []
 
     for frame in data:
+
         if filter_type == "median":
             kernel_size = kwargs.get("kernel_size", 3)
             filtered_data.append(medfilt(frame, kernel_size=kernel_size).tolist())

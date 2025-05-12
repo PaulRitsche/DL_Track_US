@@ -2,15 +2,15 @@
     "aponeurosis_detection_threshold": 0.1,
     "aponeurosis_length_threshold": 400,
     "fascicle_detection_threshold": 0.05,
-    "fascicle_length_threshold": 30,
-    "minimal_muscle_width": 60,
-    "minimal_pennation_angle": 15,
+    "fascicle_length_threshold": 40,
+    "minimal_muscle_width": 200,
+    "minimal_pennation_angle": 10,
     "maximal_pennation_angle": 40,
     "fascicle_calculation_method": "linear_extrapolation",
     "fascicle_contour_tolerance": 10,
     "aponeurosis_distance_tolerance": 100,
     "selected_filter": "hampel",
     "hampel_window_size": 3,
-    "hampel_num_dev": 1,
-    "segmentation_mode": "none"
+    "hampel_num_dev": 2,
+    "segmentation_mode": "stacked"
 }

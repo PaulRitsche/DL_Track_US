@@ -397,11 +397,11 @@ def calculateArchitectureVideo(
 
             else:
                 fasc_l_all_filtered = [
-                    applyFilters(fasc_l, filter_type=settings["selected_filter"])
+                    applyFilters(fasc_l, filter_type=settings["selected_filter"])[0]
                     for fasc_l in fasc_l_all
                 ]
                 pennation_all_filtered = [
-                    applyFilters(pennation, filter_type=settings["selected_filter"])
+                    applyFilters(pennation, filter_type=settings["selected_filter"])[0]
                     for pennation in pennation_all
                 ]
 
