@@ -51,6 +51,6 @@ Again, the process is similar to the [remove video parts](./remove_video_parts.m
 
 > 🧠 **Tip:**  
 > Resizing the video can speed up the analysis, reduce errors, and protect privacy  
-> — especially in clinical settings or publications.
+> — especially in clinical settings or publications. **However, we did not include resized images during the training process.**
 
 ---

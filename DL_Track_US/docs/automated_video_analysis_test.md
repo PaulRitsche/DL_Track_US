@@ -12,8 +12,8 @@ This page explains how to test the **automated video analysis** functionality in
 Before running the test, ensure that:
 
 - You are using the correct <span style="color: #2eaf66;">**video**</span> located at `DL_Track_US_example/tests/test_video_automated`.
-- You are using the provided pre-trained <span style="color: #f97e25;">**models**</span>.
-- You have kept the default <span style="color: #e61d25;">**parameter settings**</span> in the `settings.py` file unchanged.
+- You are using the provided pre-trained <span style="color: #f97e25;">**models**</span>, located at `DL_Track_US_example/models/` (use IFSS for fascicles).
+- You have kept the default <span style="color: #e61d25;">**parameter settings**</span> in the `settings.json` file unchanged.
 - You click the <span style="color: #a34ba1;">**Run**</span> button in the GUI to start the analysis.
 
 <img src="\md_graphics/ava_test/test_setup.png">
@@ -34,8 +34,6 @@ When the analysis is complete, two new files will appear in the `DL_Track_US_exa
    - Fascicle length
    - Pennation angle
    - Muscle thickness
-   - Upper aponeurosis edge coordinates (`x_high`)
-   - Lower aponeurosis edge coordinates (`x_low`)
 
 3. Compare your results to the reference results shown below:
 

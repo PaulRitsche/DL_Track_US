@@ -249,6 +249,7 @@ Key parameters explained:
 > Correct parameter settings can greatly impact your analysis results.
 >
 > For future analyses, always test parameter settings on a small sample of your data first.
+> *Especially, choose a pennation angle range that is physiologically plausible with a minimum range.*
 > 
 > If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py`.
 

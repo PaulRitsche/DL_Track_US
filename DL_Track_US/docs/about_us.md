@@ -29,7 +29,8 @@ Our mission is to make **deep learning-based muscle architecture analysis** acce
 
 🔜 Future Plans:
 
-- Add sequential tracking support.
+- Add intuitive manual labelling tools.
+- Combine with feature tracking algorithm, e.g., Lucas-Kanade or kalman filter.
 - Extend model architectures (e.g., attention U-Nets, transformers).
 - Broaden community contribution possibilities.
 
@@ -59,10 +60,6 @@ Neil is the **co-developer** and **main visionary** behind DL_Track_US.
 His research in **biomechanics** and **muscle architecture** guided the core concepts and user-centered design of the tool.
 
 [🔗 Read more about Neil](http://users.jyu.fi/~necronin/)
-
----
-
-## Meet the Contributor
 
 ---
 

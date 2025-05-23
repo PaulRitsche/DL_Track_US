@@ -49,6 +49,7 @@ import os
 import time
 import tkinter as tk
 import warnings
+import traceback
 
 import cv2
 import matplotlib
@@ -66,6 +67,7 @@ from keras.models import load_model
 from matplotlib.backends.backend_pdf import PdfPages
 from pandas import ExcelWriter
 from skimage.transform import resize
+from scipy.signal import savgol_filter
 from tensorflow.keras.utils import img_to_array
 
 
@@ -77,9 +79,7 @@ from DL_Track_US.gui_helpers.do_calculations import doCalculations
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
 from DL_Track_US.gui_helpers.filter_data import hampelFilterList
-
-# plt.style.use("ggplot")
-# plt.switch_backend("Agg")
+from DL_Track_US.gui_helpers.model_training import dice_bce_loss, IoU, dice_score
 
 # Ensure eager execution is enabled
 tf.config.run_functions_eagerly(True)
@@ -87,10 +87,6 @@ tf.data.experimental.enable_debug_mode()
 
 # remove interactive plotting
 plt.ioff()
-
-# set matplotlib style
-# plt.rcParams["figure.figsize"] = [7.00, 3.50]
-# plt.rcParams["figure.autolayout"] = True
 
 
 class ImageProcessor:
@@ -100,21 +96,21 @@ class ImageProcessor:
         self.preprocess_function = preprocess_function
         self.batch_size = batch_size
         self.model_apo = tf.keras.models.load_model(
-            model_apo_path, custom_objects={"IoU": self.get_iou}
+            model_apo_path,
+            custom_objects={
+                "IoU": IoU,
+                "dice_bce_loss": dice_bce_loss,
+                "dice_score": dice_score,
+            },
         )
         self.model_fasc = tf.keras.models.load_model(
-            model_fasc_path, custom_objects={"IoU": self.get_iou}
+            model_fasc_path,
+            custom_objects={
+                "IoU": IoU,
+                "dice_bce_loss": dice_bce_loss,
+                "dice_score": dice_score,
+            },
         )
-
-    def get_iou(self, y_true, y_pred, smooth: int = 1):
-        # Calculate Intersection
-        intersect = K.sum(K.abs(y_true * y_pred), axis=-1)
-        # Calculate Union
-        union = K.sum(y_true, -1) + K.sum(y_pred, -1) - intersect
-        # Caclulate iou
-        iou = (intersect + smooth) / (union + smooth)
-
-        return iou
 
     # TODO do all the predictions here and then import the do_calculation functions directly.
     # Maybe even loop trough the images then.
@@ -332,6 +328,8 @@ def exportToExcel(
     filename: str = "Results",
     filtered_fasc=None,
     filtered_pennation=None,
+    analysis_mode: str = "video",
+    image_filenames: list = None,
 ):
     """
     Saves raw and optionally filtered analysis results to an Excel file, including an index column for each frame.
@@ -356,6 +354,10 @@ def exportToExcel(
         Filtered fascicle length data.
     filtered_pennation : list of lists, optional
         Filtered pennation angle data.
+    analysis_mode : str, optional
+        Analysis mode used for the calculations. If "video", savgol filter will be appiled.
+    image_filenames : list of str, optional
+        List of image filenames corresponding to the analysis results.
     """
 
     def create_array(data):
@@ -378,86 +380,92 @@ def exportToExcel(
     for i, j in enumerate(x_highs_all):
         xh[i, : len(j)] = j
 
-    # Create DataFrames with an index column
-    df1 = pd.DataFrame(data=fl_raw, dtype=float)
-    df2 = pd.DataFrame(data=pe_raw, dtype=float)
-    df3 = pd.DataFrame(data=xl, dtype=float)
-    df4 = pd.DataFrame(data=xh, dtype=float)
-    df5 = pd.DataFrame(data=thickness_all, dtype=float)
+    if analysis_mode == "video":
+        df1 = pd.DataFrame(data=fl_raw, dtype=float)
+        df2 = pd.DataFrame(data=pe_raw, dtype=float)
+        df3 = pd.DataFrame(data=xl, dtype=float)
+        df4 = pd.DataFrame(data=xh, dtype=float)
+        df5 = pd.DataFrame(data=thickness_all, dtype=float)
+    else:
+        df1 = pd.DataFrame(data=fl_raw, index=image_filenames, dtype=float)
+        df2 = pd.DataFrame(data=pe_raw, index=image_filenames, dtype=float)
+        df3 = pd.DataFrame(data=xl, index=image_filenames, dtype=float)
+        df4 = pd.DataFrame(data=xh, index=image_filenames, dtype=float)
+        df5 = pd.DataFrame(data=thickness_all, index=image_filenames, dtype=float)
 
     # Write to Excel
     writer = ExcelWriter(f"{path}/{filename}.xlsx")
 
-    df1.to_excel(writer, sheet_name="Fasc_length_raw", index=True)
-    df2.to_excel(writer, sheet_name="Pennation_raw", index=True)
-    df3.to_excel(writer, sheet_name="X_low", index=True)
-    df4.to_excel(writer, sheet_name="X_high", index=True)
-    df5.to_excel(writer, sheet_name="Thickness", index=True)
+    df1.to_excel(writer, sheet_name="Fasc_length_raw")
+    df2.to_excel(writer, sheet_name="Pennation_raw")
+    df3.to_excel(writer, sheet_name="X_low")
+    df4.to_excel(writer, sheet_name="X_high")
+    df5.to_excel(writer, sheet_name="Thickness")
 
     # Add filtered fascicle length (if provided)
     if filtered_fasc is not None:
         fl_filtered = create_array(filtered_fasc)
         for i, j in enumerate(filtered_fasc):
             fl_filtered[i, : len(j)] = j
-        df6 = pd.DataFrame(data=fl_filtered, dtype=float)
+        if analysis_mode == "video":
+            df6 = pd.DataFrame(data=fl_filtered, dtype=float)
+        else:
+            df6 = pd.DataFrame(data=fl_filtered, index=image_filenames, dtype=float)
         df6.to_excel(writer, sheet_name="Fasc_length_filtered", index=True)
 
-        # add overall filtereed median
-        df61 = pd.DataFrame(
-            hampelFilterList(df6.median(axis=1, skipna=True))["filtered"]
-        )
-        df61.to_excel(writer, sheet_name="Fasc_length_filtered_median", index=True)
+        # add overall filtered median
+        if analysis_mode == "video":
+
+            df61 = pd.DataFrame(
+                hampelFilterList(df6.median(axis=1, skipna=True))["filtered"]
+            )
+            window_length = (
+                11 if len(df61) >= 11 else (len(df61) // 2) * 2 + 1
+            )  # must be odd and ≤ len
+            polyorder = 3 if window_length > 3 else 2
+
+            df61_savgol = pd.Series(
+                savgol_filter(
+                    df61.iloc[:, 0], window_length=window_length, polyorder=polyorder
+                )
+            )
+            df61_savgol.to_excel(
+                writer, sheet_name="Fasc_length_filtered_median", index=True
+            )
+            # df61.to_excel(writer, sheet_name="Fasc_length_filtered_median", index=True)
 
     # Add filtered pennation angle (if provided)
     if filtered_pennation is not None:
         pe_filtered = create_array(filtered_pennation)
         for i, j in enumerate(filtered_pennation):
             pe_filtered[i, : len(j)] = j
-        df7 = pd.DataFrame(data=pe_filtered, dtype=float)
+        if analysis_mode == "video":
+            df7 = pd.DataFrame(data=pe_filtered, dtype=float)
+        else:
+            df7 = pd.DataFrame(data=pe_filtered, index=image_filenames, dtype=float)
         df7.to_excel(writer, sheet_name="Pennation_filtered", index=True)
 
-        df71 = pd.DataFrame(
-            hampelFilterList(df7.median(axis=1, skipna=True))["filtered"]
-        )
-        df71.to_excel(writer, sheet_name="pennation_filtered_median", index=True)
+        if analysis_mode == "video":
+
+            df71 = pd.DataFrame(
+                hampelFilterList(df7.median(axis=1, skipna=True))["filtered"]
+            )
+            window_length = (
+                11 if len(df71) >= 11 else (len(df71) // 2) * 2 + 1
+            )  # must be odd and ≤ len
+            polyorder = 3 if window_length > 3 else 2
+
+            df71_savgol = pd.Series(
+                savgol_filter(
+                    df71.iloc[:, 0], window_length=window_length, polyorder=polyorder
+                )
+            )
+            df71_savgol.to_excel(
+                writer, sheet_name="Pennation_filtered_median", index=True
+            )
+            # df71.to_excel(writer, sheet_name="Pennation_filtered_median", index=True)
 
     writer.close()
-
-
-def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
-    """Function to save the analysis results to a .xlsx file.
-
-    A pd.DataFrame object must be inputted. The results
-    inculded in the dataframe are saved to an .xlsx file.
-    The .xlsx file is saved to the specified rootpath.
-
-    Parameters
-    ----------
-    rootpath : str
-        String variable containing the path to where the .xlsx file
-        should be saved.
-    dataframe : pd.DataFrame
-        Pandas dataframe variable containing the image analysis results
-        for every image anlyzed.
-
-    Examples
-    --------
-    >>> saveResults(img_path = "C:/Users/admin/Dokuments/images",
-                    dataframe = [['File',"image1"],['FL', 12],
-                                 ['PA', 17], ...])
-    """
-    # Make filepath
-    excelpath = rootpath + "/Results.xlsx"
-
-    # Check if file already existing and write .xlsx
-    if os.path.exists(excelpath):
-        with pd.ExcelWriter(excelpath, mode="a", if_sheet_exists="replace") as writer:
-            data = dataframe
-            data.to_excel(writer, sheet_name="Results")
-    else:
-        with pd.ExcelWriter(excelpath, mode="w") as writer:
-            data = dataframe
-            data.to_excel(writer, sheet_name="Results")
 
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
@@ -863,6 +871,8 @@ def calculateBatch(
                     thickness_all,
                     filtered_fasc=fasc_l_all_filtered,
                     filtered_pennation=pennation_all_filtered,
+                    analysis_mode="image",
+                    image_filenames=[os.path.basename(f) for f in list_of_files],
                 )
 
             except FileNotFoundError:
@@ -873,12 +883,33 @@ def calculateBatch(
                 return
 
             except ValueError:
-                failed_files.append(fail)
-                warnings.warn("No aponeuroses found in image.")
+                error_details = traceback.format_exc()
+                tk.messagebox.showerror(
+                    "Fascicle detection Error",
+                    "Adapt analysis parameters or model for valid detection.\n"
+                    + "If 'bar scaling' is selected, remove failed images and analyse without scaling.\n\n"
+                    + error_details,
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
             except PermissionError:
                 tk.messagebox.showerror(
                     "Information", "Close results file berfore ongoing analysis."
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+
+            except IndexError:
+                error_details = traceback.format_exc()
+                tk.messagebox.showerror(
+                    "Fascicle detection Error",
+                    "Adapt analysis parameters or model for valid detection.\n\n"
+                    + error_details,
                 )
                 gui.should_stop = False
                 gui.is_running = False

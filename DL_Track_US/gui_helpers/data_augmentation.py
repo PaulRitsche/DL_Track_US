@@ -18,6 +18,7 @@ image_augmentation
 
 import os
 import tkinter as tk
+import traceback
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -130,13 +131,15 @@ def image_augmentation(input_img_folder, input_mask_folder, gui):
         gui.is_running = False
 
     except FileNotFoundError:
+        error_details = traceback.format_exc()
         tk.messagebox.showerror(
             "Information",
             "Check input directories."
             + "\nPotential error sources:"
             + "\n - Invalid specified input directories"
             + "\n - Unequal number of images or masks"
-            + "\n - Names for images and masks don't match",
+            + "\n - Names for images and masks don't match\n\n"
+            + error_details,
         )
         # clean up
         gui.do_break()
@@ -144,12 +147,15 @@ def image_augmentation(input_img_folder, input_mask_folder, gui):
         gui.is_running = False
 
     except PermissionError:
+        error_details = traceback.format_exc()
         tk.messagebox.showerror(
             "Information",
             "Check input directories."
             + "\nPotential error sources:"
-            + "\n - Invalid specified input directories",
+            + "\n - Invalid specified input directories\n\n"
+            + error_details,
         )
+
         # clean up
         gui.do_break()
         gui.should_stop = False

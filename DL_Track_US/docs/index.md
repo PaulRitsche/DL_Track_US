@@ -1,4 +1,8 @@
-# Welcome to DL_Track_US
+# Welcome to 
+
+<p align="center">
+  <img src="md_graphics/DLTrack_logo.png" alt="Logo" width="50%">
+</p>
 
 **DL_Track_US** is a Python toolkit for the automated and manual analysis of muscle architecture in human lower limb ultrasonography images and videos. It provides a user-friendly graphical interface and supports fully automated batch processing of both images and videos.
 
@@ -8,7 +12,7 @@ The method uses deep learning models trained on longitudinal ultrasound images o
 ✅ Pennation angle  
 ✅ Muscle thickness  
 
-Originally introduced by Cronin, Seynnes, and Finni in 2020, the method was substantially expanded in 2022 by Paul Ritsche and colleagues. The full method was published in 2023 and 2024:  
+Originally introduced by Cronin, Seynnes, and Finni in 2020, the method was substantially expanded in 2022 by Ritsche and colleagues. The full method was published in 2023 and 2024:  
 
 - 📄 [Journal of Open Source Software, 2023](https://doi.org/10.21105/joss.05206)
 - 📄 [Ultrasound in Medicine & Biology, 2024](https://doi.org/10.1016/j.ultrasmedbio.2024.01.004)

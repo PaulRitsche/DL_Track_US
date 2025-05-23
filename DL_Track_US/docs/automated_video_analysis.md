@@ -140,12 +140,21 @@ For the example video, flipping is required to correct fascicle orientation.
 Open the settings by clicking the <span style="color: #a34ba1;">**Settings Wheel**</span>.
 
 - A txt script `settings.txt` opens in your default editor.
-- Default values are listed; detailed descriptions are available at the top of the file.
+- Default values are listed.
 
 ![analysis parameters](md_graphics/ava/analysis_parameters.PNG)
 ![settings.py](md_graphics/ava/settings_py.PNG)
 
-You can find an explanation on all setting in [this chapter](LINK).
+You can find an explanation on all setting in [this chapter](automated_image_analysis.md#4-adjusting-settings).
+
+> 💡 **Tip:**  
+> Adapt these parameters according to your images or videos!  
+> Correct parameter settings can greatly impact your analysis results.
+>
+> For future analyses, always test parameter settings on a small sample of your data first.
+> *Especially, choose a pennation angle range that is physiologically plausible with a minimum range.*
+> 
+> If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py`.
 
 ---
 

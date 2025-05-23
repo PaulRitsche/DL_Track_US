@@ -46,8 +46,8 @@ Both will appear in:
 - Open the <span style="color: #2eaf66;">**Results.xlsx**</span> file.
 - Compare the analysis results to the expected outputs shown below.
 
-If the results are similar, **DL_Track_US works properly** for automated image analysis!
-
 <img src="\md_graphics\aia_test\results.png">
 
 ---
+
+✅ If the results are similar, **DL_Track_US works properly** for automated image analysis!

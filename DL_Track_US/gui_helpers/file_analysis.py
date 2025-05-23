@@ -336,6 +336,7 @@ def overlay_directory_images(image_dir, mask_dir, alpha=0.5, start_index=0):
 
             # Redraw the plot
             plt.draw()
+
         except IndexError:
             tk.messagebox.showerror(
                 "Information", f"Start index must be between 0 and {len(image_files)}"

@@ -33,9 +33,9 @@ class AdvancedAnalysis:
         self.advanced_window = ctk.CTkToplevel(fg_color="#2A484E")
         self.advanced_window.title("Advanced Methods Window")
 
-        head_path = os.path.dirname(os.path.abspath(__file__))
-        iconpath = head_path + "/gui_helpers/home_im.ico"
-        # self.advanced_window.iconbitmap(iconpath)
+        # head_path = os.path.dirname(os.path.abspath(__file__))
+        iconpath = self.parent.resource_path("gui_helpers/gui_files/DLTrack_logo.ico")
+        self.advanced_window.iconbitmap(iconpath)
 
         # if platform.startswith("win"):
         #     self.a_window.after(200, lambda: self.a_window.iconbitmap(iconpath))
@@ -49,7 +49,7 @@ class AdvancedAnalysis:
         self.advanced_window.columnconfigure(0, weight=1)
         self.advanced_window.columnconfigure(1, weight=5)
         self.advanced_window.rowconfigure(0, weight=1)
-        self.advanced_window.minsize(width=600, height=400)
+        self.advanced_window.minsize(width=300, height=100)
 
         self.advanced_window.grab_set()
 

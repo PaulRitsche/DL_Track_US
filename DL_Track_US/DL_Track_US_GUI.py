@@ -36,13 +36,13 @@ References
 [3] DL_Track: Cronin, Neil J. and Finni, Taija and Seynnes, Olivier. "Fully automated analysis of muscle architecture from B-mode ultrasound images with deep learning." arXiv preprint arXiv:https://arxiv.org/abs/2009.04790 (2020)
 """
 
-import importlib
 import os
 import subprocess
 import sys
 import glob
 import webbrowser
 import json
+import traceback
 
 import tkinter as tk
 from threading import Lock, Thread
@@ -66,161 +66,130 @@ from DL_Track_US.gui_modules import AdvancedAnalysis
 # disable interactive backend
 plt.ioff()
 
+# TODO robustness of the GUI, only dor advanced methods
+# TODO add exeption handling for advanced methods
+# TODO executable for mac and windows
+# TODO final doc check
+
 
 class DLTrack(ctk.CTk):
     """
-    DLTrack GUI for Muscle Ultrasound Analysis
-    ==========================================
+    DLTrack Graphical User Interface for Muscle Ultrasound Analysis
+    =================================================================
 
-    This module provides a graphical user interface (GUI) for the DL_Track package,
-    allowing users to annotate longitudinal ultrasonography images and videos both
-    manually and automatically. The GUI facilitates navigation through the package's
-    functionalities, including automated and manual evaluation of muscle
-    ultrasonography images. It computes muscle fascicle length, pennation angle,
-    and muscle thickness using convolutional neural networks (U-Net, VGG16).
+    Main UI class of the DL_Track_US package providing both automatic and manual analysis
+    of longitudinal B-mode ultrasound images and videos. Supports annotation, model-based
+    segmentation, result visualization, and metric export.
 
-    The GUI integrates and improves upon the work of Cronin et al. (2020),
-    enhancing usability and accessibility for researchers and practitioners.
+    The GUI integrates U-Net and VGG16-based CNN models to compute fascicle length,
+    pennation angle, and muscle thickness. Users can customize analysis parameters,
+    calibrate scaling, and optionally flip video frames.
 
     Dependencies
     ------------
-    - `tkinter` : Standard GUI toolkit for Python.
-    - `customtkinter` : Enhanced GUI styling.
-    - `threading` : Enables concurrent execution.
-    - `matplotlib` : Used for visualization and rendering plots.
-    - `cv2` (OpenCV) : Image processing library.
-    - `numpy`, `pandas` : Numerical and data manipulation.
-    - `PIL` (Pillow) : Image handling.
-    - `glob`, `os`, `sys`, `subprocess` : File and system interactions.
-
-    Classes
-    -------
-    DLTrack
-        A graphical interface for muscle ultrasound annotation, supporting automatic
-        and manual segmentation, model training, and analysis.
+    - GUI: tkinter, customtkinter, CTkToolTip
+    - Image/Video Handling: OpenCV (cv2), PIL, matplotlib
+    - Numerical: numpy, pandas
+    - System: os, sys, subprocess, threading, glob, json, traceback
 
     Attributes
     ----------
-    self._lock : threading.Lock
-        Lock object for thread safety.
-    self._is_running : bool
-        Boolean flag indicating whether the GUI is active.
-    self._should_stop : bool
-        Boolean flag to stop ongoing processes.
-    self.main : tkinter.Tk
-        Main GUI window.
-    self.input : str
-        Directory path for input files.
-    self.apo_model : str
-        Path to aponeurosis segmentation model.
-    self.fasc_model : str
-        Path to fascicle segmentation model.
-    self.analysis_type : {"image", "video", "image_manual", "video_manual"}
-        Selected analysis mode.
-    self.scaling : {"bar", "manual", "no scaling"}
-        Scaling method.
-    self.filetype : str
-        Selected file type for analysis.
-    self.spacing : int
-        Spacing distance for pixel/cm ratio calculations.
-    self.flipflag : str
-        File path for flip flags.
-    self.flip : {"no_flip", "flip"}
-        Flip option for video analysis.
-    self.video : str
-        Path to video file for manual analysis.
-    self.apo_threshold : float
-        Threshold value for aponeurosis segmentation.
-    self.fasc_threshold : float
-        Threshold value for fascicle segmentation.
-    self.fasc_cont_threshold : float
-        Threshold for fascicle continuity detection.
-    self.min_width : float
-        Minimum detectable distance between aponeuroses.
-    self.min_pennation : float
-        Minimum acceptable pennation angle.
-    self.max_pennation : float
-        Maximum acceptable pennation angle.
-    self.train_image_dir : str
-        Path to training image dataset.
-    self.mask_path : str
-        Path to binary mask dataset.
-    self.out_dir : str
-        Directory for saving trained models.
-    self.batch_size : int
-        Batch size for model training.
-    self.learning_rate : float
-        Learning rate for model training.
-    self.epochs : int
-        Number of training epochs.
-    self.loss : str
-        Loss function used for training.
+    main : ctk.CTkFrame
+        Primary GUI layout container.
+    results : ctk.CTkFrame
+        Frame for image/video and result display.
+    terminal : ctk.CTkFrame
+        Panel for figure/metric visualization.
+    analysis_type : StringVar
+        Current analysis mode ("image", "video", "image_manual", "video_manual").
+    filetype : StringVar
+        File extension filter for input files.
+    scaling : StringVar
+        Chosen scaling type ("Bar", "Manual", "None").
+    spacing : StringVar
+        Millimeter spacing used in manual calibration.
+    flip : StringVar
+        Flip option for video analysis ("flip", "no_flip").
+    filter_fasc : StringVar
+        Option to enable fascicle filtering.
+    step : StringVar
+        Frame step interval for video analysis.
+    input_dir : str
+        Directory containing input images or videos.
+    apo_model : str
+        Path to the selected aponeurosis segmentation model.
+    fasc_model : str
+        Path to the selected fascicle segmentation model.
+    flipflag_dir : str
+        Path to CSV file with flip flags for images.
+    video_path : str
+        Path to a single video file (for manual analysis).
+    processed_frames : list
+        List of currently processed image frames or matplotlib figures.
+    current_frame_index : int
+        Index of currently displayed frame.
+    settings : dict
+        Dictionary of user-defined configuration parameters.
+    _lock : threading.Lock
+        Thread lock for thread-safe flags.
+    _is_running : bool
+        Indicates whether a processing thread is active.
+    _should_stop : bool
+        Indicates whether a running thread should be interrupted.
 
     Methods
     -------
-    __init__()
-        Initializes the GUI and sets up event listeners.
-    mclick(event)
-        Detects mouse clicks for calibration.
-    calibrate_distance()
-        Computes pixel-to-mm conversion for manual calibration.
-    calibrateDistanceManually()
-        Opens a manual calibration interface.
-    display_results(input_df_raw, input_df_filtered, input_df_medians)
-        Displays analysis results in the GUI.
-    on_processing_complete()
-        Updates UI elements after processing.
-    display_frame(item)
-        Displays the current image or video frame in the GUI.
-    update_frame_by_slider(value)
-        Changes displayed frame based on slider value.
-    update_slider_range()
-        Synchronizes slider with processed frames.
-    load_settings()
-        Loads user-defined settings.
-    open_settings()
-        Opens the configuration settings file.
-    get_input_dir()
-        Opens a file dialog to select the input directory.
-    get_apo_model_path()
-        Opens a file dialog to select the aponeurosis model file.
-    get_fasc_model_path()
-        Opens a file dialog to select the fascicle model file.
-    change_analysis_type()
-        Updates UI elements based on the selected analysis type.
-    change_spacing()
-        Enables or disables spacing selection based on scaling type.
-    get_flipfile_path()
-        Opens a file dialog to select the flip flag file.
-    get_video_path()
-        Opens a file dialog to select the video file for manual analysis.
-    should_stop()
-        Thread-safe property indicating whether the process should stop.
-    is_running()
-        Thread-safe property indicating if the process is running.
+    __init__(*args, **kwargs)
+        Initializes GUI layout, variables, buttons, and bindings.
     run_code()
-        Runs the selected analysis in a separate thread.
+        Launches appropriate analysis pipeline in a background thread.
     do_break()
-        Stops the currently running analysis process.
+        Interrupts the currently running analysis thread.
     check_processing_complete(thread, callback)
-        Monitors the completion of an analysis process.
+        Monitors thread execution and invokes callback on completion.
+    display_frame(item)
+        Displays either an image frame or a matplotlib figure in the canvas.
+    display_results(input_df_raw, input_df_filtered, input_df_medians)
+        Plots fascicle length medians across frames and embeds in GUI.
+    calibrateDistanceManually()
+        Initializes interactive calibration interface.
+    calibrate_distance()
+        Computes and displays pixel-to-mm scaling from two points.
+    mclick(event)
+        Captures mouse positions during manual calibration.
+    get_input_dir(), get_apo_model_path(), get_fasc_model_path()
+        File dialog utilities for selecting inputs.
+    get_flipfile_path(), get_video_path()
+        Select paths for flip flag CSV or single video.
+    change_analysis_type(*args)
+        Dynamically enables/disables GUI components based on analysis type.
+    change_spacing(*args)
+        Enables calibration button only for manual scaling.
+    update_frame_by_slider(value), update_slider_range()
+        Slider controls for frame navigation.
+    load_settings()
+        Loads persistent analysis settings from JSON file.
+    open_settings()
+        Opens editable JSON settings file in default system editor.
 
     Notes
     -----
-    - This GUI is an interactive front-end for DL_Track, ensuring easy access
-    to image and video analysis.
+    - Intended to be launched via `python -m DL_Track_US_GUI` or integrated into apps.
+    - Processing callbacks are executed asynchronously to preserve UI responsiveness.
+    - Uses external functions from `gui_helpers` and `gui_modules.AdvancedAnalysis`.
+
+    See Also
+    --------
+    gui_helpers.calculateBatch
+    gui_helpers.calculateArchitectureVideo
+    gui_helpers.calculateBatchManual
+    gui_helpers.calculateArchitectureVideoManual
 
     References
     ----------
-    [1] Simonyan, K., & Zisserman, A. (2014). “Very deep convolutional networks for
-        large-scale image recognition.” arXiv preprint arXiv:1409.1556.
-    [2] Ronneberger, O., Fischer, P., & Brox, T. (2015). "U-Net: Convolutional Networks
-        for Biomedical Image Segmentation." arXiv preprint arXiv:1505.04597.
-    [3] Cronin, N. J., Finni, T., & Seynnes, O. (2020). "Fully automated analysis of
-        muscle architecture from B-mode ultrasound images with deep learning."
-        arXiv preprint arXiv:2009.04790.
-    [4] Ritsche et al., (2023). DL_Track_US: a python package to analyse muscle ultrasonography images.
-        Journal of Open Source Software, 8(85), 5206, https://doi.org/10.21105/joss.05206
+    [1] Cronin et al. (2020), arXiv:2009.04790
+    [2] Ritsche et al. (2023), JOSS, https://doi.org/10.21105/joss.05206
+    [3] Ritsche et al. (2024), UMB, https://doi.org/10.1016/j.ultrasmedbio.2023.10.011
     """
 
     def __init__(self, *args, **kwargs):
@@ -332,6 +301,8 @@ class DLTrack(ctk.CTk):
             self.main, text="Inputs", command=self.get_input_dir
         )
         input_button.grid(column=0, row=4, sticky=E)
+        self.input_dir_label = ctk.CTkLabel(self.main, text="")
+        self.input_dir_label.grid(column=0, row=5)
 
         tooltip_input = CTkToolTip(
             input_button,
@@ -355,7 +326,8 @@ class DLTrack(ctk.CTk):
             text_color="#000000",
             alpha=0.7,
         )
-
+        self.apo_dir_label = ctk.CTkLabel(self.main, text="")
+        self.apo_dir_label.grid(column=1, row=5)
         # Fasc model path
         fasc_model_button = ctk.CTkButton(
             self.main, text="Fasc Model", command=self.get_fasc_model_path
@@ -369,6 +341,8 @@ class DLTrack(ctk.CTk):
             text_color="#000000",
             alpha=0.7,
         )
+        self.fasc_dir_label = ctk.CTkLabel(self.main, text="")
+        self.fasc_dir_label.grid(column=2, row=5)
 
         # Analysis Type
         # Separators
@@ -445,7 +419,7 @@ class DLTrack(ctk.CTk):
             state="disabled",
         )
         self.scaling_entry.grid(column=1, row=12, sticky=(W, E))
-        self.scaling.set("Bar")
+        self.scaling.set("None")
         self.scaling.trace_add("write", self.change_spacing)
 
         # Spacing label
@@ -609,8 +583,11 @@ class DLTrack(ctk.CTk):
         logo_path = self.resource_path("gui_helpers/gui_files/DLTrack_logo.png")
         self.logo_img = ImageTk.PhotoImage(Image.open(logo_path))
 
-        self.video_canvas = tk.Label(
-            self.results, bg="#2A484E", image=self.logo_img, border=3
+        self.video_canvas = tk.Canvas(
+            self.results, bg="#2A484E", highlightthickness=0, width=800, height=600
+        )
+        self.logo_id = self.video_canvas.create_image(
+            400, 300, anchor="center", image=self.logo_img
         )
 
         self.video_canvas.grid(
@@ -621,9 +598,13 @@ class DLTrack(ctk.CTk):
             sticky=(N, S, W, E),
         )
 
+        self.canvas_inner_frame = tk.Frame(self.video_canvas, bg="#2A484E")
+        self.canvas_window = self.video_canvas.create_window(
+            (0, 0), window=self.canvas_inner_frame, anchor="nw"
+        )
+
         # Configure rows with a loop
-        for row in range(5):
-            self.results.rowconfigure(row, weight=1)
+        self.results.rowconfigure(0, weight=1)
         self.results.columnconfigure(0, weight=1)
 
         # Add a slider for frame navigation
@@ -794,49 +775,50 @@ class DLTrack(ctk.CTk):
         input_df_medians : pd.DataFrame
             Dataftame containing the filtered median results.
         """
-        # Calculate the median length of the fascicles
-        # Drop the first column if it's just row indices
-        data_raw_cleaned = input_df_raw.iloc[:, 1:]
-        data_filtered_cleaned = input_df_filtered.iloc[:, 1:]
+        if self.analysis_type.get() == "video":
+            # Calculate the median length of the fascicles
+            # Drop the first column if it's just row indices
+            data_raw_cleaned = input_df_raw.iloc[:, 1:]
+            data_filtered_cleaned = input_df_filtered.iloc[:, 1:]
 
-        # Compute row-wise median for each DataFrame
-        medians_raw = data_raw_cleaned.median(axis=1, skipna=True)
-        medians_filtered = data_filtered_cleaned.median(axis=1, skipna=True)
-        filtered_medians = input_df_medians.iloc[:, 1:]
+            # Compute row-wise median for each DataFrame
+            medians_raw = data_raw_cleaned.median(axis=1, skipna=True)
+            medians_filtered = data_filtered_cleaned.median(axis=1, skipna=True)
+            filtered_medians = input_df_medians.iloc[:, 1:]
 
-        # Create a new figure for the plot
-        fig, ax = plt.subplots()
-        ax.plot(medians_raw, "o-", label="Median Fascicle Length")
-        ax.plot(
-            medians_filtered,
-            "+-",
-            label="Median Filtered Fascicle Length",
-            color="green",
-        )  # Add filtered lengths in green
-        ax.plot(
-            filtered_medians,
-            "x-",
-            label="Filtered Median Fascicle Length",
-            color="yellow",
-        )  # Add filtered lengths in green
-        ax.set_xlabel("Frame")
-        ax.legend()
-        ax.grid(True)
-        plt.tight_layout()
+            # Create a new figure for the plot
+            fig, ax = plt.subplots()
+            ax.plot(medians_raw, "o-", label="Median Fascicle Length")
+            ax.plot(
+                medians_filtered,
+                "+-",
+                label="Median Filtered Fascicle Length",
+                color="green",
+            )  # Add filtered lengths in green
+            ax.plot(
+                filtered_medians,
+                "x-",
+                label="Filtered Median Fascicle Length",
+                color="yellow",
+            )  # Add filtered lengths in green
+            ax.set_xlabel("Frame")
+            ax.legend()
+            ax.grid(True)
+            plt.tight_layout()
 
-        # Display the plot in the video_canvas
-        if hasattr(self, "result_canvas"):
-            self.result_canvas.get_tk_widget().destroy()
+            # Display the plot in the video_canvas
+            if hasattr(self, "result_canvas"):
+                self.result_canvas.get_tk_widget().destroy()
 
-        self.result_canvas = FigureCanvasTkAgg(fig, master=self.terminal)
-        self.result_canvas.draw()
-        result_widget = self.result_canvas.get_tk_widget()
-        result_widget.grid(column=0, row=0, columnspan=16, sticky=(W, E))
-        result_widget.config(height=200)
+            self.result_canvas = FigureCanvasTkAgg(fig, master=self.terminal)
+            self.result_canvas.draw()
+            result_widget = self.result_canvas.get_tk_widget()
+            result_widget.grid(column=0, row=0, columnspan=16, sticky=(W, E))
+            result_widget.config(height=200)
 
-        # Configure resizing of the figure
-        self.terminal.grid_columnconfigure(0, weight=1)
-        self.terminal.grid_rowconfigure(0, weight=1)
+            # Configure resizing of the figure
+            self.terminal.grid_columnconfigure(0, weight=1)
+            self.terminal.grid_rowconfigure(0, weight=1)
 
     def on_processing_complete(self):
         """
@@ -860,23 +842,24 @@ class DLTrack(ctk.CTk):
         else:
             results_file_path = os.path.join(self.input_dir, "Results.xlsx")
 
-        try:
-            if os.path.exists(results_file_path):
-                results_data_raw = pd.read_excel(
-                    results_file_path, sheet_name="Fasc_length_raw"
-                )
-                results_data_filtered = pd.read_excel(
-                    results_file_path, sheet_name="Fasc_length_filtered"
-                )
-                results_data_medians = pd.read_excel(
-                    results_file_path, sheet_name="Fasc_length_filtered_median"
-                )
+        if self.analysis_type.get() == "video":
+            try:
+                if os.path.exists(results_file_path):
+                    results_data_raw = pd.read_excel(
+                        results_file_path, sheet_name="Fasc_length_raw"
+                    )
+                    results_data_filtered = pd.read_excel(
+                        results_file_path, sheet_name="Fasc_length_filtered"
+                    )
+                    results_data_medians = pd.read_excel(
+                        results_file_path, sheet_name="Fasc_length_filtered_median"
+                    )
 
-                self.display_results(
-                    results_data_raw, results_data_filtered, results_data_medians
-                )
-        except:
-            print("No results file found.")
+                    self.display_results(
+                        results_data_raw, results_data_filtered, results_data_medians
+                    )
+            except:
+                print("No results file found.")
 
     def display_frame(self, item):
         """
@@ -887,6 +870,11 @@ class DLTrack(ctk.CTk):
             print("No frame or figure to display.")
             return
 
+        # Clear the logo if it's still there
+        if hasattr(self, "logo_id"):
+            self.video_canvas.delete(self.logo_id)
+            del self.logo_id
+
         if hasattr(self, "calib_canvas"):
             self.calib_canvas.destroy()
             del self.calib_canvas
@@ -894,41 +882,94 @@ class DLTrack(ctk.CTk):
         # Check if the item is an OpenCV frame (NumPy array)
         if isinstance(item, np.ndarray):
 
+            self.video_canvas.delete("all")
+
             if hasattr(self, "figure_canvas"):
                 self.figure_canvas.get_tk_widget().destroy()
 
-            # Process and display the OpenCV frame
             frame_rgb = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)
             frame_image = Image.fromarray(frame_rgb)
-            frame_tk = ImageTk.PhotoImage(image=frame_image, size=(600, 800))
+            self.last_frame_displayed = item  # Store original BGR frame
 
-            if not hasattr(self, "video_canvas"):
-                self.video_canvas = tk.Label(self.results, bg="#2A484E", border=3)
-                self.video_canvas.grid(
-                    column=0, row=0, columnspan=6, rowspan=8, sticky=(N, S, W, E)
+            # Resize to canvas size
+            canvas_width = self.video_canvas.winfo_width()
+            canvas_height = self.video_canvas.winfo_height()
+
+            if canvas_width > 1 and canvas_height > 1:
+                img = frame_image.resize(
+                    (canvas_width, canvas_height), Image.Resampling.LANCZOS
                 )
+            else:
+                img = frame_image
 
-            self.video_canvas.configure(image=frame_tk)
-            self.video_canvas.imgtk = frame_tk
+            self.frame_tk = ImageTk.PhotoImage(image=img)
+
+            # Draw centered image in canvas
+            self.canvas_image_id = self.video_canvas.create_image(
+                canvas_width // 2,
+                canvas_height // 2,
+                image=self.frame_tk,
+                anchor=tk.CENTER,
+            )
+
+            # Bind resizing to re-center and redraw
+            def _on_canvas_resize(event):
+
+                self.video_canvas.delete(
+                    "all"
+                )  # prevent logo from coming back on resize
+
+                if hasattr(self, "last_frame_displayed"):
+                    resized = Image.fromarray(
+                        cv2.cvtColor(self.last_frame_displayed, cv2.COLOR_BGR2RGB)
+                    )
+                    new_width, new_height = event.width, event.height
+                    resized = resized.resize(
+                        (new_width, new_height), Image.Resampling.LANCZOS
+                    )
+                    self.frame_tk = ImageTk.PhotoImage(image=resized)
+
+                    self.video_canvas.delete(self.canvas_image_id)
+                    self.canvas_image_id = self.video_canvas.create_image(
+                        new_width // 2,
+                        new_height // 2,
+                        image=self.frame_tk,
+                        anchor=tk.CENTER,
+                    )
+
+            self.video_canvas.bind("<Configure>", _on_canvas_resize)
 
             self.processed_frames.append(item)
 
         # Check if the item is a matplotlib figure
         elif isinstance(item, plt.Figure):
+
+            self.video_canvas.delete("all")
             # Reuse the existing FigureCanvasTkAgg if it exists
             if hasattr(self, "figure_canvas"):
-                self.figure_canvas.figure = item
-                self.figure_canvas.draw()
-            else:
-                # Create a new FigureCanvasTkAgg
-                self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
-                self.figure_canvas.draw()
+                self.figure_canvas.get_tk_widget().destroy()
+                del self.figure_canvas
 
-                # Create a widget for the figure
-                figure_widget = self.figure_canvas.get_tk_widget()
-                figure_widget.grid(
-                    column=0, row=0, columnspan=6, rowspan=8, sticky=(W, E, S, N)
-                )
+            # Embed the canvas frame again
+            self.canvas_window = self.video_canvas.create_window(
+                (0, 0), window=self.canvas_inner_frame, anchor="nw"
+            )
+
+            # Create a new FigureCanvasTkAgg
+            self.figure_canvas = FigureCanvasTkAgg(item, master=self.video_canvas)
+            figure_widget = self.figure_canvas.get_tk_widget()
+            figure_widget.pack(fill=tk.BOTH, expand=True)
+
+            # # Bind resizing to redraw the figure
+            # def resize_figure(event):
+            #     item.set_size_inches(
+            #         event.width / self.figure_canvas.figure.dpi,
+            #         event.height / self.figure_canvas.figure.dpi,
+            #     )
+            #     self.figure_canvas.draw()
+
+            # figure_widget.bind("<Configure>", resize_figure)
+            self.figure_canvas.draw()
 
             self.processed_frames.append(item)
 
@@ -969,8 +1010,6 @@ class DLTrack(ctk.CTk):
         )
         self.frame_slider.grid(column=0, row=2, columnspan=2, sticky=(W, E))
 
-    # Methods used in main GUI window when respective buttons are pressed.
-    # Define functionalities for buttons used in GUI master window
     def load_settings(self):
         """
         Instance Method to load the setting file for.
@@ -979,10 +1018,6 @@ class DLTrack(ctk.CTk):
         The settings specified by the user will then be transferred
         to the code and used.
         """
-        # If not previously imported, just import it
-        # global settings
-        # self.settings = importlib.reload(settings)
-
         with open(self.resource_path("gui_helpers/gui_files/settings.json"), "r") as f:
             settings = json.load(f)
             self.settings = settings
@@ -1014,11 +1049,10 @@ class DLTrack(ctk.CTk):
         the input directory are analysed.
         """
         self.input_dir = filedialog.askdirectory()
-        ctk.CTkLabel(
-            self.main,
+        self.input_dir_label.configure(
             text=f"Folder: {os.path.basename(self.input_dir)}",
             font=("Segue UI", 8, "bold"),
-        ).grid(column=0, row=5)
+        )
 
     # Get path of aponeurosis model
     def get_apo_model_path(self):
@@ -1026,11 +1060,10 @@ class DLTrack(ctk.CTk):
         This must be an absolute path and the model must be a .h5 file.
         """
         self.apo_model = filedialog.askopenfilename(title="Open aponeurosis model.")
-        ctk.CTkLabel(
-            self.main,
+        self.apo_dir_label.configure(
             text=f"{os.path.splitext(os.path.basename(self.apo_model))[0]}",
             font=("Segue UI", 8, "bold"),
-        ).grid(column=1, row=5)
+        )
 
     # Get path of fascicle model
     def get_fasc_model_path(self):
@@ -1038,11 +1071,10 @@ class DLTrack(ctk.CTk):
         This must be an absolute path and the model must be a .h5 file.
         """
         self.fasc_model = filedialog.askopenfilename(title="Open fascicle model.")
-        ctk.CTkLabel(
-            self.main,
+        self.fasc_dir_label.configure(
             text=f"{os.path.splitext(os.path.basename(self.fasc_model))[0]}",
             font=("Segue UI", 8, "bold"),
-        ).grid(column=2, row=5)
+        )
 
     def change_analysis_type(self, *args):
         """
@@ -1303,24 +1335,6 @@ class DLTrack(ctk.CTk):
                 self.do_break()
                 return
 
-            # Define dictionary containing settings
-            # settings = {
-            #     "aponeurosis_detection_threshold": self.settings.aponeurosis_detection_threshold,
-            #     "aponeurosis_length_threshold": self.settings.aponeurosis_length_threshold,
-            #     "fascicle_detection_threshold": self.settings.fascicle_detection_threshold,
-            #     "fascicle_length_threshold": self.settings.fascicle_length_threshold,
-            #     "minimal_muscle_width": self.settings.minimal_muscle_width,
-            #     "minimal_pennation_angle": self.settings.minimal_pennation_angle,
-            #     "maximal_pennation_angle": self.settings.maximal_pennation_angle,
-            #     "fascicle_calculation_method": self.settings.fascicle_calculation_method,
-            #     "fascicle_contour_tolerance": self.settings.fascicle_contour_tolerance,
-            #     "aponeurosis_distance_tolerance": self.settings.aponeurosis_distance_tolerance,
-            #     "selected_filter": self.settings.selected_filter,
-            #     "hampel_window_size": self.settings.hampel_window_size,
-            #     "hampel_num_dev": self.settings.hampel_num_dev,
-            #     "segmentation_mode": self.settings.segmentation_mode,
-            # }
-
             # Start thread depending on Analysis type
             if self.analysis_type.get() == "image":
 
@@ -1471,41 +1485,56 @@ class DLTrack(ctk.CTk):
 
         # Error handling
         except AttributeError:
+            error_details = traceback.format_exc()
             tk.messagebox.showerror(
                 "Information",
                 "Check input parameters."
                 + "\nPotential error sources:"
-                + "\n - Invalid specified directory.",
+                + "\n - Invalid specified directory."
+                + "\n - Invalid specified analysis type.\n\n "
+                + error_details,
             )
             self.do_break()
             self.should_stop = False
             self.is_running = False
 
         except FileNotFoundError:
+            error_details = traceback.format_exc()
             tk.messagebox.showerror(
                 "Information",
                 "Check input parameters."
                 + "\nPotential error source:"
-                + "\n - Invalid specified directory.",
+                + "\n - Invalid specified directory."
+                + "\n - Invalid specified analysis type."
+                + "\n - Invalid specified flipflag path (if applicable).\n\n"
+                + error_details,
             )
             self.do_break()
             self.should_stop = False
             self.is_running = False
 
         except PermissionError:
+            error_details = traceback.format_exc()
             tk.messagebox.showerror(
                 "Information",
                 "Check input parameters."
                 + "\nPotential error source:"
-                + "\n - Invalid specified directory.",
+                + "\n - Invalid specified directory."
+                + "\n - Invalid specified analysis type."
+                + "\n - Invalid specified flipflag path (if applicable).\n\n"
+                + error_details,
             )
             self.do_break()
             self.should_stop = False
             self.is_running = False
 
         except ValueError:
+            error_details = traceback.format_exc()
             tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
+                "Information",
+                "Analysis parameter entry fields"
+                + " must not be empty.\n"
+                + error_details,
             )
             self.do_break()
             self.should_stop = False
@@ -1554,7 +1583,6 @@ def runMain() -> None:
     For documentation of DL_Track see top of this module.
     """
     app = DLTrack()
-    # app._state_before_windows_set_titlebar_color = "zoomed"
     app.mainloop()
 
 

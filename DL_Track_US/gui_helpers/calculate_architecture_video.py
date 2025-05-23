@@ -51,6 +51,7 @@ import glob
 import os
 import time
 import tkinter as tk
+import traceback
 
 import cv2
 import matplotlib.pyplot as plt
@@ -302,7 +303,14 @@ def calculateArchitectureVideo(
         start_time = time.time()
 
         # Load models outside the loop
-        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
+        model_apo = load_model(
+            apo_modelpath,
+            custom_objects={
+                "IoU": IoU,
+                "dice_bce_loss": dice_bce_loss,
+                "dice_score": dice_score,
+            },
+        )
 
         if settings["segmentation_mode"] == "stacked":
             model_fasc = load_model(
@@ -418,19 +426,61 @@ def calculateArchitectureVideo(
                 pennation_all_filtered,
             )
 
-    except IndexError as e:
+    except FileNotFoundError:
+        tk.messagebox.showerror("Information", "Input directory is incorrect.")
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
+
+    except ValueError:
+        error_details = traceback.format_exc()
         tk.messagebox.showerror(
-            "Information",
-            f"No Aponeurosis detected. Change aponeurosis threshold. + \n{str(e)}",
+            "Fascicle detection Error",
+            "Adapt analysis parameters or model for valid detection.\n"
+            + "If 'bar scaling' is selected, remove failed images and analyse without scaling.\n\n"
+            + error_details,
         )
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()
+        return
+
+    except PermissionError:
+        tk.messagebox.showerror(
+            "Information", "Close results file berfore ongoing analysis."
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
+
+    except IndexError:
+        error_details = traceback.format_exc()
+        tk.messagebox.showerror(
+            "Fascicle detection Error",
+            "Adapt analysis parameters or model for valid detection.\n\n"
+            + error_details,
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
+
+    except OSError:
+        error_details = traceback.format_exc()
+        tk.messagebox.showerror(
+            "Information",
+            "Adapt path to model files.\n\n" + error_details,
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
 
     except Exception as e:
-        error_message = f"An error occurred:\n{str(e)}"
-        print(error_message)
-        tk.messagebox.showerror("Error", error_message)
+        error_details = traceback.format_exc()
+        tk.messagebox.showerror("Error", error_details)
         gui.should_stop = False
         gui.is_running = False
         gui.do_break()

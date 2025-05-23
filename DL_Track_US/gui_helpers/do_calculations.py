@@ -484,9 +484,9 @@ def doCalculations(  # TODO adapt docstring
                     mindist = dist
 
         # Compute functions to approximate the shape of the aponeuroses
-        zUA = np.polyfit(upp_x, upp_y_new, 2)
+        zUA = np.polyfit(upp_x, upp_y_new, 1)
         g = np.poly1d(zUA)
-        zLA = np.polyfit(low_x, low_y_new, 2)
+        zLA = np.polyfit(low_x, low_y_new, 1)
         h = np.poly1d(zLA)
 
         mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle

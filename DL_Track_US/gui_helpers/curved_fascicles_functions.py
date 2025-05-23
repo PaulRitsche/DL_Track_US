@@ -35,6 +35,7 @@ import numpy as np
 import pandas as pd
 from keras import backend as K
 from shapely.geometry import LineString
+import tkinter as tk
 
 
 def adapted_contourEdge(edge: str, contour: list) -> np.ndarray:
@@ -604,6 +605,69 @@ def find_complete_fascicle_linear(
     tolerance: int,
     coeff_limit: float,
 ):
+    """
+    Traces a complete fascicle by iteratively fitting and extrapolating a linear model
+    through connected contour segments in an ultrasound image.
+
+    Starting from a seed contour `i`, the function fits a line, extrapolates it over a defined
+    width, and collects all contour segments that lie within a vertical tolerance range
+    around the extrapolated line. The procedure continues recursively to find connected
+    fascicle segments along the extrapolated path.
+
+    Parameters
+    ----------
+    i : int
+        Index of the initial contour used to start the fascicle tracing.
+    contours_sorted_x : list of ndarray
+        List of arrays containing the x-coordinates of each contour segment.
+    contours_sorted_y : list of ndarray
+        List of arrays containing the y-coordinates of each contour segment.
+    contours_sorted : list of ndarray
+        List of full contour arrays (used for proximity checking).
+    label : dict
+        Dictionary mapping contour indices to a boolean indicating whether they have already been used.
+        Will be updated in-place.
+    mid : int
+        Midpoint x-coordinate used as center of extrapolation range.
+    width : int
+        Half-width of the extrapolation span in pixels (from `mid - width` to `mid + width`).
+    tolerance : int
+        Vertical distance in pixels allowed between the extrapolated line and candidate contour segments.
+    coeff_limit : float
+        Currently unused; placeholder for limiting slope or intercept values during fitting.
+
+    Returns
+    -------
+    ex_current_fascicle_x : ndarray
+        Extrapolated x-coordinates of the complete fascicle.
+    ex_current_fascicle_y : ndarray
+        Corresponding y-coordinates from the final linear model fit.
+    linear_fit : bool
+        Flag indicating whether a linear fit was successfully computed (always `True` in current logic).
+    inner_number_contours : list of int
+        List of contour indices that belong to the detected fascicle.
+
+    Notes
+    -----
+    - This function modifies the `label` dictionary in-place to prevent reprocessing contours.
+    - The input `coeff_limit` is accepted but currently not used for filtering.
+
+    Examples
+    --------
+    >>> ex_x, ex_y, is_linear, used_contours = find_complete_fascicle_linear(
+    ...     i=0,
+    ...     contours_sorted_x=contour_x_list,
+    ...     contours_sorted_y=contour_y_list,
+    ...     contours_sorted=contour_list,
+    ...     label={j: False for j in range(len(contour_x_list))},
+    ...     mid=256,
+    ...     width=100,
+    ...     tolerance=5,
+    ...     coeff_limit=0.5
+    ... )
+    >>> plt.plot(ex_x, ex_y)
+    >>> print(f"Used {len(used_contours)} contour segments.")
+    """
 
     # get upper edge contour of starting fascicle
     current_fascicle_x = contours_sorted_x[i]
