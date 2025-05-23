@@ -15,8 +15,8 @@
         <link rel="next" href="../manual_video_analysis/">
       
       
-      <link rel="icon" href="../None">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
+      <link rel="icon" href="../md_graphics/DLTrack_logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -48,7 +48,7 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../docs/overrides/custom.css">
+      <link rel="stylesheet" href="../overrides/custom.css">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#1-creating-video-and-network-directories" class="md-skip">
+        <a href="#automated-video-analysis" class="md-skip">
           Skip to content
         </a>
       
@@ -94,8 +94,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="DL_Track_US" class="md-header__button md-logo" aria-label="DL_Track_US" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../md_graphics/DLTrack_logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -150,11 +149,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -186,6 +187,7 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
@@ -227,8 +229,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="DL_Track_US" class="md-nav__button md-logo" aria-label="DL_Track_US" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../md_graphics/DLTrack_logo.png" alt="logo">
 
     </a>
     DL_Track_US
@@ -258,6 +259,7 @@
       <a href=".." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Welcome
     
@@ -276,8 +278,31 @@
   
   
     <li class="md-nav__item">
+      <a href="../news/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    News
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Installation
@@ -302,15 +327,17 @@
     
     
     
+    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
+  
   
   <span class="md-ellipsis">
     Tutorials
@@ -321,8 +348,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
           </label>
@@ -338,8 +365,9 @@
       <a href="../automated_image_analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
-    Autamated Image Analysis
+    Automated Image Analysis
     
   </span>
   
@@ -359,6 +387,7 @@
     <li class="md-nav__item">
       <a href="../manual_image_analysis/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Manual Image Analysis
@@ -385,9 +414,12 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
+  
   
   <span class="md-ellipsis">
     Automated Video Analysis
@@ -401,6 +433,7 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
     Automated Video Analysis
     
@@ -411,14 +444,18 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -446,6 +483,66 @@
       3. Specifying Analysis Parameters
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="3. Specifying Analysis Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-selecting-the-analysis-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Selecting the Analysis Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-setting-the-video-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Setting the Video Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-choosing-the-scaling-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Choosing the Scaling Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-filtering-fascicles" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 Filtering Fascicles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-setting-flip-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 Setting Flip Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-setting-frame-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.6 Setting Frame Steps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -495,6 +592,7 @@
       <a href="../manual_video_analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Manual Video Analysis
     
@@ -524,15 +622,17 @@
     
     
     
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
+  
   
   <span class="md-ellipsis">
     Advanced Methods
@@ -543,8 +643,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Advanced Methods
           </label>
@@ -559,6 +659,7 @@
     <li class="md-nav__item">
       <a href="../training_your_own_networks/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Training Your Own Networks
@@ -582,6 +683,7 @@
       <a href="../inspecting_masks/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Inspecting Masks
     
@@ -603,6 +705,7 @@
     <li class="md-nav__item">
       <a href="../crop_video/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Crop Video
@@ -626,8 +729,169 @@
       <a href="../remove_video_parts/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Remove Video Parts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resize_video/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Resize Video
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tests
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Tests
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automated_image_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Automated Image Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual_image_video_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manual Img/Vid Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automated_video_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Automated Video Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_training_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Training Test
     
   </span>
   
@@ -655,6 +919,7 @@
       <a href="../contributing/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Contributing
     
@@ -675,6 +940,7 @@
     <li class="md-nav__item">
       <a href="../code_of_conduct/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Code of Conduct
@@ -697,6 +963,7 @@
       <a href="../about_us/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     About Us
     
@@ -704,6 +971,143 @@
   
 
       </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DL_Track_US
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_advanced_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Advanced Functions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_model_training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Training
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_helpers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GUI helpers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -721,14 +1125,18 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -756,6 +1164,66 @@
       3. Specifying Analysis Parameters
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="3. Specifying Analysis Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-selecting-the-analysis-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Selecting the Analysis Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-setting-the-video-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Setting the Video Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-choosing-the-scaling-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Choosing the Scaling Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-filtering-fascicles" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 Filtering Fascicles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-setting-flip-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 Setting Flip Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-setting-frame-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.6 Setting Frame Steps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -805,241 +1273,178 @@
   
 
 
-  <h1>Automated Video Analysis</h1>
-
-<p>On this page you get to know the automated video analysis.
-The videos are evaluated without user input and may be scaled. The videos should be
-contained in a single folder, like in the “DL_Track_US_example/videos” folder.</p>
-<p>If you haven’t downloaded this folder, please do so now (link:
-<a href="https://osf.io/7mjsc/?view_only=">DL_Track_US - Examples &amp; Models</a>). Unzip the folder and put it
-somewhere accessible.</p>
-<p>The automated video analysis is very similar to the automated image analysis. 
-In fact, the inputted video is analysed frame by frame and each frame is therefore treated like
-an independent image. Moreover, only few analysis parameters are
-different between both analysis types. </p>
-<p>Once the analysis of the video file is finished, a „proc.avi“ file will be created at the directoy of the input video.
-The „proc.avi“ file can be openend with, i.e., VLC-Player on windows and Omni-Player on macOS.</p>
-<h2 id="1-creating-video-and-network-directories">1. Creating Video and Network Directories</h2>
+<h1 id="automated-video-analysis">🎥 Automated Video Analysis<a class="headerlink" href="#automated-video-analysis" title="Permanent link">&para;</a></h1>
+<p>This page introduces the <strong>automated video analysis</strong> in DL_Track_US.</p>
 <ul>
-<li>In order for DL_Track_US to recognize your videos, they should best be
-in a single folder.</li>
-<li>The “DL_Track_US_example/videos“ folder contains <span style="color: #2eaf66;"><strong>one video</strong></span>.</li>
+<li>Videos are evaluated <strong>without user input</strong>.</li>
+<li>Videos must be contained in a single folder, e.g., <code>DL_Track_US_example/videos</code>.</li>
+</ul>
+<p>If you have not downloaded the example folder yet, please do so:<br />
+<a href="https://osf.io/7mjsc/?view_only=">DL_Track_US - Examples &amp; Models</a>.</p>
+<blockquote>
+<p>📦 Unzip the folder and save it somewhere easily accessible.</p>
+</blockquote>
+<hr />
+<p>The automated video analysis is very similar to automated image analysis:<br />
+Only a few analysis parameters differ between the two types.</p>
+<p>After the analysis, a <code>proc.avi</code> file will be created in the input video directory.<br />
+It can be opened with VLC Player (Windows) or OmniPlayer (macOS).</p>
+<hr />
+<h2 id="1-creating-video-and-network-directories">1. Creating Video and Network Directories<a class="headerlink" href="#1-creating-video-and-network-directories" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Videos should be stored in a <strong>single folder</strong>.</li>
+<li>The <code>DL_Track_US_example/videos</code> folder contains <span style="color: #2eaf66;"><strong>one video</strong></span>.</li>
 </ul>
 <p><img alt="video folder" src="../md_graphics/ava/video_folder.PNG" /></p>
-<h2 id="2-specifying-input-directories-in-the-gui">2. Specifying Input Directories in the GUI</h2>
-<p>Once the GUI is openend, the first step of every analysis type in DL_Track_US
-is to specify the input directories in the graphical user interface (GUI).</p>
+<hr />
+<h2 id="2-specifying-input-directories-in-the-gui">2. Specifying Input Directories in the GUI<a class="headerlink" href="#2-specifying-input-directories-in-the-gui" title="Permanent link">&para;</a></h2>
+<p>Once the GUI is open:</p>
 <ul>
-<li>Start the analysis with specifying the path to the folder containing the video to be analysed.</li>
-<li>Remember this was the folder "DL_Track_US_example/video". By clicking on the <span style="color: #a34ba1;"><strong>Inputs</strong></span> button in the GUI a selection window opens were you need to select the images folder.</li>
-<li>Click <strong>select folder</strong> to specify the path in the GUI.</li>
+<li>Click the <span style="color: #a34ba1;"><strong>Inputs</strong></span> button to specify the folder containing your video.</li>
+<li>Select the <code>DL_Track_US_example/videos</code> folder and click <strong>Select folder</strong>.</li>
 </ul>
 <p><img alt="inputs button" src="../md_graphics/ava/inputs_button.PNG" /></p>
-<p>Now, you will specify the absolute path to the aponeurosis neural
-network.</p>
+<hr />
+<p>Next, specify the aponeurosis model:</p>
 <ul>
-<li>Remember that the model is in the “DL_Track_US_example/models”
-folder.</li>
-<li>By clicking on the <span style="color: #a34ba1;"><strong>Apo Model button</strong></span> in the GUI a selection window
-opens were you need to select the aponeurosis neural network in the
-models folder.</li>
-<li>Click <span style="color: #299ed9;"><strong>open</strong></span> to specify the path to the aponeurosis neural network in the
-GUI</li>
+<li>Click the <span style="color: #a34ba1;"><strong>Apo Model</strong></span> button.</li>
+<li>Select the aponeurosis neural network file from <code>DL_Track_US_example/models</code>.</li>
+<li>Click <span style="color: #299ed9;"><strong>Open</strong></span>.</li>
 </ul>
 <p><img alt="apo model button" src="../md_graphics/ava/apo_model_button.png" />
 <img alt="apo model" src="../md_graphics/ava/apo_model.png" /></p>
-<p>Next, you will specify the absolute path to the fascicle neural
-network.</p>
+<hr />
+<p>Then, specify the fascicle model:</p>
 <ul>
-<li>The model is in the “DL_Track_US_example/models” folder.</li>
-<li>By clicking on the <span style="color: #a34ba1;"><strong>Fasc Model button</strong></span> in the GUI a selection window
-opens were you need to select the fascicle neural network in the
-models folder.</li>
-<li>Click <span style="color: #299ed9;"><strong>open</strong></span> to specify the path to the fascicle neural network in the GUI.</li>
+<li>Click the <span style="color: #a34ba1;"><strong>Fasc Model</strong></span> button.</li>
+<li>Select the fascicle neural network file from <code>DL_Track_US_example/models</code>.</li>
+<li>Click <span style="color: #299ed9;"><strong>Open</strong></span>.</li>
 </ul>
 <p><img alt="fasc model button" src="../md_graphics/ava/fasc_model_button.png" />
 <img alt="fasc model" src="../md_graphics/ava/fasc_model.png" /></p>
-<h2 id="3-specifying-analysis-parameters">3. Specifying Analysis Parameters</h2>
-<p>As a first step, you will select the right analysis type in the GUI.</p>
+<hr />
+<h2 id="3-specifying-analysis-parameters">3. Specifying Analysis Parameters<a class="headerlink" href="#3-specifying-analysis-parameters" title="Permanent link">&para;</a></h2>
+<h3 id="31-selecting-the-analysis-type">3.1 Selecting the Analysis Type<a class="headerlink" href="#31-selecting-the-analysis-type" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Please select <span style="color: #a34ba1;"><strong>Video</strong></span> from the dropdown-menu.</li>
+<li>Choose <span style="color: #a34ba1;"><strong>Video</strong></span> from the dropdown menu.</li>
 </ul>
 <p><img alt="analysis type video" src="../md_graphics/ava/analysis_type_video.png" /></p>
-<p>You now need to specify the <strong>Video Type</strong>.</p>
+<hr />
+<h3 id="32-setting-the-video-type">3.2 Setting the Video Type<a class="headerlink" href="#32-setting-the-video-type" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The ending of the Video Type must match the ending of your videos,
-otherwise no files are found by DL_Track_US.</li>
-<li>You can either select a pre-specified ending from the dropdown list or
-type in your own ending.</li>
-<li>Please keep the formatting similar to those Video Type provided in the
-dropdown list.</li>
-<li>The video in the “DL_Track_US_example/video” folder are of the Video
-Type “.mp4”. Thus, you should select the <span style="color: #a34ba1;"><strong>“/*.mp4”</strong></span> Video Type.</li>
+<li>The file extension must match your videos (e.g., <code>.mp4</code>).</li>
+<li>Select or type <span style="color: #a34ba1;"><strong>/*.mp4</strong></span>.</li>
 </ul>
 <p><img alt="video type" src="../md_graphics/ava/video_type.png" /></p>
-<p>Subsequently, you need to specify the video <strong>Scaling Type</strong>.</p>
+<hr />
+<h3 id="33-choosing-the-scaling-type">3.3 Choosing the Scaling Type<a class="headerlink" href="#33-choosing-the-scaling-type" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Scaling in general has the advantage that the resulting estimated
-muscle architectural features are in centimetre units rather than pixel
-units.</li>
-<li>There are two Scaling Types in the DL_Track_US package.</li>
-<li>For this tutorial however, you will select the <span style="color: #a34ba1;"><strong>“None”</strong></span> option as
-displayed below.</li>
+<li>Select <span style="color: #a34ba1;"><strong>None</strong></span> for this tutorial.</li>
 </ul>
 <p><img alt="scaling type" src="../md_graphics/ava/scaling_type.png" /></p>
-<p>The other Scaling Type is <span style="color: #a34ba1;"><strong>“Manual”</strong></span>. This <strong>Scaling Type</strong> requires input from the user.</p>
+<p>Alternatively, you could use <span style="color: #a34ba1;"><strong>Manual</strong></span> scaling:</p>
 <ul>
-<li>Whenever you use “<strong>Manual</strong>” as your Scaling Type, make sure
-that the minimal distance between the scaling bars or the known
-distance between the manually specified points is represented in
-the <span style="color: #2eaf66;"><strong>Spacing</strong></span> parameter.</li>
-<li>Select the Spacing parameter from the dropdown list as 5, 10, 15 or 20
-millimetre. For this tutorial it is not necessary to select anything, as the
-Spacing parameter is not used during an analysis with Scaling Type “<strong>None</strong>”.</li>
+<li>Place two points on a known distance (5, 10, 15, or 20 mm).</li>
+<li>Click <span style="color: #a34ba1;"><strong>Calibrate</strong></span>.</li>
 </ul>
-<p><img src="\md_graphics\ava\spacing_3.png" width="600"></p>
+<p><img src="\md_graphics/ava/calibrate_button.png" width="600">
+<img src="\md_graphics/ava/calibrate.png" width="600"></p>
+<p>After calibration, a <span style="color: #299ed9;"><strong>messagebox</strong></span> shows the pixel distance:</p>
+<p><img src="\md_graphics/ava/calibration_result.png" width="600"></p>
+<hr />
+<h3 id="34-filtering-fascicles">3.4 Filtering Fascicles<a class="headerlink" href="#34-filtering-fascicles" title="Permanent link">&para;</a></h3>
 <ul>
-<li>When you choose “Manual” as your Scaling type, you need to manually place <strong>two points</strong> on
-the image using the left mouse button.</li>
-<li>In order to do this, you need to click <span style="color: #a34ba1;"><strong>Calibrate</strong></span>.</li>
-</ul>
-<p><img src="\md_graphics\ava\calibrate_button.png" width="600"></p>
-<ul>
-<li>Then, just click one time with your left mouse button to record the first point
-(a red dot will apear).</li>
-<li>Place the second point at a known distance of either 5, 10, 15 or 20
-millimetre.</li>
-<li>Afterwards, click <span style="color: #a34ba1;"><strong>Confirm</strong></span>.</li>
-</ul>
-<p><img src="\md_graphics\ava\calibrate.png" width="600"></p>
-<p>After confirming a <span style="color: #299ed9;"><strong>messagebox</strong></span> should appear with the distance of the spacing parameter in pixels.</p>
-<p><img src="\md_graphics\ava\calibration_result.png" width="600"></p>
-<ul>
-<li>In version 0.2.1 we introduced a new feature to DL_Track_US, called the <strong>Filter Fascicle</strong> option.</li>
-<li>Here, you have two options, <span style="color: #a34ba1;"><strong>“YES”</strong></span> or <span style="color: #a34ba1;"><strong>“NO”</strong></span>.</li>
-<li>Using <strong>“YES”</strong> all fascicles that overlap will be removed.</li>
+<li>Select <span style="color: #a34ba1;"><strong>YES</strong></span> to remove overlapping fascicles.</li>
 </ul>
 <p><img alt="filter fasciles" src="../md_graphics/ava/filter_fascicles.png" /></p>
-<p>Here are some results demonstrating the difference in an image, for video
-frames the effect would be similar.</p>
+<p>Example difference between filtered and unfiltered:</p>
 <p><img alt="difference filter fasciles" src="../md_graphics/ava/difference_filter_fascicles.png" /></p>
-<p>Another parameter that you need to specify is the <span style="color: #a34ba1;"><strong>Flip Options</strong></span> parameters.</p>
+<hr />
+<h3 id="35-setting-flip-options">3.5 Setting Flip Options<a class="headerlink" href="#35-setting-flip-options" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The Flip Options parameter determines if the whole video is flipped
-along the vertical axis. “Flip” stands for flipping the video, whereas
-“Don’t Flip” means please do not flip the video.</li>
-<li>The example video must be flipped.</li>
-<li>Its fascicle orientation is incorrect, with fascicles originating at the
-bottom right and inserting on the top left.</li>
-<li>Below is a visual representation of a correct fascicle orientation.</li>
-<li>The fascicles are originating at the bottom left and are inserting on the top
-right.</li>
-<li>Note that all videos in the specified input folder, in this case the
-DL_Track_US_example/video” folder, MUST have the same fascicle
-orientation, since the Flip Option is applied to all of them.</li>
+<li>Choose the appropriate flip setting:</li>
+<li><strong>Flip</strong> to flip the video vertically,</li>
+<li><strong>Don’t Flip</strong> otherwise.</li>
 </ul>
 <p><img alt="flip option" src="../md_graphics/ava/flip_option.png" />
 <img alt="flip option 2" src="../md_graphics/ava/flip_option_2.png" /></p>
-<p>The next step is to specify the <span style="color: #a34ba1;"><strong>Frame Steps</strong></span>.</p>
+<p>For the example video, flipping is required to correct fascicle orientation.</p>
+<hr />
+<h3 id="36-setting-frame-steps">3.6 Setting Frame Steps<a class="headerlink" href="#36-setting-frame-steps" title="Permanent link">&para;</a></h3>
 <ul>
-<li>You can either select a pre-specified Frame Step from the dropdown list
-or type your Frame Step.</li>
-<li>The Frame Step is used during the analysis as a step size while iterating
-through all the frames in a video.</li>
-<li>In this tutorial you should specify a Frame Step of 1. This means that
-every video frame is analysed. With a Frame Step of 3, every 3rd
-frame is analysed. With a Frame Step of 10, every 10th frame an so
-on.</li>
-<li>Although information is lost when you skip frames during the analysis, it
-also reduces the overall analysis time.</li>
+<li>Set Frame Step to <strong>1</strong> (every frame analyzed).</li>
+<li>Larger steps (e.g., 3, 10) reduce computation time but skip frames.</li>
 </ul>
 <p><img alt="step size" src="../md_graphics/ava/step_size.png" /></p>
-<h2 id="4-adjusting-settings">4. Adjusting Settings</h2>
-<p>As a last step, you need to adjust the settings for the
-aponeurosis and fascicle neural networks. If you click on the <span style="color: #a34ba1;"><strong>settings wheel</strong></span> a 
-python script with the name "settings.py" opens up in your default text editor. On this page, all parameters used by the aponeurosis and
-fascicles neural networks during inference are specified. The default values are always listed on the right hand side of the parameters. The settings are explained in detail at the top of the settings.py file.</p>
+<hr />
+<h2 id="4-adjusting-settings">4. Adjusting Settings<a class="headerlink" href="#4-adjusting-settings" title="Permanent link">&para;</a></h2>
+<p>Open the settings by clicking the <span style="color: #a34ba1;"><strong>Settings Wheel</strong></span>.</p>
+<ul>
+<li>A txt script <code>settings.txt</code> opens in your default editor.</li>
+<li>Default values are listed.</li>
+</ul>
 <p><img alt="analysis parameters" src="../md_graphics/ava/analysis_parameters.PNG" />
 <img alt="settings.py" src="../md_graphics/ava/settings_py.PNG" /></p>
+<p>You can find an explanation on all setting in <a href="../automated_image_analysis/#4-adjusting-settings">this chapter</a>.</p>
+<blockquote>
+<p>💡 <strong>Tip:</strong><br />
+Adapt these parameters according to your images or videos!<br />
+Correct parameter settings can greatly impact your analysis results.</p>
+<p>For future analyses, always test parameter settings on a small sample of your data first.
+<em>Especially, choose a pennation angle range that is physiologically plausible with a minimum range.</em></p>
+<p>If you accidentally disrupt the <code>settings.txt</code> file, there is a backup available: <code>_backup_settings.py</code>.</p>
+</blockquote>
+<hr />
+<h2 id="5-running-breaking-dl_track_us">5. Running / Breaking DL_Track_US<a class="headerlink" href="#5-running-breaking-dl_track_us" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p>The <strong>aponeurosis detection threshold</strong> determines the threshold of the minimal
-acceptable probability by which a pixel is predicted as aponeurosis. The lower,
-the more pixels will be classified as aponeurosis.</p>
-</li>
-<li>
-<p>Changing the <strong>aponeurosis length threshold</strong> will result in longer or shorter structures
-detected as aponeurosis.</p>
-</li>
-<li>
-<p>The <strong>fascicle detection threshold</strong> and the fascicle lenght threshold are the same thing, just for the fasicles.</p>
-</li>
-<li>
-<p>The <strong>minimal muscle width</strong> determines the minimal acceptable distance between superficial and deep aponeurosis.</p>
-</li>
-<li>
-<p><strong>Minimal and Maximal Pennation</strong> describe the respective minimal and maximal
-pennation angle that is physiologically possible in the analysed image/muscle.</p>
-</li>
-<li>
-<p>The <strong>fascile calculation method</strong> determines the approach by which the fascile length is calculated. This can either be linear_extrapolation, curve_polyfitting, curve_connect_linear, curve_connect_poly or orientation_map.</p>
-</li>
-<li>
-<p>The lower the <strong>fascile contour tolerance</strong>, the shorter the minimal acceptable length of
-detected fascicle segments to be included in the results.</p>
-</li>
-<li>
-<p>The lower the <strong>aponeurosis distance tolerance</strong>, the nearer a fascicle fragment must be to the aponeurosis. This increases certainty of pennation angle calculation and extrapolation.</p>
-</li>
-</ul>
-<p>For this tutorial, you can leave all parameters the way they are. You can set the parameters by saving the python file. Adapt
-these parameters according to your images in analyses. For future analyses, it’s best you test the ideal parameter configuration in
-a small sample of your images prior to the actual analysis. If you should somehow distruct the settings.py file there is a backup called _backup_settings.py.</p>
-<h2 id="5-running-breaking-dl_track_us">5. Running / Breaking DL_Track_US</h2>
-<ul>
-<li>By clicking the <span style="color: #a34ba1;"><strong>Run</strong></span> button in the main GUI window, you can start the
-analysis.</li>
-<li>Moreover, you can see that there is a <span style="color: #299ed9;"><strong>Break</strong></span> button placed in the GUI as
-well.</li>
-<li>Clicking the <span style="color: #299ed9;"><strong>Break</strong></span> button allows you to stop the analysis at any point.
-The currently evaluated image will be processed and then the
-analysis is terminated.</li>
+<li>Click the <span style="color: #a34ba1;"><strong>Run</strong></span> button to start analysis.</li>
+<li>Use the <span style="color: #299ed9;"><strong>Break</strong></span> button if you need to stop the analysis.</li>
 </ul>
 <p><img alt="running breaking" src="../md_graphics/ava/running_breaking.png" /></p>
-<p>After running the analyis the three lines are displayed in the line graph:</p>
+<hr />
+<p>Once analysis completes, navigate back to <code>DL_Track_US_example/videos</code>.</p>
+<p>You will find two new files:</p>
+<ul>
+<li><span style="color: #299ed9;"><strong>calf_raise_proc.avi</strong></span>:</li>
+<li>
+<p>Video showing overlaid segmentation results.</p>
+</li>
+<li>
+<p><span style="color: #2eaf66;"><strong>calf_raise.xlsx</strong></span>:</p>
+</li>
+<li>Excel file containing estimated muscle parameters (fascicle length, pennation angle, muscle thickness).</li>
+</ul>
+<p><img src="\md_graphics/ava/video_folder_after.png"></p>
+<hr />
+<p>Line graph results include:</p>
 <ul>
 <li>Median Fascicle Length</li>
 <li>Median Filtered Fascicle Length</li>
-<li>Filtered Median Fascicle Length</li>
+<li>Filtered Median Fascicle Length (based on chosen filter)</li>
 </ul>
-<!-- Beschreibung Paul -->
-
-<p><img src="\md_graphics\ava\plotted_results.png"></p>
-<p>Subsequently to clicking the Run button in the main GUI, navigate again to the
-“DL_Track_US_example/video”.</p>
+<p><img src="\md_graphics/ava/plotted_results.png"></p>
+<hr />
+<h2 id="6-error-handling">6. Error Handling<a class="headerlink" href="#6-error-handling" title="Permanent link">&para;</a></h2>
+<p>If an error occurs:</p>
 <ul>
-<li>You will see that two files will be / have been created, <span style="color: #299ed9;"><strong>calf_raise_proc.avi</strong></span> 
-and <span style="color: #2eaf66;"><strong>calf_raise.xlsx</strong></span>.</li>
-<li>The calf_raise_proc.avi file contains each the input video with overlaid
-segmented fascicles and aponeurosis. This file allows you to visually
-inspect the model outputs.</li>
-<li>The calf_raise.xlsx file contains the actual architectural parameter
-estimates for each video frame. There, all detected muscle fascicle
-lengths and pennation angles as well a the calculated muscle thickness will
-be displayed. Each video frame is displayed in a separate row.</li>
-<li>Note that the calf_raise_proc.avi file can be opened only after the
-calf_raise.xlsx. was created.</li>
+<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will open to explain the issue.</li>
 </ul>
-<p><img alt="video folder after" src="../md_graphics/ava/video_folder_after.png" /></p>
-<h2 id="6-error-handling">6. Error Handling</h2>
-<p>Whenever an error occurs during the analysis process, the DL_Track_US GUI
-will open a <span style="color: #299ed9;"><strong>messagebox</strong></span>. This looks always similar to this:</p>
 <p><img alt="error" src="../md_graphics/aia/error.PNG" /></p>
-<p>We tried to formulate these messageboxes as concise as possible. Just
-follow their instructions to fix the error and run the analysis anew. In case
-an error occurs that is not caught by an error messagebox, don’t hesitate to
-report this in the Q&amp;A section in the <a href="https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a">DL_Track_US discussion forum</a>.
-Please take a look here how do best do this.</p>
+<p>We have tried to make all error messages as <strong>concise</strong> and <strong>informative</strong> as possible.<br />
+Simply follow the instructions in the error box and restart the analysis after resolving the issue.</p>
+<blockquote>
+<p>💬 <strong>Note:</strong><br />
+If an unexpected error occurs that is not caught by a message box,<br />
+please report it in the <a href="https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a">DL_Track_US Discussion Forum - Q&amp;A Section</a>.</p>
+</blockquote>
+<p>When reporting an issue:</p>
+<ul>
+<li>Please include a description of the problem,</li>
+<li>Steps to reproduce the issue,</li>
+<li>And (if possible) screenshots of the GUI and error message.</li>
+</ul>
+<hr />
+<p>By following these guidelines, we can continuously improve DL_Track_US.</p>
 
 
 
@@ -1047,6 +1452,38 @@ Please take a look here how do best do this.</p>
 
 
 
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 23, 2025 16:38:54">May 23, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 3, 2025 10:41:25">March 3, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
 
 
 
@@ -1068,6 +1505,11 @@ Please take a look here how do best do this.</p>
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 - 2025. DL_Track_US - <a href="#__consent">Change cookie settings</a>
+
+    </div>
+  
   
     Made with
     <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -1086,7 +1528,9 @@ Please take a look here how do best do this.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
