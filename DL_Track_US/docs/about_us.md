@@ -31,6 +31,7 @@ Our mission is to make **deep learning-based muscle architecture analysis** acce
 
 - Add intuitive manual labelling tools.
 - Combine with feature tracking algorithm, e.g., Lucas-Kanade or kalman filter.
+- Finalize fascicle curvature estimation and consideration.
 - Extend model architectures (e.g., attention U-Nets, transformers).
 - Broaden community contribution possibilities.
 
@@ -42,7 +43,7 @@ Our mission is to make **deep learning-based muscle architecture analysis** acce
 
 ### Paul Ritsche
 
-<img src="\md_graphics\devs\paul_ritsche.png" width="150">
+![paul](md_graphics\devs\paul_ritsche.png)
 
 Paul is the **lead developer** and primary coder behind DL_Track_US.  
 He designed, implemented, and maintains the software in close collaboration with Neil Cronin.  
@@ -54,7 +55,7 @@ Paul has a background in **biomechanics**, **ultrasound imaging**, and **softwar
 
 ### Neil Cronin
 
-<img src="\md_graphics\devs\neil_cronin.png" width="150">
+![neil](md_graphics\devs\neil_cronin.png)
 
 Neil is the **co-developer** and **main visionary** behind DL_Track_US.  
 His research in **biomechanics** and **muscle architecture** guided the core concepts and user-centered design of the tool.
@@ -65,7 +66,7 @@ His research in **biomechanics** and **muscle architecture** guided the core con
 
 ### Olivier Seynnes
 
-<img src="\md_graphics\devs\olivier_seynnes.png" width="150">
+![olivier](md_graphics\devs\olivier_seynnes.png)
 
 Olivier has been involved with DL_Track_US from the early stages, providing **critical input**, **scientific validation**, and **feedback** during development.  
 Olivier’s expertise in **muscle physiology** and **musculoskeletal ultrasound** ensured DL_Track_US met high scientific standards.

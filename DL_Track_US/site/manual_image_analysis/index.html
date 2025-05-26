@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content=""Automated analysis of muscle architecture in ultrasonography images and videos using deep learning"">
+      
       
       
       
@@ -15,8 +17,8 @@
         <link rel="next" href="../automated_video_analysis/">
       
       
-      <link rel="icon" href="../None">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
+      <link rel="icon" href="../md_graphics/DLTrack_logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -24,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -48,7 +50,7 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../docs/overrides/custom.css">
+      <link rel="stylesheet" href="../overrides/custom.css">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#1-creating-image-directory" class="md-skip">
+        <a href="#manual-image-analysis" class="md-skip">
           Skip to content
         </a>
       
@@ -94,8 +96,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="DL_Track_US" class="md-header__button md-logo" aria-label="DL_Track_US" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../md_graphics/DLTrack_logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -150,11 +151,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -186,6 +189,7 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
@@ -227,8 +231,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="DL_Track_US" class="md-nav__button md-logo" aria-label="DL_Track_US" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../md_graphics/DLTrack_logo.png" alt="logo">
 
     </a>
     DL_Track_US
@@ -258,6 +261,7 @@
       <a href=".." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Welcome
     
@@ -276,8 +280,31 @@
   
   
     <li class="md-nav__item">
+      <a href="../news/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    News
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../installation/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Installation
@@ -302,15 +329,17 @@
     
     
     
+    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
+  
   
   <span class="md-ellipsis">
     Tutorials
@@ -321,8 +350,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
           </label>
@@ -338,8 +367,9 @@
       <a href="../automated_image_analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
-    Autamated Image Analysis
+    Automated Image Analysis
     
   </span>
   
@@ -363,9 +393,12 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
+  
   
   <span class="md-ellipsis">
     Manual Image Analysis
@@ -379,6 +412,7 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
     Manual Image Analysis
     
@@ -389,14 +423,18 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -434,6 +472,66 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="4. Manual Analysis of Image">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important rules:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#41-manual-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Manual Scaling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-drawing-aponeuroses" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Drawing Aponeuroses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-measuring-muscle-thickness" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Measuring Muscle Thickness
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-drawing-fascicles" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Drawing Fascicles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-measuring-pennation-angles" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Measuring Pennation Angles
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -442,6 +540,39 @@
       5. Saving / Breaking / Next Image
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="5. Saving / Breaking / Next Image">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-saving-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Saving Results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-going-to-next-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Going to Next Image
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-breaking-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Breaking Analysis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -473,6 +604,7 @@
       <a href="../automated_video_analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Automated Video Analysis
     
@@ -494,6 +626,7 @@
     <li class="md-nav__item">
       <a href="../manual_video_analysis/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Manual Video Analysis
@@ -524,15 +657,17 @@
     
     
     
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
+  
   
   <span class="md-ellipsis">
     Advanced Methods
@@ -543,8 +678,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Advanced Methods
           </label>
@@ -559,6 +694,7 @@
     <li class="md-nav__item">
       <a href="../training_your_own_networks/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Training Your Own Networks
@@ -582,6 +718,7 @@
       <a href="../inspecting_masks/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Inspecting Masks
     
@@ -603,6 +740,7 @@
     <li class="md-nav__item">
       <a href="../crop_video/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Crop Video
@@ -626,8 +764,169 @@
       <a href="../remove_video_parts/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Remove Video Parts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resize_video/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Resize Video
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tests
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Tests
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automated_image_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Automated Image Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual_image_video_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manual Img/Vid Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../automated_video_analysis_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Automated Video Analysis Test
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_training_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Training Test
     
   </span>
   
@@ -655,6 +954,7 @@
       <a href="../contributing/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     Contributing
     
@@ -675,6 +975,7 @@
     <li class="md-nav__item">
       <a href="../code_of_conduct/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Code of Conduct
@@ -697,6 +998,7 @@
       <a href="../about_us/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     About Us
     
@@ -704,6 +1006,143 @@
   
 
       </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DL_Track_US
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_advanced_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Advanced Functions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_model_training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Training
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api_helpers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GUI helpers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -721,14 +1160,18 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -766,6 +1209,66 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="4. Manual Analysis of Image">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important rules:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#41-manual-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Manual Scaling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-drawing-aponeuroses" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Drawing Aponeuroses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-measuring-muscle-thickness" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Measuring Muscle Thickness
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-drawing-fascicles" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Drawing Fascicles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-measuring-pennation-angles" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Measuring Pennation Angles
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -774,6 +1277,39 @@
       5. Saving / Breaking / Next Image
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="5. Saving / Breaking / Next Image">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-saving-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Saving Results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-going-to-next-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Going to Next Image
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-breaking-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Breaking Analysis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -805,202 +1341,171 @@
   
 
 
-  <h1>Manual Image Analysis</h1>
-
-<p>This page covers the manual image analysis.
-The images are evaluated manually by drawing the muscle thickness, fascicle length
-and pennation angles directly on the image. For this type of analysis, single
-images (not videos) are a prerequisite. These images should be
-contained in a single folder, like in the
-“DL_Track_US_example/images_manual” folder. </p>
-<p>If you haven’t downloaded
-this folder yet, please do so now (link: <a href="https://osf.io/7mjsc/?view_only=">DL_Track_US - Examples &amp; Models</a>). 
-Unzip the folder and put it somewhere accessible.</p>
-<h2 id="1-creating-image-directory">1. Creating Image Directory</h2>
+<h1 id="manual-image-analysis">🖼 Manual Image Analysis<a class="headerlink" href="#manual-image-analysis" title="Permanent link">&para;</a></h1>
+<p>This page covers <strong>manual image analysis</strong> in DL_Track_US.<br />
+In this mode, images are evaluated manually by <strong>drawing muscle thickness, fascicle length, and pennation angles</strong> directly onto the images.</p>
+<p><strong>Important:</strong><br />
+Manual analysis is applicable only for <strong>single images</strong> (not videos).<br />
+All images must be contained in a single folder, e.g., <code>DL_Track_US_example/images_manual</code>.</p>
+<p>If you have not downloaded the example folder yet, please do so:<br />
+<a href="https://osf.io/7mjsc/?view_only=">DL_Track_US - Examples &amp; Models</a>.</p>
+<blockquote>
+<p>📦 Unzip the folder and save it somewhere easily accessible.</p>
+</blockquote>
+<hr />
+<h2 id="1-creating-image-directory">1. Creating Image Directory<a class="headerlink" href="#1-creating-image-directory" title="Permanent link">&para;</a></h2>
 <ul>
-<li>All images to be analyzed should be in a single folder.</li>
-<li>The “DL_Track_US/image_manual“ folder contains <span style="color:#2eaf66;"><strong>2 images</strong></span>.</li>
+<li>Place all images to be analyzed into a <strong>single folder</strong>.</li>
+<li>The <code>DL_Track_US_example/images_manual</code> folder contains <span style="color:#2eaf66;"><strong>2 images</strong></span>.</li>
 </ul>
 <p><img alt="image folder" src="../md_graphics/mia/image_folder.PNG" /></p>
 <ul>
-<li>In contrast to automated image analysis, you do not need a flip_flag.txt file nor do you need neural networks that do predictions. </li>
-<li>In manual image analysis, you are the neural network.</li>
+<li>Unlike automated analysis, you <strong>do not</strong> need a <code>flip_flag.txt</code> file or neural networks.</li>
+<li>In manual analysis, <strong>you</strong> are the "neural network."</li>
 </ul>
-<h2 id="2-specifying-input-directories-in-the-gui">2. Specifying Input Directories in the GUI</h2>
+<hr />
+<h2 id="2-specifying-input-directories-in-the-gui">2. Specifying Input Directories in the GUI<a class="headerlink" href="#2-specifying-input-directories-in-the-gui" title="Permanent link">&para;</a></h2>
 <ul>
-<li>You will begin with specifying the path to the folder containing the images to be analysed.</li>
-<li>In this case we use the “DL_Track_US_example/images_manual” folder.</li>
-<li>By clicking on the <span style="color: #a34ba1;"><strong>Inputs</strong></span> button in the GUI a selection window opens were you need to select the images folder.</li>
-<li>Click <strong>Select folder</strong> to specify the path in the GUI.</li>
+<li>Click the <span style="color: #a34ba1;"><strong>Inputs</strong></span> button in the GUI to open a selection window.</li>
+<li>Choose the <code>DL_Track_US_example/images_manual</code> folder.</li>
+<li>Click <strong>Select folder</strong> to confirm.</li>
 </ul>
 <p><img alt="input button" src="../md_graphics/mia/input_button.PNG" /></p>
-<h2 id="3-specifying-analysis-parameters">3. Specifying Analysis Parameters</h2>
-<p>First, please select <span style="color: #a34ba1;"><strong>image_manual</strong></span> from the dropdown-menu.</p>
-<p><img alt="select image manual" src="../md_graphics/mia/select_image_manual.PNG" /></p>
-<p>Next, you need to specify the <strong>Image Type</strong>.</p>
+<hr />
+<h2 id="3-specifying-analysis-parameters">3. Specifying Analysis Parameters<a class="headerlink" href="#3-specifying-analysis-parameters" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The ending of the Image Type must match the ending of your images,
-otherwise no files are found by DL_Track_US.</li>
-<li>You can either select a pre-specified ending from the dropdown list or
-type in your own ending.</li>
-<li>Please keep the formatting similar to the Image Types provided in the dropdown list.</li>
-<li>All the images in the “DL_Track_US_example/images_manual” folder
-are of the Image Type <strong>“.tif”</strong>.</li>
-<li>Thus, you should select the <span style="color: #a34ba1;"><strong>“/*.tif”</strong></span> Image Type as shown below.</li>
+<li>Select <span style="color: #a34ba1;"><strong>image_manual</strong></span> from the dropdown menu.</li>
+</ul>
+<p><img alt="select image manual" src="../md_graphics/mia/select_image_manual.PNG" /></p>
+<p>Then specify the <strong>Image Type</strong>:</p>
+<ul>
+<li>The file extension must match your images (e.g., <code>.tif</code>).</li>
+<li>Either select it from the dropdown or type it manually.</li>
+<li>For this tutorial, select <span style="color: #a34ba1;"><strong>/*.tif</strong></span>.</li>
 </ul>
 <p><img alt="image type" src="../md_graphics/mia/image_type.PNG" /></p>
 <ul>
-<li>Once you have specified the Image Type, you can start with the
-analysis.</li>
-<li>You can start the analysis by clicking the <span style="color: #a34ba1;"><strong>Run</strong></span> button in the main GUI.</li>
+<li>After setting the image type, click <span style="color: #a34ba1;"><strong>Run</strong></span> to start the manual analysis.</li>
 </ul>
 <p><img alt="run button" src="../md_graphics/mia/run_button.PNG" /></p>
-<h2 id="4-manual-analysis-of-image">4. Manual Analysis of Image</h2>
-<p>After clicking the Run button in the main GUI, the “Manual Analysis
-window” opens. </p>
-<ul>
-<li>Here is how it looks like:</li>
-</ul>
+<hr />
+<h2 id="4-manual-analysis-of-image">4. Manual Analysis of Image<a class="headerlink" href="#4-manual-analysis-of-image" title="Permanent link">&para;</a></h2>
+<p>After clicking <strong>Run</strong>, the <strong>Manual Analysis window</strong> opens:</p>
 <p><img alt="manual analysis window" src="../md_graphics/mia/manual_analysis_window.PNG" /></p>
-<p>Important to note:</p>
+<h3 id="important-rules">Important rules:<a class="headerlink" href="#important-rules" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The actual lines you draw are not used during the computation of the
-architectural parameters.</li>
-<li>The start- and endpoints of each line are relevant.</li>
-<li>The start point is defined as the point where you clicked the left mouse
-button to start drawing the line.</li>
-<li>The endpoint is defined as the point where you released the left mouse
-button to stop drawing the line.</li>
-<li>The line follows the cursor as long as the left mouse button is pressed.</li>
-<li>The calculations of the scaling line length, muscle thickness, fascicle length
-and pennation angle are dependent on the number of specified
-lines/segments.</li>
-<li><strong>Do NOT click somewhere random</strong> on the image during the analysis of
-a parameter and exactly follow the instructions. If additional clicks
-happened, start the analysis new by selecting the radiobutton
-representing the parameter again.</li>
-<li>If you do not follow the instructions presented in this tutorial, we
-cannot guarantee the correctness of the analysis results.</li>
+<li>The start and end points of each line are critical — not the line itself.</li>
+<li>Start drawing by pressing the left mouse button; end by releasing it.</li>
+<li>Avoid any unwanted clicks!<br />
+  If extra clicks happen, restart the current analysis step.</li>
 </ul>
-<p>First of all, you will scale the images manually so that the calculated
-architectural parameters are returned in centimetre rather than pixel units.</p>
+<hr />
+<h3 id="41-manual-scaling">4.1 Manual Scaling<a class="headerlink" href="#41-manual-scaling" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Draw a one centimetre long straight line in the image.</li>
-<li>The distance of one centimetre is usually recognizable in the scaling
-bars in the image.</li>
-<li>You can initiate the scaling process by selecting the <span style="color: #a34ba1;"><strong>Scale Image</strong></span>
-radiobutton in the “Manual Analysis window”.</li>
-<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will appear advising you what to do.</li>
+<li>Select <span style="color: #a34ba1;"><strong>Scale Image</strong></span> in the Manual Analysis window.</li>
+<li>Draw a <strong>1-centimetre straight line</strong> based on scaling bars in the image.</li>
+<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will guide you.</li>
 </ul>
 <p><img alt="scaling messagebox" src="../md_graphics/mia/scaling_messagebox.PNG" /></p>
-<p>The <span style="color: #f97e25;"><strong>drawn line</strong></span> should look like this.</p>
+<p>Example of the drawn line:</p>
 <p><img alt="drawn line" src="../md_graphics/mia/drawn_line.PNG" /></p>
-<p>As a next step you have the option to extend the muscle aponeuroses to ease
-the extrapolation of fascicles extending outside of the image.</p>
+<hr />
+<h3 id="42-drawing-aponeuroses">4.2 Drawing Aponeuroses<a class="headerlink" href="#42-drawing-aponeuroses" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Select the <span style="color: #a34ba1;"><strong>Draw Aponeurosis</strong></span> button in the “Manual Analysis window”
-and draw the <span style="color: #f97e25;"><strong>aponeurosis lines</strong></span> on the image as shown below.</li>
-<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will appear advising you what to do.</li>
+<li>Select <span style="color: #a34ba1;"><strong>Draw Aponeurosis</strong></span> to manually extend aponeuroses.</li>
+<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will instruct you.</li>
 </ul>
 <p><img alt="draw aponeuroses" src="../md_graphics/mia/draw_aponeuroses.PNG" />
 <img alt="draw aponeuroses 2" src="../md_graphics/mia/draw_aponeuroses_2.PNG" /></p>
-<p>Now you can start with the muscle thickness assessment.</p>
+<hr />
+<h3 id="43-measuring-muscle-thickness">4.3 Measuring Muscle Thickness<a class="headerlink" href="#43-measuring-muscle-thickness" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Select the <span style="color: #a34ba1;"><strong>Muscle Thickness</strong></span> radiobutton in the “Manual Analysis
-window”.</li>
-<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will appear advising you what to do.</li>
-<li>Draw <span style="color: #f97e25;"><strong>three straight lines</strong></span> reaching from the superficial to the deep
-aponeurosis in the middle right and left portion of the muscle image.</li>
+<li>Select <span style="color: #a34ba1;"><strong>Muscle Thickness</strong></span>.</li>
+<li>Draw <span style="color: #f97e25;"><strong>three straight lines</strong></span> from superficial to deep aponeurosis across the muscle image.</li>
 </ul>
 <p><img alt="muscle thickness" src="../md_graphics/mia/muscle_thickness.PNG" />
 <img alt="muscle thickness 2" src="../md_graphics/mia/muscle_thickness_2.PNG" /></p>
-<p>Next you can mark single fascicles on the image.</p>
+<hr />
+<h3 id="44-drawing-fascicles">4.4 Drawing Fascicles<a class="headerlink" href="#44-drawing-fascicles" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Select the <span style="color: #a34ba1;"><strong>Muscle Fascicles</strong></span> radiobutton in the “Manual Analysis
-window”.</li>
-<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will appear advising you what to do.</li>
-<li>Draw at least three <span style="color: #f97e25;"><strong>fascicles</strong></span> per image in different regions of the image.</li>
-<li>It is possible to extrapolate the <span style="color: #f97e25;"><strong>fascicles</strong></span> outside of the image region.</li>
-<li>Each <span style="color: #f97e25;"><strong>fascicles</strong></span> MUST consist of three segments.</li>
-<li>Do not draw more or less segments per <span style="color: #f97e25;"><strong>fascicles</strong></span> and pay attention to avoid
-any extra unwanted mouse clicks.</li>
-<li>One segment <strong>MUST</strong> start where the previous segment ended.</li>
-<li>Take a look at the image sequence below to see how it is done:</li>
+<li>Select <span style="color: #a34ba1;"><strong>Muscle Fascicles</strong></span>.</li>
+<li>Draw at least <span style="color: #f97e25;"><strong>three fascicles</strong></span> in different regions.</li>
+<li>Each fascicle must have <strong>three segments</strong>:</li>
+<li>Each segment must start where the previous segment ended.</li>
+<li>Avoid extra mouse clicks.</li>
 </ul>
 <p><img alt="muscle fasciles" src="../md_graphics/mia/muscle_fasciles.PNG" />
 <img alt="fascile segments" src="../md_graphics/mia/fascile_segments.PNG" /></p>
-<p>Next you can manually analyse the pennation angle.</p>
+<hr />
+<h3 id="45-measuring-pennation-angles">4.5 Measuring Pennation Angles<a class="headerlink" href="#45-measuring-pennation-angles" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Select the radiobutton <span style="color: #a34ba1;"><strong>Pennation Angle</strong></span>.</li>
-<li>A <span style="color:  #299ed9;"><strong>messagebox</strong></span> will appear advising you what to do.</li>
-<li>Draw at least three <span style="color: #f97e25;"><strong>pennation angles</strong></span> per image at different regions of
-the image.</li>
-<li>Each drawn pennation angles MUST consist of two segments. The first
-segment should follow the orientation of the fascicle, the second
-segment should follow the orientation of the deep aponeurosis. The
-segments should both originate at the insertion of the fascicle in the
-deep aponeurosis.</li>
-<li>Please pay attention to avoid unwanted clicks on the image.</li>
+<li>Select <span style="color: #a34ba1;"><strong>Pennation Angle</strong></span>.</li>
+<li>Draw at least <span style="color: #f97e25;"><strong>three pennation angles</strong></span>:</li>
+<li>Each must have <strong>two segments</strong>:<ol>
+<li>Along the fascicle</li>
+<li>Along the deep aponeurosis</li>
+</ol>
+</li>
 </ul>
 <p><img alt="pennation angle" src="../md_graphics/mia/pennation_angle.png" />
 <img alt="pennation angle 3" src="../md_graphics/mia/pennation_angle_3.png" /></p>
-<h2 id="5-saving-breaking-next-image">5. Saving / Breaking / Next Image</h2>
-<p>There are three buttons in the “Manual Analysis window” left to explain. 
-The first button is the <span style="color: #a34ba1;"><strong>Save Results</strong></span> button.</p>
+<hr />
+<h2 id="5-saving-breaking-next-image">5. Saving / Breaking / Next Image<a class="headerlink" href="#5-saving-breaking-next-image" title="Permanent link">&para;</a></h2>
+<h3 id="51-saving-results">5.1 Saving Results<a class="headerlink" href="#51-saving-results" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The Save Results button is a very important button!</li>
-<li>Press the Save Results button once you have analyzed all parameters
-that you wanted to analyze and before continuing with the next
-image.</li>
-<li>An excel file with the name Manual_Results.xlsx is saved in the
-directory of the input images upon pressing the Save Results button.
-Therein, all analysis results are stored. Moreover, by pressing the
-Save Results, a screenshot of your current analysis is captured and
-stored. (Note: The image may look strange, as we can only approximate
-the coordinates and size of the manual analysis on your screen.)</li>
-<li>In your case all files are saved in the
-“DL_Track_US_example/images_manual” folder.</li>
+<li>Press the <span style="color: #a34ba1;"><strong>Save Results</strong></span> button after finishing each image.</li>
+<li>It saves:</li>
+<li>An Excel file (<code>Manual_Results.xlsx</code>)</li>
+<li>A screenshot of your drawing.</li>
 </ul>
+<p>Saved results are stored in <code>DL_Track_US_example/images_manual</code>.</p>
 <p><img alt="save results" src="../md_graphics/mia/save_results.PNG" /></p>
-<p>The second button we haven’t explained yet is the <span style="color: #299ed9;"><strong>Next Image</strong></span>
-button.</p>
+<hr />
+<h3 id="52-going-to-next-image">5.2 Going to Next Image<a class="headerlink" href="#52-going-to-next-image" title="Permanent link">&para;</a></h3>
 <ul>
-<li>By clicking this button, you can proceed to the next image in the input
-folder (in your case the “DL_Track_US_example/images_manual”
-folder).</li>
-<li>Please remember to press the <strong>Save Results</strong> button prior to
-proceeding to the next images, otherwise you analysis results for this
-image will be lost.</li>
-<li>When the <span style="color: #299ed9;"><strong>Next Image</strong></span> button is pressed, the displayed image is
-updated.</li>
+<li>Click the <span style="color: #299ed9;"><strong>Next Image</strong></span> button to proceed.</li>
+<li>Always <strong>save results first</strong> before moving to the next image!</li>
 </ul>
 <p><img alt="next image" src="../md_graphics/mia/next_image.PNG" />
 <img alt="next image 2" src="../md_graphics/mia/next_image_2.PNG" /></p>
-<p>The last button we need to explain is the <span style="color: #2eaf66;"><strong>Break Analysis</strong></span> button.</p>
+<hr />
+<h3 id="53-breaking-analysis">5.3 Breaking Analysis<a class="headerlink" href="#53-breaking-analysis" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Pressing this button allows you to terminate the analysis and
-return to the main GUI window.</li>
-<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will appear asking you if you really want to stop the
-analysis.</li>
-<li>Once the <span style="color: #2eaf66;"><strong>Break Analysis</strong></span> button is pressed and you answered the
-messagebox with “YES”, the “Manual Analysis window” will be
-automatically closed.</li>
+<li>Click <span style="color: #2eaf66;"><strong>Break Analysis</strong></span> to terminate analysis.</li>
+<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will confirm your choice.</li>
+<li>After confirming, you return to the main GUI.</li>
 </ul>
 <p><img alt="break analysis" src="../md_graphics/mia/break_analysis.PNG" /></p>
-<p>When you have saved your results clicking the very important button and
-followed our instructions during this tutorial, your input directory 
-“DL_Track_US_example/images_manual” should look like this. It should contain
-<span style="color: #2eaf66;"><strong>the images</strong></span>, saved <span style="color: #299ed9;"><strong>screenshots</strong></span>, as well as the <span style="color: #f97e25;"><strong>Manual_Results.xlsx</strong></span> file.</p>
+<hr />
+<p>After saving all results, your folder should contain:</p>
+<ul>
+<li><span style="color: #2eaf66;"><strong>Input images</strong></span></li>
+<li>Saved <span style="color: #299ed9;"><strong>screenshots</strong></span></li>
+<li>The <span style="color: #f97e25;"><strong>Manual_Results.xlsx</strong></span> file</li>
+</ul>
 <p><img alt="images folder after" src="../md_graphics/mia/images_folder_after.PNG" /></p>
-<h2 id="6-error-handling">6. Error Handling</h2>
-<p>Whenever an error occurs during the manual image analysis process, the
-DL_Track_US GUI will open a <span style="color: #299ed9;"><strong>messagebox</strong></span>. This looks always similar to this:</p>
+<hr />
+<h2 id="6-error-handling">6. Error Handling<a class="headerlink" href="#6-error-handling" title="Permanent link">&para;</a></h2>
+<p>If any error occurs:</p>
+<ul>
+<li>A <span style="color: #299ed9;"><strong>messagebox</strong></span> will open explaining the issue.</li>
+</ul>
 <p><img alt="error" src="../md_graphics/mia/error.PNG" /></p>
-<p>We tried to formulate these messageboxes as concise as possible. Just follow
-their instructions to fix the error and run the analysis anew. In case an error
-occurs that is not caught by an error messagebox, don’t hesitate to report this
-in the Q&amp;A section in the <a href="https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a">DL_Track_US discussion forum</a>. Please take a look
-<a href="https://dltrack.readthedocs.io/en/latest/contribute.html">here</a> how do best do this.</p>
+<p>We have tried to make all error messages as <strong>concise</strong> and <strong>informative</strong> as possible.<br />
+Simply follow the instructions in the error box and restart the analysis after resolving the issue.</p>
+<blockquote>
+<p>💬 <strong>Note:</strong><br />
+If an unexpected error occurs that is not caught by a message box,<br />
+please report it in the <a href="https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a">DL_Track_US Discussion Forum - Q&amp;A Section</a>.</p>
+</blockquote>
+<p>When reporting an issue:</p>
+<ul>
+<li>Please include a description of the problem,</li>
+<li>Steps to reproduce the issue,</li>
+<li>And (if possible) screenshots of the GUI and error message.</li>
+</ul>
+<hr />
+<p>By following these guidelines, we can continuously improve DL_Track_US.</p>
 
 
 
@@ -1008,6 +1513,38 @@ in the Q&amp;A section in the <a href="https://github.com/PaulRitsche/DLTrack/di
 
 
 
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="April 28, 2025 21:00:50">April 28, 2025</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 19, 2025 11:01:11">February 19, 2025</span>
+  </span>
+
+    
+    
+    
+  </aside>
 
 
 
@@ -1029,10 +1566,47 @@ in the Q&amp;A section in the <a href="https://github.com/PaulRitsche/DLTrack/di
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 - 2025. DL_Track_US - <a href="#__consent">Change cookie settings</a>
+
+    </div>
   
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/PaulRitsche/DL_Track_US" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.researchgate.net/profile/Paul-Ritsche" target="_blank" rel="noopener" title="www.researchgate.net" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M0 32v448h448V32zm262.2 334.4c-6.6 3-33.2 6-50-14.2-9.2-10.6-25.3-33.3-42.2-63.6-8.9 0-14.7 0-21.4-.6v46.4c0 23.5 6 21.2 25.8 23.9v8.1c-6.9-.3-23.1-.8-35.6-.8-13.1 0-26.1.6-33.6.8v-8.1c15.5-2.9 22-1.3 22-23.9V225c0-22.6-6.4-21-22-23.9V193c25.8 1 53.1-.6 70.9-.6 31.7 0 55.9 14.4 55.9 45.6 0 21.1-16.7 42.2-39.2 47.5 13.6 24.2 30 45.6 42.2 58.9 7.2 7.8 17.2 14.7 27.2 14.7zm22.9-135c-23.3 0-32.2-15.7-32.2-32.2V167c0-12.2 8.8-30.4 34-30.4s30.4 17.9 30.4 17.9l-10.7 7.2s-5.5-12.5-19.7-12.5c-7.9 0-19.7 7.3-19.7 19.7v26.8c0 13.4 6.6 23.3 17.9 23.3 14.1 0 21.5-10.9 21.5-26.8h-17.9v-10.7h30.4c0 20.5 4.7 49.9-34 49.9m-116.5 44.7c-9.4 0-13.6-.3-20-.8v-69.7c6.4-.6 15-.6 22.5-.6 23.3 0 37.2 12.2 37.2 34.5 0 21.9-15 36.6-39.7 36.6"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/ritpau" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
     </a>
   
 </div>
@@ -1047,7 +1621,67 @@ in the Q&amp;A section in the <a href="https://github.com/PaulRitsche/DLTrack/di
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            
+
+
+
+<h4>Cookie consent</h4>
+<p>We use only the minimum cookies required by GitHub to ensure our website functions smoothly. You can disable them anytime, because your privacy is our priority!</p>
+<input class="md-toggle" type="checkbox" id="__settings" >
+<div class="md-consent__settings">
+  <ul class="task-list">
+    
+    
+      
+    
+    
+      
+        
+  
+  
+    
+    
+  
+  <li class="task-list-item">
+    <label class="task-list-control">
+      <input type="checkbox" name="github" checked>
+      <span class="task-list-indicator"></span>
+      GitHub
+    </label>
+  </li>
+
+      
+    
+    
+  </ul>
+</div>
+<div class="md-consent__controls">
+  
+    
+      <button class="md-button md-button--primary">Accept</button>
+    
+    
+    
+  
+    
+    
+    
+      <label class="md-button" for="__settings">Manage settings</label>
+    
+  
+</div>
+          </form>
+        </aside>
+      </div>
+      <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout((function(){document.querySelector("[data-md-component=consent]").hidden=!1}),250);var form=document.forms.consent;for(var action of["submit","reset"])form.addEventListener(action,(function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map((function(e){return[e,!0]})))),location.hash="",location.reload()}))</script>
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>

@@ -7,7 +7,7 @@ This page explains how to **test the model training** using the DL_Track_US GUI.
 ## 1. Before You Start
 
 - A **working GPU** is highly recommended; otherwise, model training will take significantly longer.
-- Instructions to setup the GUI and environment are found in the [Installation Guidelines](https://github.com/PaulRitsche/DL_Track_US).
+- Instructions to setup the GUI and environment are found in the [Installation Guidelines](https://paulritsche.github.io/DL_Track_US/installation/).
 
 - The **test training images and masks** you need are located in:
   - `DL_Track_US_example/tests/model_training/`
@@ -27,7 +27,7 @@ For this test, ensure the following:
 - Keep the **<span style="color: #299ed9;">parameter settings</span>** exactly as shown.
 - **Critical:** Set the number of <span style="color: #f97e25;">**Epochs to 3**</span> (for quick test training).
 
-<img src="\md_graphics\model_training_test\test_setup.png" width="600">
+![test_setup](md_graphics\model_training_test\test_setup.png)
 
 ---
 

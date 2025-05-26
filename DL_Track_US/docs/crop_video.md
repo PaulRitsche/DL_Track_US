@@ -11,9 +11,9 @@ In order to **save time** when analysing videos, you can **cut out frames withou
 - In the <span style="color: #2eaf66;">**Select Method**</span> dropdown, select **"Crop Video"**.
 - A separate **Crop Video Window** will pop up.
 
-<img src="\md_graphics\crop_video\advanced_methods.png">
-<img src="\md_graphics\crop_video\select_method.png" width="120">
-<img src="\md_graphics\crop_video\crop_video_window.png" width="200">
+![adv_meth](md_graphics\inspecting_masks\advanced_methods.png)
+![select_meth](md_graphics\inspecting_masks\select_method.png)
+![crop_vid](md_graphics\crop_video\crop_video_window.png)
 
 ---
 
@@ -22,7 +22,7 @@ In order to **save time** when analysing videos, you can **cut out frames withou
 - Click the <span style="color: #a34ba1;">**Load Video**</span> button.
 - Select the video file you want to crop.
 
-<img src="\md_graphics\crop_video\load_video_button.png" width="200">
+![vid_button](md_graphics\crop_video\load_video_button.png)
 
 After successfully loading the video, the UI should update.
 
@@ -33,7 +33,7 @@ After successfully loading the video, the UI should update.
 - Use the **yellow slider** to watch through the video and identify sections without muscle movement.
 - Then, type in the desired <span style="color: #299ed9;">**Start Frame**</span> and <span style="color: #299ed9;">**End Frame**</span>.
 
-<img src="\md_graphics\crop_video\select_frames.png" width="400">
+![select_frames](md_graphics\crop_video\select_frames.png)
 
 ---
 
@@ -42,7 +42,7 @@ After successfully loading the video, the UI should update.
 - Click the <span style="color: #a34ba1;">**Browse**</span> button to select the output folder where the cropped video will be saved.
 - Finally, click <span style="color: #2eaf66;">**Crop Video**</span> to save the trimmed video.
 
-<img src="\md_graphics\crop_video\select_output.png" width="400">
+![select_output](md_graphics\crop_video\select_output.png)
 
 ---
 

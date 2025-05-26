@@ -41,7 +41,7 @@ When using **multiple subfolders**, the flip-flag file format looks like this:
 - Below is a visual representation of the **correct fascicle orientation**.  
 If your fascicles are oriented differently, please specify a `1` flip-flag for those images.
 
-<img src="\md_graphics/aia/fascial_orientation.PNG" width="600">
+![orientation](md_graphics/aia/fascial_orientation.PNG)
 
 ## 2. Specifying Input Directories in the GUI
 
@@ -127,17 +127,17 @@ If you choose the **Manual** Scaling Type:
 - You must manually place **two points** on the image at a known distance.
 - Click the <span style="color: #a34ba1;">**Calibrate**</span> button to begin manual calibration.
 
-<img src="\md_graphics/aia/calibrate_button.png" width="600">
+![calibrate_button](md_graphics/aia/calibrate_button.png)
 
 - Click once with the left mouse button to set the first point (a red dot will appear).
 - Place the second point according to the real-world distance (5, 10, 15, or 20 mm).
 - Afterwards, click <span style="color: #a34ba1;">**Confirm**</span>.
 
-<img src="\md_graphics/aia/calibrate.png" width="600">
+![calibrate](md_graphics/aia/calibrate.png)
 
 - A <span style="color: #299ed9;">**message box**</span> will appear showing the corresponding pixel distance.
 
-<img src="\md_graphics/aia/calibration_result.png" width="600">
+![calib_result](md_graphics/aia/calibration_result.png)
 
 ---
 
@@ -148,7 +148,7 @@ Regardless of scaling type, whenever you use Bar or Manual scaling:
 
 For this tutorial, the Spacing parameter is **not necessary** since scaling is set to <span style="color: #a34ba1;">**None**</span>.
 
-<img src="\md_graphics/aia/spacing_3.png" width="600">
+![spacing](md_graphics/aia/spacing_3.png)
 
 ---
 
@@ -273,7 +273,7 @@ Once the analysis runs successfully, the results are displayed as a line graph s
 - Median Filtered Fascicle Length
 - Filtered Median Fascicle Length
 
-<img src="\md_graphics/aia/plotted_results.png">
+![results_plot](md_graphics/aia/plotted_results.png)
 
 ---
 

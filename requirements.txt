@@ -1,4 +1,5 @@
 customtkinter==5.2.2
+CTKToolTip==0.8
 jupyter==1.0.0
 Keras==2.10.0
 matplotlib==3.6.1

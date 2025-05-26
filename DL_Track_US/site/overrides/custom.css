@@ -1,0 +1,113 @@
+/* ───── Default (light) theme ───── */
+:root {
+    --md-primary-fg-color: #2A484E;
+    --md-accent-fg-color: #3a7ebf;
+    --md-default-bg-color: #ffffff;
+    --md-default-fg-color: #000000;
+    --md-typeset-a-color: #3a7ebf;
+    --md-typeset-color: #000000;
+
+    --md-code-bg-color: #f0f0f0;
+    --md-code-fg-color: #333333;
+
+    --md-header-bg-color: #2A484E;
+    --md-header-fg-color: #ffffff;
+
+    --md-footer-bg-color: #f9f9f9;
+    --md-footer-fg-color: #000000;
+}
+
+/* ───── Dark theme override ───── */
+[data-md-color-scheme="slate"] {
+    --md-primary-fg-color: #1f538d;
+    --md-accent-fg-color: #3a7ebf;
+    --md-default-bg-color: #253336;
+    --md-default-fg-color: #ffffff;
+    --md-typeset-a-color: #A8D8CD;
+    --md-typeset-color: #ffffff;
+
+    --md-code-bg-color: #2A484E;
+    --md-code-fg-color: #ffffff;
+
+    --md-header-bg-color: #2A484E;
+    --md-header-fg-color: #ffffff;
+
+    --md-footer-bg-color: #1f538d;
+    --md-footer-fg-color: #ffffff;
+}
+
+/* ───── Header Styling ───── */
+.md-header {
+    background-color: var(--md-header-bg-color) !important;
+    color: var(--md-header-fg-color) !important;
+    box-shadow: none;
+}
+
+.md-header__title,
+.md-header__button,
+.md-tabs__link {
+    color: var(--md-header-fg-color) !important;
+}
+
+/* ───── Buttons ───── */
+.md-typeset .md-button {
+    background-color: #DDEFE3;
+    color: #000000;
+    border: 1px solid #000000;
+    border-radius: 6px;
+}
+
+.md-typeset .md-button:hover {
+    background-color: #A8D8CD;
+    color: #000000;
+}
+
+/* ───── Inputs and Forms ───── */
+input,
+textarea,
+select {
+    background-color: #F9F9FA;
+    color: black;
+    border: 2px solid #979DA2;
+    border-radius: 6px;
+}
+
+/* ───── Tables ───── */
+.md-typeset table {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+}
+
+.md-typeset table th,
+.md-typeset table td {
+    border: 1px solid #ddd;
+}
+
+/* ───── Scrollbar Styling ───── */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #3a7ebf;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #325882;
+}
+
+/* ───── Code Blocks ───── */
+code,
+pre {
+    background-color: var(--md-code-bg-color);
+    color: var(--md-code-fg-color);
+    border-radius: 6px;
+    padding: 0.25em 0.5em;
+}
+
+/* ───── Admonition / Callout Boxes ───── */
+.md-typeset .admonition.tip {
+    background-color: #e6f4ea;
+    border-left: 4px solid #4caf50;
+}

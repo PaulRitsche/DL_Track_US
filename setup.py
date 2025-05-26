@@ -8,6 +8,7 @@ except ImportError:
 
 INSTALL_REQUIRES = [
     "customtkinter==5.2.2",
+    "CTKToolTip=0.8",
     "Keras==2.10.0",
     "matplotlib==3.6.1",
     "numpy==1.23.4",
@@ -38,7 +39,7 @@ long_descr = (this_directory / "README_Pypi.md").read_text()
 if __name__ == "__main__":
     setup(
         name="DL_Track_US",
-        version="0.3.1",
+        version="0.3.0",
         maintainer="Paul Ritsche",
         maintainer_email="paul.ritsche@unibas.ch",
         long_description=long_descr,

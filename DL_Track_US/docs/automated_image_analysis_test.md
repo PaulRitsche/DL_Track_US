@@ -25,8 +25,7 @@ Make sure the following are correct:
   `DL_Track_US_example/tests/test_images_automated/flip_flags.txt`
 - Then click the **Run** button to start the analysis.
 
-<img src="\md_graphics\aia_test\test_setup.png">
-
+![test_setup](md_graphics\aia_test\test_setup.png)
 ---
 
 ## After Running the Test
@@ -46,7 +45,7 @@ Both will appear in:
 - Open the <span style="color: #2eaf66;">**Results.xlsx**</span> file.
 - Compare the analysis results to the expected outputs shown below.
 
-<img src="\md_graphics\aia_test\results.png">
+![resuts](md_graphics\aia_test\results.png)
 
 ---
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "DL_Track_US"
-version = "0.3.1"
+version = "0.3.0"
 authors = [
   { name="Paul Ritsche", email="paul.ritsche@unibas.ch" },
   { name="Olivier Seynnes", email="oliviers@nih.no" },
@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
     "customtkinter==5.2.2",
+    "CTKToolTip==0.8",
     "Keras==2.10.0",
     "matplotlib==3.6.1",
     "numpy==1.23.4",
@@ -41,6 +42,7 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/PaulRitsche/DL_Track_US"
 "Bug Tracker" = "https://github.com/PaulRitsche/DL_Track_US/issues"
+"Documentation" = "https://paulritsche.github.io/DL_Track_US/"
 
 [tool.commitizen]
 name = "cz_conventional_commits"

@@ -1,4 +1,33 @@
 
+2025-05-26
+==========
+
+Removed
+-------
+
+- Old docs
+- Figures Folder
+- Test Folder (included in online docs)
+
+Added
+-----
+
+- DL_Track mkdocs documentation
+
+- Api docs
+- Logo and Icons to main UI
+
+- Logo in advanced_methods
+
+Fixed
+-----
+
+- slow video loading and processing
+
+- Documentation updates for the upcoming v0.3.0 release.
+- Error handling in advancec_methods.py
+- Resizing in main UI and advancec_methods.py
+
 2025-03-11
 ==========
 

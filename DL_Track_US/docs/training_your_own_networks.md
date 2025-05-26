@@ -16,7 +16,7 @@ The DL_Track_US package GUI includes the possibility to **train your own neural 
 If you're new to neural networks, we recommend this [introduction course](https://deeplizard.com/learn/video/gZmobeGL0Yg).
 
 > 📝 **Note:**  
-> DL_Track_US allows **training** but **not modifying** network architectures!
+> DL_Track_US UI allows **training** but **not modifying** network architectures!
 
 ---
 
@@ -50,13 +50,13 @@ Example:
 
 ## 2. Specifying Relevant Directories
 
-- Open the GUI.
+- Open the UI.
 - Click the <span style="color: #a34ba1;">**Advanced Methods**</span> button.
 - In the dropdown, select <span style="color: #2eaf66;">**Train Model**</span>.
 
 ![advanced methods](md_graphics/training_your_own_networks/advanced_methods.png)
 ![select method](md_graphics/training_your_own_networks/select_method.png)
-<img src="\md_graphics/training_your_own_networks/train_model.png" width="400">
+![train_model](md_graphics/training_your_own_networks/train_model.png)
 
 Now specify the directories:
 
@@ -65,7 +65,7 @@ Now specify the directories:
 - Click <span style="color: #a34ba1;">**Images**</span>.
 - Select `DL_Track_US_example/model_training/apo_img_example`.
 
-<img src="\md_graphics/training_your_own_networks/images_button.png" width="400">
+![images_button](md_graphics/training_your_own_networks/images_button.png)
 
 ---
 
@@ -74,7 +74,7 @@ Now specify the directories:
 - Click <span style="color: #a34ba1;">**Masks**</span>.
 - Select `DL_Track_US_example/model_training/apo_mask_example`.
 
-<img src="\md_graphics/training_your_own_networks/masks_button.png" width="400">
+![masks_button](md_graphics/training_your_own_networks/masks_button.png)
 
 ---
 
@@ -83,7 +83,7 @@ Now specify the directories:
 - Click <span style="color: #a34ba1;">**Output**</span>.
 - Choose a folder to save the trained model, loss plots, and CSV results.
 
-<img src="\md_graphics/training_your_own_networks/output_button.png" width="400">
+![output_button](md_graphics/training_your_own_networks/output_button.png)
 
 ---
 
@@ -95,7 +95,7 @@ Image augmentation artificially increases your dataset size by applying random t
 
 - Click <span style="color: #a34ba1;">**Augment Images**</span>.
 
-<img src="\md_graphics/training_your_own_networks/augment_images_button.png" width="400">
+![augment_button](md_graphics/training_your_own_networks/augment_images_button.png)
 
 A messagebox will notify you once augmentation is complete.
 
@@ -107,13 +107,13 @@ A messagebox will notify you once augmentation is complete.
 - **NEVER** use just 3 <span style="color: #299ed9;">**epochs**</span> for real training.  
   (3 epochs are okay only for testing.)
 
-<img src="\md_graphics/training_your_own_networks/hyperparameters.png" width="400">
+![hyperparameters](md_graphics/training_your_own_networks/hyperparameters.png)
 
 Now click:
 
 - <span style="color: #a34ba1;">**Start Training**</span>
 
-<img src="\md_graphics/training_your_own_networks/start_training_button.png" width="400">
+![training_button](md_graphics/training_your_own_networks/start_training_button.png)
 
 Three messageboxes will guide you during the training process.
 
@@ -169,12 +169,12 @@ You need:
 - 📁 `aponeurosis_masks` folder
 
 You’ll use [ImageJ/Fiji](https://imagej.net/software/fiji/downloads) and our script:  
-🗂 [`DL_Track_US/DL_Track_US/gui_helpers/gui_files/Image_Labeling_DL_Track_US.ijm`](https://github.com/PaulRitsche/DL_Track_US/blob/main/DL_Track_US/gui_helpers/Image_Labeling_DL_Track_US.ijm)
+🗂 [`DL_Track_US/DL_Track_US/gui_helpers/gui_files/Image_Labeling_DL_Track_US.ijm`](https://github.com/PaulRitsche/DL_Track_US/blob/main/DL_Track_US/gui_helpers/gui_files/Image_Labeling_DL_Track_US.ijm)
 
 Drag the `.ijm` file into a running Fiji/ImageJ window to start.
 
-<img src="\md_graphics/training_your_own_networks/fiji.png">
-<img src="\md_graphics/training_your_own_networks/labelling_file.png">
+![fiji](md_graphics/training_your_own_networks/fiji.png)
+![labelling](md_graphics/training_your_own_networks/labelling_file.png)
 
 ---
 
@@ -189,13 +189,13 @@ Drag the `.ijm` file into a running Fiji/ImageJ window to start.
 2. **Label Aponeuroses**:  
    Use polygon tool to select **superficial** and then **deep** aponeurosis.
 
-    <img src="\md_graphics/training_your_own_networks/upper_aponeurosis.png">
-    <img src="\md_graphics/training_your_own_networks/lower_aponeurosis.png">
+    ![upper_apo](md_graphics/training_your_own_networks/upper_aponeurosis.png)
+    ![lower_apo](md_graphics/training_your_own_networks/lower_aponeurosis.png)
 
 3. **Label Fascicles**:  
    Use segmented line tool for clearly visible fascicle parts only.
 
-    <img src="\md_graphics/training_your_own_networks/fascicles.png">
+    ![fascicles](md_graphics/training_your_own_networks/fascicles.png)
 
 4. **Save and Move to Next Image**.
 

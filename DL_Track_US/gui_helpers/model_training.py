@@ -308,7 +308,7 @@ def build_vgg16_unet(input_shape: tuple):
     return model
 
 
-def IoU(y_true, y_pred, smooth: int = 1) -> float:
+def IoU(y_true, y_pred, dtype=tf.float32) -> float:
     """Function to compute the intersection over union score (IoU),
     a measure of prediction accuracy. This is sometimes also called
     Jaccard score.
@@ -324,9 +324,8 @@ def IoU(y_true, y_pred, smooth: int = 1) -> float:
         This is the mask that is provided prior to model training.
     y_pred : tf.Tensor
         Predicted image segmentation by the network.
-    smooth : int, default = 1
-        Smoothing operator applied during final calculation of
-        IoU. Must be non-negative and non-zero.
+    dtype : default = tff.float32
+        Data type of the IoU calculation. The default is tf.float32.
 
     Returns
     -------
@@ -343,18 +342,26 @@ def IoU(y_true, y_pred, smooth: int = 1) -> float:
     --------
     >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1), dtype=float32),
             y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
-            shape=(1, 512, 512, 1), dtype=float32),
-            smooth=1)
+            shape=(1, 512, 512, 1), dtype=float32), dtype=float32)
     Tensor("truediv:0", shape=(1, 512, 512), dtype=float32)
     """
-    # Caclulate Intersection
-    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
-    # Calculate Union
-    union = K.sum(y_true, -1) + K.sum(y_pred, -1) - intersection
-    # Calculate IoU
-    iou = (intersection + smooth) / (union + smooth)
+    y_pred = tf.cast(y_pred, dtype)
+    y_true = tf.cast(y_true, y_pred.dtype)
 
-    return iou
+    y_pred = tf.squeeze(y_pred)
+    y_true = tf.squeeze(y_true)
+
+    y_true_pos = tf.reshape(y_true, [-1])
+    y_pred_pos = tf.reshape(y_pred, [-1])
+
+    area_intersect = tf.reduce_sum(tf.multiply(y_true_pos, y_pred_pos))
+
+    area_true = tf.reduce_sum(y_true_pos)
+    area_pred = tf.reduce_sum(y_pred_pos)
+    area_union = area_true + area_pred - area_intersect
+
+    # Return the IoU score
+    return tf.math.divide_no_nan(area_intersect, area_union)
 
 
 def dice_score(y_true, y_pred) -> float:
@@ -430,7 +437,7 @@ def focal_loss(y_true, y_pred, alpha: float = 0.8, gamma: float = 2) -> float:
 
     Examples
     --------
-    >>> IoU(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1),
+    >>> focal_loss(y_true=Tensor("IteratorGetNext:1", shape=(1, 512, 512, 1),
             dtype=float32),
             y_pred=Tensor("VGG16_U-Net/conv2d_8/Sigmoid:0",
             shape=(1, 512, 512, 1), dtype=float32),

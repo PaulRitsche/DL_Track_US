@@ -16,8 +16,7 @@ Before running the test, ensure that:
 - You have kept the default <span style="color: #e61d25;">**parameter settings**</span> in the `settings.json` file unchanged.
 - You click the <span style="color: #a34ba1;">**Run**</span> button in the GUI to start the analysis.
 
-<img src="\md_graphics/ava_test/test_setup.png">
-
+![setup](md_graphics/ava_test/test_setup.png)
 ---
 
 When the analysis is complete, two new files will appear in the `DL_Track_US_example/tests/test_video_automated` folder:
@@ -37,7 +36,7 @@ When the analysis is complete, two new files will appear in the `DL_Track_US_exa
 
 3. Compare your results to the reference results shown below:
 
-<img src="\md_graphics/ava_test/results.png">
+![results](md_graphics/ava_test/results.png)
 
 ---
 

@@ -18,7 +18,7 @@ We provide **two ways** to install DL_Track_US:
 4. Double-click the file to launch the **DL_Track_US GUI**
 
 🎯 You can now test the app using the provided example files.  
-Check our [Examples](https://dltrack.readthedocs.io/en/latest/usage.html) and [Testing](https://dltrack.readthedocs.io/en/latest/tests.html) sections for more.
+Check our [Tutorial](https://paulritsche.github.io/DL_Track_US/) and [Testing](https://paulritsche.github.io/DL_Track_US/) sections for more.
 
 ⚠️ You might see a warning from your antivirus software. You can safely dismiss it, this app is secure and verified.
 
@@ -41,8 +41,8 @@ Check our [Examples](https://dltrack.readthedocs.io/en/latest/usage.html) and [T
 ### Step 2 - Create a virtual environment
 
 ```bash
-conda create -n DL_Track_US python=3.10
-conda activate DL_Track_US
+conda create -n DL_Track_US0.3.0 python=3.10
+conda activate DL_Track_US0.3.0
 ```
 
 ---
@@ -52,7 +52,7 @@ conda activate DL_Track_US
 #### **Windows users:**
 
 ```bash
-pip install DL-Track-US==0.2.1
+pip install DL-Track-US==0.3.0
 ```
 
 #### **MacOS users:**

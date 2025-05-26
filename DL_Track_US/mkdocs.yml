@@ -1,9 +1,10 @@
 # Define the skeleton of the website/documentation
 site_name: DL_Track_US
-# site_description: >-
-#   All you need to know about openhdemg
+site_description: >-
+  "Automated analysis of muscle architecture in ultrasonography images and videos using deep learning"
 
-# # Repository
+
+# Repository
 repo_name: DL_Track_US
 repo_url: https://github.com/PaulRitsche/DL_Track_US
 
@@ -137,25 +138,25 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 
-# # Modify extra tools.
-# extra:
-#   generator: false # Remove 'Made with Material for MkDocs' in the footer.
-#   social:
-#     - icon: fontawesome/brands/github 
-#       link: https://github.com/GiacomoValliPhD/openhdemg
-#     - icon: fontawesome/brands/twitter 
-#       link: https://twitter.com/openhdemg
-#     - icon: fontawesome/brands/youtube 
-#       link: https://www.youtube.com/@openhdemg
-#   consent:
-#     title: Cookie consent
-#     description: >- 
-#       We use only the minimum cookies required by GitHub to ensure our website functions smoothly.
-#       You can disable them anytime, because your privacy is our priority!
-#     actions:
-#       - accept
-#       - manage
-#       # - reject
+# Modify extra tools.
+extra:
+  generator: false # Remove 'Made with Material for MkDocs' in the footer.
+  social:
+    - icon: fontawesome/brands/github 
+      link: https://github.com/PaulRitsche/DL_Track_US
+    - icon: fontawesome/brands/researchgate 
+      link: https://www.researchgate.net/profile/Paul-Ritsche
+    - icon: fontawesome/brands/twitter 
+      link: https://twitter.com/ritpau
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use only the minimum cookies required by GitHub to ensure our website functions smoothly.
+      You can disable them anytime, because your privacy is our priority!
+    actions:
+      - accept
+      - manage
+      # - reject
 
 # # Need to have or pip install:
 # # mkdocs

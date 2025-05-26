@@ -1,4 +1,4 @@
-# 🖼 Resize Video
+# ✂️ Resize Video
 
 In DL_Track_US you can **resize a video** so that only the **selected region** remains:
 
@@ -31,11 +31,11 @@ After successfully loading the video:
 - Use the **yellow slider** to scroll through the video frames.
 - Click and drag **with the left mouse button** to **select the part you want to keep**.
 
-<img src="\md_graphics\resize_video\video_resize_area.png" width="600">
+![resize](md_graphics\resize_video\video_resize_area.png)
 
 Your result (after re-loading) will look like this:
 
-<img src="\md_graphics\resize_video\video_result.png" width="600">
+![resize_result](md_graphics\resize_video\video_result.png)
 
 
 ---

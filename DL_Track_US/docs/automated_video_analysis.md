@@ -92,12 +92,11 @@ Alternatively, you could use <span style="color: #a34ba1;">**Manual**</span> sca
 - Place two points on a known distance (5, 10, 15, or 20 mm).
 - Click <span style="color: #a34ba1;">**Calibrate**</span>.
 
-<img src="\md_graphics/ava/calibrate_button.png" width="600">
-<img src="\md_graphics/ava/calibrate.png" width="600">
-
+![calibrate_button](md_graphics/ava/calibrate_button.png)
+![caibrate](md_graphics/ava/calibrate.png)
 After calibration, a <span style="color: #299ed9;">**messagebox**</span> shows the pixel distance:
 
-<img src="\md_graphics/ava/calibration_result.png" width="600">
+![calib_result](md_graphics/ava/calibration_result.png)
 
 ---
 
@@ -177,7 +176,7 @@ You will find two new files:
 - <span style="color: #2eaf66;">**calf_raise.xlsx**</span>:
   - Excel file containing estimated muscle parameters (fascicle length, pennation angle, muscle thickness).
 
-<img src="\md_graphics/ava/video_folder_after.png">
+![vid_folder](md_graphics/ava/video_folder_after.png)
 
 ---
 
@@ -187,7 +186,7 @@ Line graph results include:
 - Median Filtered Fascicle Length
 - Filtered Median Fascicle Length (based on chosen filter)
 
-<img src="\md_graphics/ava/plotted_results.png">
+![results_plot](md_graphics/ava/plotted_results.png)
 
 ---
 

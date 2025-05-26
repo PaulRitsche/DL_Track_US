@@ -7,14 +7,14 @@ In version **0.2.1** of DL_Track_US, we included an option to **inspect labeled 
 
 ## 1. Accessing the Mask Inspection Tool
 
-- Open the GUI.
+- Open the UI.
 - In the main window, click on <span style="color: #a34ba1;">**Advanced Methods**</span>.
 - In the <span style="color: #2eaf66;">**Select Method**</span> dropdown, choose **"Inspect Masks"**.
 - The **Mask Inspection Window** will open.
 
-<img src="\md_graphics\inspecting_masks\advanced_methods.png">
-<img src="\md_graphics\inspecting_masks\select_method.png" width="100">
-<img src="\md_graphics\inspecting_masks\inspecting_masks.png" width="250">
+![adv_meth](md_graphics\inspecting_masks\advanced_methods.png)
+![select_meth](md_graphics\inspecting_masks\select_method.png)
+![inspect](md_graphics\inspecting_masks\inspecting_masks.png)
 
 ---
 
@@ -28,7 +28,7 @@ You need to specify three directories:
 
 These folders should have been created during the [Image Labeling](training_your_own_networks.md#7-image-labels) process.
 
-> Fascicle and aponeurosis masks can be inspected **separately**.
+> Fascicle and aponeurosis masks must be inspected **separately**.
 
 ### Specify:
 
@@ -36,7 +36,7 @@ These folders should have been created during the [Image Labeling](training_your
 - Click <span style="color: #2eaf66;">**Mask Dir**</span> to select the respective masks folder (either fascicle or aponeurosis masks).
 - Use the <span style="color: #f97e25;">**Start Index**</span> to choose the starting image number.
 
-<img src="\md_graphics\inspecting_masks\inspecting_masks_buttons.png">
+![mask_button](md_graphics\inspecting_masks\inspecting_masks_buttons.png)
 
 ---
 
@@ -54,7 +54,7 @@ One of two things will happen:
 - Naming conventions are correct.
 - You will see a <span style="color: #299ed9;">**messagebox**</span> confirming everything is OK.
 
-<img src="\md_graphics\inspecting_masks\no_different_images.png">
+![no_different](md_graphics\inspecting_masks\no_different_images.png)
 
 Click **OK** to continue to the Mask Inspection GUI.
 
@@ -75,17 +75,17 @@ In this case:
 > 💡 **Tip:**  
 > Adjust the files according to the table, then restart the inspection.
 
-<!-- (Insert mismatch detection screenshot here if available) -->
+![differen_images](md_graphics\inspecting_masks\different_images.png)
 
 ---
 
-## 4. Using the Mask Inspection GUI
+## 4. Using the Mask Inspection UI
 
 Once inspection starts:
 
-<img src="\md_graphics\inspecting_masks\inspection_gui.png">
+![inpsection](md_graphics\inspecting_masks\inspection_gui.png)
 
-In this GUI:
+In this UI:
 
 - The original images are shown.
 - The masks are **overlaid in semi-transparent green**.

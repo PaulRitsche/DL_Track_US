@@ -17,7 +17,7 @@ Before starting:
   `DL_Track_US_example/tests/test_image_manual`.
 - Click the **Run** button to start the analysis.
 
-<img src="\md_graphics\miva_test\test_setup.png">
+![test_setup](md_graphics\miva_test\test_setup.png)
 
 ---
 
@@ -27,7 +27,7 @@ After clicking **Run**:
 
 - The **Manual Analysis window** should pop up containing the test image.
 
-<img src="\md_graphics\miva_test\reanalysing.png">
+![reanalysis](md_graphics\miva_test\reanalysing.png)
 
 ---
 
@@ -73,6 +73,6 @@ A new file will be created:
 
 If the results are similar, **DL_Track_US works properly** for manual image and video analysis!
 
-<img src="\md_graphics\miva_test\results.png">
+![results](md_graphics\miva_test\results.png)
 
 ---

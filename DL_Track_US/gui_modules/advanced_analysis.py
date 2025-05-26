@@ -10,6 +10,8 @@ import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
 from threading import Lock, Thread
+import traceback
+from sys import platform
 
 
 class AdvancedAnalysis:
@@ -35,10 +37,11 @@ class AdvancedAnalysis:
 
         # head_path = os.path.dirname(os.path.abspath(__file__))
         iconpath = self.parent.resource_path("gui_helpers/gui_files/DLTrack_logo.ico")
-        self.advanced_window.iconbitmap(iconpath)
 
-        # if platform.startswith("win"):
-        #     self.a_window.after(200, lambda: self.a_window.iconbitmap(iconpath))
+        if platform.startswith("win"):
+            self.advanced_window.after(
+                200, lambda: self.advanced_window.iconbitmap(iconpath)
+            )
 
         # Configure resizing of user interface
         for row in range(21):
@@ -46,14 +49,15 @@ class AdvancedAnalysis:
         for column in range(4):
             self.advanced_window.rowconfigure(column, weight=1)
 
-        self.advanced_window.columnconfigure(0, weight=1)
-        self.advanced_window.columnconfigure(1, weight=5)
-        self.advanced_window.rowconfigure(0, weight=1)
+        # # self.advanced_window.columnconfigure(0, weight=1)
+        self.advanced_window.columnconfigure(1, weight=1)
+        # self.advanced_window.rowconfigure(0, weight=1)
         self.advanced_window.minsize(width=300, height=100)
 
         self.advanced_window.grab_set()
 
-        ctk.CTkLabel(self.advanced_window, text="Select Method").grid(column=1, row=0)
+        self.advanced_label = ctk.CTkLabel(self.advanced_window, text="Select Method")
+        self.advanced_label.grid(column=1, row=0)
 
         # Mask Option
         self.advanced_option = StringVar()
@@ -145,8 +149,10 @@ class AdvancedAnalysis:
                 for widget in self.advanced_window_frame.winfo_children():
                     widget.destroy()
 
+            self.advanced_label.destroy()
+
             self.advanced_window_frame = ctk.CTkFrame(self.advanced_window)
-            self.advanced_window_frame.grid(column=1, row=2, sticky=(N, S, W, E))
+            self.advanced_window_frame.grid(column=1, row=1, sticky=(N, S, W, E))
 
             if self.advanced_option.get() == "Inspect Masks":
 
@@ -158,7 +164,13 @@ class AdvancedAnalysis:
                 dir1_button = ctk.CTkButton(
                     self.advanced_window_frame,
                     text="Image Dir",
-                    command=lambda: (self.raw_image_dir.set(filedialog.askdirectory())),
+                    command=lambda: (
+                        self.raw_image_dir.set(filedialog.askdirectory()),
+                        ctk.CTkLabel(
+                            self.advanced_window_frame,
+                            text=f"{self.raw_image_dir.get().split('/')[-1]}",
+                        ).grid(column=0, row=3),
+                    ),
                 )
                 dir1_button.grid(column=0, row=2, sticky=(W, E))
 
@@ -170,8 +182,9 @@ class AdvancedAnalysis:
                     command=lambda: (
                         self.mask_image_dir.set(filedialog.askdirectory()),
                         ctk.CTkLabel(
-                            self.advanced_window_frame, text=f"{self.mask_image_dir}"
-                        ).grid(column=0, row=3),
+                            self.advanced_window_frame,
+                            text=f"{self.mask_image_dir.get().split('/')[-1]}",
+                        ).grid(column=1, row=3),
                     ),
                 )
                 self.dir2_button.grid(column=1, row=2, sticky=(W, E))
@@ -189,7 +202,7 @@ class AdvancedAnalysis:
                 start_idx.set("0")
 
                 ttk.Separator(self.advanced_window_frame, orient="horizontal").grid(
-                    column=1, row=5, columnspan=4
+                    column=0, row=5, columnspan=4, sticky=(W, E)
                 )
 
                 # Inspect button
@@ -322,6 +335,13 @@ class AdvancedAnalysis:
                 size_entry.grid(column=1, row=7, sticky=(W, E))
                 self.batch_size.set("1")
 
+                # Model info
+                ctk.CTkLabel(
+                    self.advanced_window_frame,
+                    text="*Note that a UNet model \nwith a VGG16 encoder\n is used for training*",
+                    font=("Verdana", 8, "bold"),
+                ).grid(column=2, row=7, padx=10)
+
                 # Learning Rate Label
                 ctk.CTkLabel(self.advanced_window_frame, text="Learning Rate").grid(
                     column=0, row=8
@@ -387,8 +407,7 @@ class AdvancedAnalysis:
                 ctk.CTkLabel(
                     self.advanced_window_frame,
                     text="*Use augmentation only with \nbacked-up original images*",
-                    font=("Segue UI", 8, "bold"),
-                    text_color="#000000",
+                    font=("Verdana", 8, "bold"),
                 ).grid(column=0, row=12, sticky=E)
 
                 # Model train button
@@ -531,11 +550,17 @@ class AdvancedAnalysis:
                     child.grid_configure(padx=5, pady=5)
 
         except FileNotFoundError:
-            tk.messagebox.showerror("Information", "Enter the correct folder path!")
+            tk.messagebox.showerror("Information", "Enter the correct video path!")
 
         # Add padding
         for child in self.advanced_window_frame.winfo_children():
             child.grid_configure(padx=5, pady=5)
+
+        for i in range(3):
+            self.advanced_window_frame.columnconfigure(i, weight=1)
+
+        for i in range(6):
+            self.advanced_window_frame.rowconfigure(i, weight=1)
 
     def load_video(self):
         """
@@ -700,12 +725,6 @@ class AdvancedAnalysis:
                 if not ret:
                     break
 
-                # resized_frame = cv2.resize(
-                #     frame, (self.desired_width, self.desired_height)
-                # )
-
-                # Crop the frame to the selected area
-                # cropped_frame = resized_frame[y0:y1, x0:x1]
                 cropped_frame = frame[y0:y1, x0:x1]
 
                 out.write(cropped_frame)
@@ -717,7 +736,7 @@ class AdvancedAnalysis:
             cap.release()
             out.release()
 
-            tk.messagebox.showinfo("Success", f"Cropped video saved to {output_path}")
+            tk.messagebox.showinfo("Success", f"Resized video saved to {output_path}")
 
         except AttributeError:
             tk.messagebox.showerror("Error", "No video loaded.")
@@ -778,25 +797,43 @@ class AdvancedAnalysis:
 
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-            frame_count = 0
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret:
-                    break
+            if end_frame > int(cap.get(cv2.CAP_PROP_FRAME_COUNT)):
+                tk.messagebox.showerror("Error", "End frame exceeds video frame count.")
+                return
+            elif (
+                start_frame not in range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+                or end_frame < start_frame
+            ):
+                tk.messagebox.showerror(
+                    "Error", "Start frame must be non-negative and less than end frame."
+                )
+                return
+            elif start_frame == end_frame:
+                tk.messagebox.showerror(
+                    "Error", "Start and end frames cannot be the same."
+                )
+                return
+            else:
 
-                if start_frame <= frame_count <= end_frame:
-                    resized_frame = cv2.resize(frame, (width, height))
-                    out.write(resized_frame)
+                frame_count = 0
+                while cap.isOpened():
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
 
-                frame_count += 1
-                if frame_count > end_frame:
-                    break
+                    if start_frame <= frame_count <= end_frame:
+                        resized_frame = cv2.resize(frame, (width, height))
+                        out.write(resized_frame)
 
-            cap.release()
-            out.release()
-            tk.messagebox.showinfo(
-                "Success", f"Video cropped and saved to {output_path}"
-            )
+                    frame_count += 1
+                    if frame_count > end_frame:
+                        break
+
+                cap.release()
+                out.release()
+                tk.messagebox.showinfo(
+                    "Success", f"Video cropped and saved to {output_path}"
+                )
 
         except ValueError:
             tk.messagebox.showerror(
@@ -909,8 +946,21 @@ class AdvancedAnalysis:
 
         # Error handling
         except ValueError:
+            error_message = traceback.format_exc()
             tk.messagebox.showerror(
-                "Information", "Analysis parameter entry fields" + " must not be empty."
+                "Information",
+                "Analysis parameter entry fields"
+                + " must not be empty.\n\n"
+                + error_message,
+            )
+            self.do_break()
+            self.should_stop = False
+            self.is_running = False
+
+        except AttributeError:
+            error_message = traceback.format_exc()
+            tk.messagebox.showerror(
+                "Error", "Specify all input directories. \n\n" + error_message
             )
             self.do_break()
             self.should_stop = False

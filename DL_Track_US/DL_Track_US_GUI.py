@@ -66,10 +66,10 @@ from DL_Track_US.gui_modules import AdvancedAnalysis
 # disable interactive backend
 plt.ioff()
 
-# TODO robustness of the GUI, only dor advanced methods
-# TODO add exeption handling for advanced methods
 # TODO executable for mac and windows
 # TODO final doc check
+# TODO update Readme Pypi
+# TODO OSF
 
 
 class DLTrack(ctk.CTk):

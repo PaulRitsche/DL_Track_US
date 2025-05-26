@@ -17,6 +17,12 @@
 
 In the new version, we reduced processing time per frame by 40% from version 0.2.1 on GPU and CPU to 0.6s and ... , respectively.
 
+### Improved user interface
+
+In version 0.3.0 we improved the user interface and included real time visualization of model predictions as well as a results terminal at the end of analyis. The analysis process is now more transparent and felxibel, since we included more analysis options in the settings. 
+
+![DL_Track_Main](md_graphics/DLTrack_mainUI.png)
+
 ### New model with bi-directional short long term memory for video analysis
 
 We further provide a new model with a new overall aproach for fascicle anylsis in videos. **For the first time, we provide a model with memory and awareness of surrounding frames**. The model is taken from [Chanti et al. (2021)](https://ieeexplore.ieee.org/document/9350651) and is called **IFSS_NET**. 
