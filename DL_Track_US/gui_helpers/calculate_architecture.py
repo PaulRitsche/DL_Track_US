@@ -77,7 +77,8 @@ from DL_Track_US.gui_helpers.calibrate import (
 )
 from DL_Track_US.gui_helpers.do_calculations import doCalculations
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
-from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
+
+# from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
 from DL_Track_US.gui_helpers.filter_data import hampelFilterList
 from DL_Track_US.gui_helpers.model_training import dice_bce_loss, IoU, dice_score
 
@@ -733,78 +734,108 @@ def calculateBatch(
                         )
 
                     elif fasc_calculation_approach == "curve_polyfitting":
-                        fasc_l, pennation, midthick, x_low, x_high, fig = (
-                            doCalculations_curved(
-                                original_image=img,
-                                img_copy=img_copy,
-                                h=height,
-                                w=width,
-                                model_apo=image_processor.model_apo,
-                                model_fasc=image_processor.model_fasc,
-                                dic=settings,
-                                filter_fasc=filter_fasc,
-                                calib_dist=calib_dist,
-                                spacing=spacing,
-                                approach="curve_polyfitting",
-                                image_callback=image_frame,
-                            )
+
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve polifitting is not yet fully implemented.",
                         )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_polyfitting",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
 
                     elif fasc_calculation_approach == "curve_connect_linear":
-                        fasc_l, pennation, midthick, x_low, x_high, fig = (
-                            doCalculations_curved(
-                                original_image=img,
-                                img_copy=img_copy,
-                                h=height,
-                                w=width,
-                                model_apo=image_processor.model_apo,
-                                model_fasc=image_processor.model_fasc,
-                                dic=settings,
-                                filter_fasc=filter_fasc,
-                                calib_dist=calib_dist,
-                                spacing=spacing,
-                                approach="curve_connect_linear",
-                                image_callback=image_frame,
-                            )
+
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve connect linear is not yet fully implemented.",
                         )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_connect_linear",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
 
                     elif fasc_calculation_approach == "curve_connect_poly":
-                        fasc_l, pennation, midthick, x_low, x_high, fig = (
-                            doCalculations_curved(
-                                original_image=img,
-                                img_copy=img_copy,
-                                h=height,
-                                w=width,
-                                model_apo=image_processor.model_apo,
-                                model_fasc=image_processor.model_fasc,
-                                dic=settings,
-                                filter_fasc=filter_fasc,
-                                calib_dist=calib_dist,
-                                spacing=spacing,
-                                approach="curve_connect_poly",
-                                image_callback=image_frame,
-                            )
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve connect poly is not yet fully implemented.",
                         )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_connect_poly",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
 
                     elif fasc_calculation_approach == "orientation_map":
-                        fasc_l, pennation, midthick, x_low, x_high, fig = (
-                            doCalculations_curved(
-                                original_image=img,
-                                img_copy=img_copy,
-                                h=height,
-                                w=width,
-                                model_apo=image_processor.model_apo,
-                                model_fasc=image_processor.model_fasc,
-                                dic=settings,
-                                filter_fasc=filter_fasc,
-                                calib_dist=calib_dist,
-                                spacing=spacing,
-                                approach="orientation_map",
-                                image_callback=image_frame,
-                            )
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Orientation map is not yet fully implemented.",
                         )
-                        x_low = None
-                        x_high = None
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="orientation_map",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
+                        # x_low = None
+                        # x_high = None
 
                     # Append warning to failes files when no aponeurosis was
                     # found and continue analysis

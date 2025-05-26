@@ -15,7 +15,7 @@
 
 ### Faster model predicitions on GPU & CPU
 
-In the new version, we reduced processing time per frame by 40% from version 0.2.1 on GPU and CPU to 0.6s and ... , respectively.
+In the new version, we reduced processing time per frame by 40% from version 0.2.1 (RTX4080 & Intel i9), respectively.
 
 ### Improved user interface
 

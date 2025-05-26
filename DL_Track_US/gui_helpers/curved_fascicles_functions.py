@@ -34,7 +34,8 @@ import cv2
 import numpy as np
 import pandas as pd
 from keras import backend as K
-from shapely.geometry import LineString
+
+# from shapely.geometry import LineString
 import tkinter as tk
 
 

@@ -66,10 +66,9 @@ from DL_Track_US.gui_modules import AdvancedAnalysis
 # disable interactive backend
 plt.ioff()
 
-# TODO executable for mac and windows
+# TODO installer for mac
 # TODO final doc check
-# TODO update Readme Pypi
-# TODO OSF
+# TODO OSF Page
 
 
 class DLTrack(ctk.CTk):

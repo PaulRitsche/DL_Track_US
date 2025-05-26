@@ -7,17 +7,18 @@ We provide **two ways** to install DL_Track_US:
 
 ---
 
-## Option 1: Download the Executable (Recommended for Beginners)
+## Option 1: Download the Installer (Recommended for Beginners)
 
 > **No programming required**
 
 1. Visit our [OSF project page](https://osf.io/7mjsc/?view_only=)  
-2. Download and unzip the file: `DL_Track_US_example.zip`
+2. Download and unzip the file: `DL_Track_US_example0.3.0.zip`
 3. Inside the unzipped folder, open:  
-   `DL_Track_US_example/executable/DL_Track_US.exe`
-4. Double-click the file to launch the **DL_Track_US GUI**
+   `DL_Track_US_example/installer/DLTrackUS_Installer.exe`
+4. Follow the instructions in the installation wizard.
+4. Double-click the desktop icon to launch the **DL_Track_US GUI**
 
-🎯 You can now test the app using the provided example files.  
+You can now test the app using the provided example files.  
 Check our [Tutorial](https://paulritsche.github.io/DL_Track_US/) and [Testing](https://paulritsche.github.io/DL_Track_US/) sections for more.
 
 ⚠️ You might see a warning from your antivirus software. You can safely dismiss it, this app is secure and verified.

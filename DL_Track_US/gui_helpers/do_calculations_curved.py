@@ -39,9 +39,11 @@ matplotlib.use("Agg")
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-import orientationpy
+
+# import orientationpy
 import pandas as pd
 import tensorflow as tf
+import tkinter as tk
 
 # original import
 from DL_Track_US.gui_helpers.curved_fascicles_functions import *
@@ -1450,12 +1452,17 @@ def doCalculations_curved(
             plt.tight_layout()
 
         if approach == "orientation_map":
-            fascicle_length, pennation_angle, x_low, x_high, fig = orientation_map(
-                fas_image, apo_image, g, h
+            tk.messagebox.showinfo(
+                "Orientation Map",
+                "The orientation map is not yet implemented. Please choose a different approach.",
             )
+            return None, None, None, None, None, None
+            # fascicle_length, pennation_angle, x_low, x_high, fig = orientation_map(
+            #     fas_image, apo_image, g, h
+            # )
 
-            xplot, yplot = 50, img_copy.shape[0] - 150
-            color = "white"
+            # xplot, yplot = 50, img_copy.shape[0] - 150
+            # color = "white"
 
         if image_callback:
             image_callback(fig)
