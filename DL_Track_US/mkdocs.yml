@@ -60,6 +60,7 @@ plugins:
     type: date  # (or 'timeago' for "3 days ago")
     timezone: Europe/Zurich  # or your preferred timezone
     locale: en
+- mike
 
 
 # Specify custom pages-menu order.
@@ -157,12 +158,15 @@ extra:
       - accept
       - manage
       # - reject
+    version: 
+      provider: mike
 
-# # Need to have or pip install:
-# # mkdocs
-# # mkdocs-autorefs
-# # mkdocs-material
-# # mkdocs-material-extensions
-# # mkdocstrings
-# # mkdocstrings-python
-# # mkdocs-git-revision-date-localized-plugin
+# Need to have or pip install:
+# mkdocs
+# mkdocs-autorefs
+# mkdocs-material
+# mkdocs-material-extensions
+# mkdocstrings
+# mkdocstrings-python
+# mkdocs-git-revision-date-localized-plugin
+# mike

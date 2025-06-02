@@ -1,4 +1,23 @@
 
+2025-06-02
+==========
+
+Added
+-----
+
+- versioning for mkdocs page with mike
+
+Changed
+-------
+
+- Documentation: for manual and automatic image and video analysis to include new models in tutorial.
+
+Fixed
+-----
+
+- pyproject.toml / setup.cfg / setup.py: Bump version to 0.3.0
+- mkdocs.yml
+
 2025-05-26
 ==========
 

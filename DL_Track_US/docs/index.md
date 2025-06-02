@@ -34,6 +34,9 @@ Originally introduced by Cronin, Seynnes, and Finni in 2020, the method was subs
 - 👓 **Graphical interface**  
   No command-line experience needed. Use the GUI to configure settings and monitor progress.
 
+- 👁‍🗨 **Community effort**
+  Open-source project aimed to increase reproducibility and collaboration.
+
 ---
 
 ## Before You Start
@@ -42,7 +45,7 @@ Originally introduced by Cronin, Seynnes, and Finni in 2020, the method was subs
 - Image quality is critical. Ensure good contrast, brightness, and visibility of fascicles and aponeuroses.
 - Generalization may be limited. Device types and acquisition settings can affect results.
 - Poor predictions? Visually inspect model output and compare it to manual labels. Adjust parameters or train new models if needed.
-- Use the test scripts in the `DL_Track_US/tests` folder to confirm everything runs as expected on your system.
+- Use the test scripts in the `DL_Track_US_v0.3.0/tests` folder to confirm everything runs as expected on your system.
 
 ---
 

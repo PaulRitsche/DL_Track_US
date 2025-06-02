@@ -66,9 +66,8 @@ from DL_Track_US.gui_modules import AdvancedAnalysis
 # disable interactive backend
 plt.ioff()
 
-# TODO installer for mac
-# TODO final doc check
-# TODO OSF Page
+# TODO Installer MacOS
+# TODO github workflow docs deploy on release
 
 
 class DLTrack(ctk.CTk):

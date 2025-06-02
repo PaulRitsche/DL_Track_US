@@ -6,7 +6,7 @@ Scaling ensures that estimated muscle architectural parameters are converted int
 
 **Important:** This type of analysis works **only for single images**, not videos.  
 All images must be contained in a single folder, for example:  
-`DL_Track_US_example/images`.
+`DL_Track_US_v0.3.0/images`.
 
 If you have not downloaded the example dataset yet, please do so now:  
 [DL_Track_US - Examples & Models](https://osf.io/7mjsc/?view_only=).
@@ -18,7 +18,7 @@ If you have not downloaded the example dataset yet, please do so now:
 ## 1. Creating Image Directory & FlipFlag.txt File
 
 - All images you want to analyze must be placed in **one folder**.
-- The folder `DL_Track_US_example/images` contains <span style="color: #2eaf66;">**4 images**</span> and a <span style="color: #f97e25;">**flip_flag.txt**</span> file.
+- The folder `DL_Track_US_v0.3.0/images` contains <span style="color: #2eaf66;">**4 images**</span> and a <span style="color: #f97e25;">**flip_flag.txt**</span> file.
 - It is not required to have the `flip_flag.txt` file in the same folder as the images, but it is convenient.
 
 ![image directory](md_graphics/aia/image_directory.PNG)
@@ -48,7 +48,7 @@ If your fascicles are oriented differently, please specify a `1` flip-flag for t
 Once the GUI is opened, the first step of every analysis in DL_Track_US is to specify the input directories.
 
 - First, specify the path to the folder containing the images to be analysed.  
-  Remember, this was the folder `DL_Track_US_example/images`.
+  Remember, this was the folder `DL_Track_US_v0.3.0/images`.
     - Click the <span style="color: #a34ba1;">**Inputs**</span> button. A selection window opens where you can select the folder.  
     - Click <span style="color: #299ed9;">**Select folder**</span> to confirm your choice.
 
@@ -56,15 +56,16 @@ Once the GUI is opened, the first step of every analysis in DL_Track_US is to sp
 ![input folder 2](md_graphics/aia/input_folder_2.PNG)
 
 - Second, specify the absolute path to the **aponeurosis neural network**.  
-  This is located in the `DL_Track_US_example/DL_Track_US_models` folder.
+  This is located in the `DL_Track_US_v0.3.0/DL_Track_US_models` folder.
     - Click the <span style="color: #a34ba1;">**Apo Model**</span> button to open a selection window.
     - Select the **aponeurosis model** and click <span style="color: #299ed9;">**Open**</span>.
 
 ![apo model path](md_graphics/aia/apo_model_path.PNG)
 ![apo model path 2](md_graphics/aia/apo_model_path_2.PNG)
 
-- Third, specify the absolute path to the **fascicle neural network** (also located in `DL_Track_US_example/DL_Track_US_models`).
-    - Click the <span style="color: #a34ba1;">**Fasc Model**</span> button to select the **fascicle model**.
+- Third, specify the absolute path to the **fascicle neural network** (also located in `DL_Track_USv0.3.0/DL_Track_US_models`).
+    - Click the <span style="color: #a34ba1;">**Fasc Model**</span> button 
+    - Select the <span style="color: #dd083e;">**VGG16**</span> fascicle neural network file from `DL_Track_US_v0.3.0/models`.
     - Confirm by clicking <span style="color: #299ed9;">**Open**</span>.
 
 ![fasc model path](md_graphics/aia/fasc_model_path.PNG)
@@ -90,7 +91,7 @@ Next, you need to specify the **Image Type**.
 - The **ending** of the Image Type must match the ending of your input images — otherwise no files will be found.
 - You can either select a pre-specified ending from the dropdown list or type in your own.
 - Please keep the formatting similar to the provided examples.
-- In the `DL_Track_US_example/images` folder, the images are of type <span style="color: #a34ba1;">**“/*.tif”**</span>.
+- In the `DL_Track_US_v0.3.0/images` folder, the images are of type <span style="color: #a34ba1;">**“/*.tif”**</span>.
 
 ![image type](md_graphics/aia/image_type.PNG)
 
@@ -251,7 +252,7 @@ Key parameters explained:
 > For future analyses, always test parameter settings on a small sample of your data first.
 > *Especially, choose a pennation angle range that is physiologically plausible with a minimum range.*
 > 
-> If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py`.
+> If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py` (only when downloading the repository).
 
 ## 5. Running / Breaking DL_Track_US
 
@@ -261,19 +262,10 @@ After completing all setup steps, you are ready to start the analysis.
 - You will also see a <span style="color: #299ed9;">**Break**</span> button in the GUI.
 - Clicking <span style="color: #299ed9;">**Break**</span> allows you to stop the analysis at any time.
   - The currently processed image will be completed,
-  - Then the analysis will terminate gracefully.
+  - Then the analysis will terminate..
 
 ![running breaking](md_graphics/aia/running_breaking.PNG)
 
----
-
-Once the analysis runs successfully, the results are displayed as a line graph showing:
-
-- Median Fascicle Length
-- Median Filtered Fascicle Length
-- Filtered Median Fascicle Length
-
-![results_plot](md_graphics/aia/plotted_results.png)
 
 ---
 
@@ -317,7 +309,7 @@ Example of an error message:
 We have tried to make all error messages as **concise** and **informative** as possible.  
 Simply follow the instructions in the error box and restart the analysis after resolving the issue.
 
-> 💬 **Note:**  
+> ⚠️ **Note:**  
 > If an unexpected error occurs that is not caught by a message box,  
 > please report it in the [DL_Track_US Discussion Forum - Q&A Section](https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a).
 

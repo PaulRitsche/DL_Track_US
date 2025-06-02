@@ -7,25 +7,29 @@ We provide **two ways** to install DL_Track_US:
 
 ---
 
-## Option 1: Download the Installer (Recommended for Beginners)
+## Option 1: Download the Installer (Recommended for Beginners & Windows only)
 
 > **No programming required**
 
-1. Visit our [OSF project page](https://osf.io/7mjsc/?view_only=)  
+1. Visit our [OSF project page](https://osf.io/7mjsc/?view_only=) and anvigate to `Files/v0.3.0/´
 2. Download and unzip the file: `DL_Track_US_example0.3.0.zip`
 3. Inside the unzipped folder, open:  
-   `DL_Track_US_example/installer/DLTrackUS_Installer.exe`
+   `DL_Track_US_example/DL_Track_US_Installer/DLTrackUS_Installer_Windows.exe`
 4. Follow the instructions in the installation wizard.
-4. Double-click the desktop icon to launch the **DL_Track_US GUI**
+5. Double-click the desktop icon to launch the **DL_Track_US GUI**
+
+> If you want to change the analysis settings, **run DL_Track_US as administrator**.
 
 You can now test the app using the provided example files.  
 Check our [Tutorial](https://paulritsche.github.io/DL_Track_US/) and [Testing](https://paulritsche.github.io/DL_Track_US/) sections for more.
+
+⚠️ **Note:** The DL_Track_US installer is available for Windows only. We are working on a MacOS version.
 
 ⚠️ You might see a warning from your antivirus software. You can safely dismiss it, this app is secure and verified.
 
 ---
 
-## Option 2: Install via pip and GitHub (Recommended for Developers)
+## Option 2: Install via pip and GitHub (Recommended for Developers & MacOS)
 
 > Ideal for customization, development, or contributing
 
@@ -34,7 +38,7 @@ Check our [Tutorial](https://paulritsche.github.io/DL_Track_US/) and [Testing](h
 ### Step 1 - Install Anaconda
 
 - Download and install [Anaconda](https://www.anaconda.com/download)
-- âœ… Be sure to check the box:  
+- Be sure to check the box:  
   *Add Anaconda to my PATH environment variable*
 
 ---
@@ -72,6 +76,8 @@ cd path/to/DL_Track_US
 pip install -r requirements.txt
 python -m pip install -e .
 ```
+
+⚠️ **Note:** DL_Track_US was tested on Windows 10 and 11 as well as M1/M2 Macs.
 
 ---
 

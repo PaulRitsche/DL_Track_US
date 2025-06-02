@@ -43,7 +43,7 @@ Once the GUI is open:
 Next, specify the aponeurosis model:
 
 - Click the <span style="color: #a34ba1;">**Apo Model**</span> button.
-- Select the aponeurosis neural network file from `DL_Track_US_example/models`.
+- Select the aponeurosis neural network file from `DL_Track_US_v0.3.0/models`.
 - Click <span style="color: #299ed9;">**Open**</span>.
 
 ![apo model button](md_graphics/ava/apo_model_button.png)
@@ -54,7 +54,7 @@ Next, specify the aponeurosis model:
 Then, specify the fascicle model:
 
 - Click the <span style="color: #a34ba1;">**Fasc Model**</span> button.
-- Select the fascicle neural network file from `DL_Track_US_example/models`.
+- Select the <span style="color: #dd083e;">**IFSS**</span> fascicle neural network file from `DL_Track_US_v0.3.0/models`.
 - Click <span style="color: #299ed9;">**Open**</span>.
 
 ![fasc model button](md_graphics/ava/fasc_model_button.png)
@@ -140,6 +140,7 @@ Open the settings by clicking the <span style="color: #a34ba1;">**Settings Wheel
 
 - A txt script `settings.txt` opens in your default editor.
 - Default values are listed.
+- <span style="color:#dd083e;">**Make sure that "segmentation_mode" is set to "stacked"**</span>.
 
 ![analysis parameters](md_graphics/ava/analysis_parameters.PNG)
 ![settings.py](md_graphics/ava/settings_py.PNG)
@@ -153,7 +154,7 @@ You can find an explanation on all setting in [this chapter](automated_image_ana
 > For future analyses, always test parameter settings on a small sample of your data first.
 > *Especially, choose a pennation angle range that is physiologically plausible with a minimum range.*
 > 
-> If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py`.
+> If you accidentally disrupt the `settings.txt` file, there is a backup available: `_backup_settings.py` (only when downloading the repository).
 
 ---
 
@@ -201,7 +202,7 @@ If an error occurs:
 We have tried to make all error messages as **concise** and **informative** as possible.  
 Simply follow the instructions in the error box and restart the analysis after resolving the issue.
 
-> 💬 **Note:**  
+> ⚠️ **Note:**  
 > If an unexpected error occurs that is not caught by a message box,  
 > please report it in the [DL_Track_US Discussion Forum - Q&A Section](https://github.com/PaulRitsche/DLTrack/discussions/categories/q-a).
 

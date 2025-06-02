@@ -20,7 +20,7 @@ Our mission is to make **deep learning-based muscle architecture analysis** acce
 
 ## Roadmap
 
-✅ Current Version (v0.2.1) includes:
+✅ Current Version (v0.3.0) includes:
 
 - Automated and manual analysis of images and videos.
 - Fascicle, aponeurosis segmentation and muscle parameter extraction.
@@ -43,7 +43,8 @@ Our mission is to make **deep learning-based muscle architecture analysis** acce
 
 ### Paul Ritsche
 
-![paul](md_graphics\devs\paul_ritsche.png)
+
+<img src="../../md_graphics/devs/paul_ritsche.png" alt="paul" width="200">
 
 Paul is the **lead developer** and primary coder behind DL_Track_US.  
 He designed, implemented, and maintains the software in close collaboration with Neil Cronin.  
@@ -55,7 +56,7 @@ Paul has a background in **biomechanics**, **ultrasound imaging**, and **softwar
 
 ### Neil Cronin
 
-![neil](md_graphics\devs\neil_cronin.png)
+<img src="../../md_graphics/devs/neil_cronin.png" alt="neil" width="200">
 
 Neil is the **co-developer** and **main visionary** behind DL_Track_US.  
 His research in **biomechanics** and **muscle architecture** guided the core concepts and user-centered design of the tool.
@@ -66,7 +67,8 @@ His research in **biomechanics** and **muscle architecture** guided the core con
 
 ### Olivier Seynnes
 
-![olivier](md_graphics\devs\olivier_seynnes.png)
+<img src="../../md_graphics/devs/olivier_seynnes.png" alt="olivier" width="200">
+
 
 Olivier has been involved with DL_Track_US from the early stages, providing **critical input**, **scientific validation**, and **feedback** during development.  
 Olivier’s expertise in **muscle physiology** and **musculoskeletal ultrasound** ensured DL_Track_US met high scientific standards.

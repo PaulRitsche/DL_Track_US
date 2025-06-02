@@ -54,7 +54,7 @@ Once training finishes, you should find **three new files** in your selected **o
 
 ---
 
-> 📝 **Note:**  
+> ⚠️ **Note:**  
 > Because neural network training includes uncertainty, your results (e.g., final loss values) may slightly differ from ours.  
 >  
 > If the three files are generated correctly, it means your DL_Track_US installation **works properly for model training**!
