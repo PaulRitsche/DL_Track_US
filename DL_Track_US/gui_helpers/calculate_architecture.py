@@ -49,26 +49,104 @@ import os
 import time
 import tkinter as tk
 import warnings
+import traceback
 
 import cv2
+import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+
+# Carla imports
 from keras import backend as K
 from keras.models import load_model
 from matplotlib.backends.backend_pdf import PdfPages
+from pandas import ExcelWriter
 from skimage.transform import resize
+from scipy.signal import savgol_filter
 from tensorflow.keras.utils import img_to_array
 
+
+# original imports
 from DL_Track_US.gui_helpers.calibrate import (
-    calibrateDistanceManually,
     calibrateDistanceStatic,
 )
 from DL_Track_US.gui_helpers.do_calculations import doCalculations
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
-plt.style.use("ggplot")
-plt.switch_backend("agg")
+# from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
+from DL_Track_US.gui_helpers.filter_data import hampelFilterList
+from DL_Track_US.gui_helpers.model_training import dice_bce_loss, IoU, dice_score
+
+# Ensure eager execution is enabled
+tf.config.run_functions_eagerly(True)
+tf.data.experimental.enable_debug_mode()
+
+# remove interactive plotting
+plt.ioff()
+
+
+class ImageProcessor:
+    def __init__(
+        self, model_apo_path, model_fasc_path, preprocess_function, batch_size=1
+    ):
+        self.preprocess_function = preprocess_function
+        self.batch_size = batch_size
+        self.model_apo = tf.keras.models.load_model(
+            model_apo_path,
+            custom_objects={
+                "IoU": IoU,
+                "dice_bce_loss": dice_bce_loss,
+                "dice_score": dice_score,
+            },
+        )
+        self.model_fasc = tf.keras.models.load_model(
+            model_fasc_path,
+            custom_objects={
+                "IoU": IoU,
+                "dice_bce_loss": dice_bce_loss,
+                "dice_score": dice_score,
+            },
+        )
+
+    # TODO do all the predictions here and then import the do_calculation functions directly.
+    # Maybe even loop trough the images then.
+    # So far, this function is unused.
+    def process_images(self, image_list):
+        preprocessed_images = [self.preprocess_function(image) for image in image_list]
+        preprocessed_images = np.stack(preprocessed_images, axis=0)
+
+        results_apo = []
+        results_fasc = []
+        for i in range(0, len(preprocessed_images), self.batch_size):
+            batch = preprocessed_images[i : i + self.batch_size]
+            output_apo = self.model_apo.predict(batch)
+            output_fasc = self.model_fasc.predict(batch)
+            results_apo.extend(output_apo)
+            results_fasc.extend(output_fasc)
+
+        return results_apo, results_fasc
+
+
+# TODO include all image pre-processing in this function
+def preprocess_function(image):
+    """Function to preprocess an image.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Image to be preprocessed.
+
+    Returns
+    -------
+    np.ndarray
+        Preprocessed image.
+    """
+    return image / 255
 
 
 def importAndReshapeImage(path_to_image: str, flip: int):
@@ -134,7 +212,7 @@ def importAndReshapeImage(path_to_image: str, flip: int):
     width = img.shape[1]
     img = np.reshape(img, [-1, img.shape[0], img.shape[1], 3])
     img = resize(img, (1, 512, 512, 3), mode="constant", preserve_range=True)
-    img = img / 255.0
+    img = img / 255.0  # Now used in preprocess image
 
     return img, img_copy, non_flipped_img, height, width, filename
 
@@ -181,7 +259,7 @@ def importImageManual(path_to_image: str, flip: int):
     return img, filename
 
 
-def getFlipFlagsList(flip_flag_path: str) -> list:
+def getFlipFlagsList(flip_flag_path: str, gui) -> list:
     """Function to retrieve flip values from a .txt file.
 
     The flip flags decide wether an image should be flipped or not.
@@ -195,6 +273,8 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
     flip_flag_path : str
         String variabel containing the absolute path to the flip flag
         .txt file containing the flip flags.
+    gui : tk.Tk
+        The GUI object.
 
     Returns
     -------
@@ -202,59 +282,192 @@ def getFlipFlagsList(flip_flag_path: str) -> list:
         A list variable containing all flip flags included in the
         specified .txt file
 
-    Example
-    -------
+    Examples
+    --------
     >>> getFlipFlagsList(flip_flag_path="C:/Desktop/Test/FlipFlags/flags.txt")
     [1, 0, 1, 0, 1, 1, 1]
     """
     # Specify empty list
     flip_flags = []
-    # open .txt file
-    file = open(flip_flag_path, "r")
-    for line in file:
-        for digit in line:
-            if digit.isdigit():
-                flip_flags.append(digit)
 
-    return flip_flags
+    try:
+        # open .txt file
+        file = open(flip_flag_path, "r")
+        for line in file:
+            for digit in line:
+                if digit.isdigit():
+                    flip_flags.append(digit)
+
+        return flip_flags
+
+    except UnicodeDecodeError:
+        tk.messagebox.showerror(
+            "Information", "Location of flipflag file is incorrect."
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
+
+    except FileNotFoundError:
+        tk.messagebox.showerror(
+            "Information", "Location of flipflag file is incorrect."
+        )
+        gui.should_stop = False
+        gui.is_running = False
+        gui.do_break()
+        return
 
 
-def compileSaveResults(rootpath: str, dataframe: pd.DataFrame) -> None:
-    """Function to save the analysis results to a .xlsx file.
-
-    A pd.DataFrame object must be inputted. The results
-    inculded in the dataframe are saved to an .xlsx file.
-    The .xlsx file is saved to the specified rootpath.
+def exportToExcel(
+    path: str,
+    fasc_l_all: list,
+    pennation_all: list,
+    x_lows_all: list,
+    x_highs_all: list,
+    thickness_all: list,
+    filename: str = "Results",
+    filtered_fasc=None,
+    filtered_pennation=None,
+    analysis_mode: str = "video",
+    image_filenames: list = None,
+):
+    """
+    Saves raw and optionally filtered analysis results to an Excel file, including an index column for each frame.
 
     Parameters
     ----------
-    rootpath : str
-        String variable containing the path to where the .xlsx file
-        should be saved.
-    dataframe : pd.DataFrame
-        Pandas dataframe variable containing the image analysis results
-        for every image anlyzed.
-
-    Examples
-    --------
-    >>> saveResults(img_path = "C:/Users/admin/Dokuments/images",
-                    dataframe = [['File',"image1"],['FL', 12],
-                                 ['PA', 17], ...])
+    path : str
+        Path where the Excel file will be saved.
+    filename : str
+        Name of the Excel file.
+    fasc_l_all : list of lists
+        Raw fascicle length data.
+    pennation_all : list of lists
+        Raw pennation angle data.
+    x_lows_all : list of lists
+        X-coordinates of lower aponeurosis intersections.
+    x_highs_all : list of lists
+        X-coordinates of upper aponeurosis intersections.
+    thickness_all : list of lists
+        Muscle thickness measurements.
+    filtered_fasc : list of lists, optional
+        Filtered fascicle length data.
+    filtered_pennation : list of lists, optional
+        Filtered pennation angle data.
+    analysis_mode : str, optional
+        Analysis mode used for the calculations. If "video", savgol filter will be appiled.
+    image_filenames : list of str, optional
+        List of image filenames corresponding to the analysis results.
     """
-    # Make filepath
-    excelpath = rootpath + "/Results.xlsx"
 
-    # Check if file already existing and write .xlsx
-    if os.path.exists(excelpath):
-        with pd.ExcelWriter(excelpath,
-                            mode="a", if_sheet_exists="replace") as writer:
-            data = dataframe
-            data.to_excel(writer, sheet_name="Results")
+    def create_array(data):
+        """Creates a NumPy array with NaNs for padding."""
+        return np.full((len(data), len(max(data, key=len, default=[]))), np.nan)
+
+    # Convert lists to NumPy arrays
+    fl_raw = create_array(fasc_l_all)
+    pe_raw = create_array(pennation_all)
+    xl = create_array(x_lows_all)
+    xh = create_array(x_highs_all)
+
+    # Fill arrays with data
+    for i, j in enumerate(fasc_l_all):
+        fl_raw[i, : len(j)] = j
+    for i, j in enumerate(pennation_all):
+        pe_raw[i, : len(j)] = j
+    for i, j in enumerate(x_lows_all):
+        xl[i, : len(j)] = j
+    for i, j in enumerate(x_highs_all):
+        xh[i, : len(j)] = j
+
+    if analysis_mode == "video":
+        df1 = pd.DataFrame(data=fl_raw, dtype=float)
+        df2 = pd.DataFrame(data=pe_raw, dtype=float)
+        df3 = pd.DataFrame(data=xl, dtype=float)
+        df4 = pd.DataFrame(data=xh, dtype=float)
+        df5 = pd.DataFrame(data=thickness_all, dtype=float)
     else:
-        with pd.ExcelWriter(excelpath, mode="w") as writer:
-            data = dataframe
-            data.to_excel(writer, sheet_name="Results")
- 
+        df1 = pd.DataFrame(data=fl_raw, index=image_filenames, dtype=float)
+        df2 = pd.DataFrame(data=pe_raw, index=image_filenames, dtype=float)
+        df3 = pd.DataFrame(data=xl, index=image_filenames, dtype=float)
+        df4 = pd.DataFrame(data=xh, index=image_filenames, dtype=float)
+        df5 = pd.DataFrame(data=thickness_all, index=image_filenames, dtype=float)
+
+    # Write to Excel
+    writer = ExcelWriter(f"{path}/{filename}.xlsx")
+
+    df1.to_excel(writer, sheet_name="Fasc_length_raw")
+    df2.to_excel(writer, sheet_name="Pennation_raw")
+    df3.to_excel(writer, sheet_name="X_low")
+    df4.to_excel(writer, sheet_name="X_high")
+    df5.to_excel(writer, sheet_name="Thickness")
+
+    # Add filtered fascicle length (if provided)
+    if filtered_fasc is not None:
+        fl_filtered = create_array(filtered_fasc)
+        for i, j in enumerate(filtered_fasc):
+            fl_filtered[i, : len(j)] = j
+        if analysis_mode == "video":
+            df6 = pd.DataFrame(data=fl_filtered, dtype=float)
+        else:
+            df6 = pd.DataFrame(data=fl_filtered, index=image_filenames, dtype=float)
+        df6.to_excel(writer, sheet_name="Fasc_length_filtered", index=True)
+
+        # add overall filtered median
+        if analysis_mode == "video":
+
+            df61 = pd.DataFrame(
+                hampelFilterList(df6.median(axis=1, skipna=True))["filtered"]
+            )
+            window_length = (
+                11 if len(df61) >= 11 else (len(df61) // 2) * 2 + 1
+            )  # must be odd and ≤ len
+            polyorder = 3 if window_length > 3 else 2
+
+            df61_savgol = pd.Series(
+                savgol_filter(
+                    df61.iloc[:, 0], window_length=window_length, polyorder=polyorder
+                )
+            )
+            df61_savgol.to_excel(
+                writer, sheet_name="Fasc_length_filtered_median", index=True
+            )
+            # df61.to_excel(writer, sheet_name="Fasc_length_filtered_median", index=True)
+
+    # Add filtered pennation angle (if provided)
+    if filtered_pennation is not None:
+        pe_filtered = create_array(filtered_pennation)
+        for i, j in enumerate(filtered_pennation):
+            pe_filtered[i, : len(j)] = j
+        if analysis_mode == "video":
+            df7 = pd.DataFrame(data=pe_filtered, dtype=float)
+        else:
+            df7 = pd.DataFrame(data=pe_filtered, index=image_filenames, dtype=float)
+        df7.to_excel(writer, sheet_name="Pennation_filtered", index=True)
+
+        if analysis_mode == "video":
+
+            df71 = pd.DataFrame(
+                hampelFilterList(df7.median(axis=1, skipna=True))["filtered"]
+            )
+            window_length = (
+                11 if len(df71) >= 11 else (len(df71) // 2) * 2 + 1
+            )  # must be odd and ≤ len
+            polyorder = 3 if window_length > 3 else 2
+
+            df71_savgol = pd.Series(
+                savgol_filter(
+                    df71.iloc[:, 0], window_length=window_length, polyorder=polyorder
+                )
+            )
+            df71_savgol.to_excel(
+                writer, sheet_name="Pennation_filtered_median", index=True
+            )
+            # df71.to_excel(writer, sheet_name="Pennation_filtered_median", index=True)
+
+    writer.close()
+
 
 def IoU(y_true, y_pred, smooth: int = 1) -> float:
     """Function to compute the intersection of union score (IoU),
@@ -315,14 +528,9 @@ def calculateBatch(
     scaling: str,
     spacing: int,
     filter_fasc: bool,
-    apo_treshold: float,
-    apo_length_tresh: int,
-    fasc_threshold: float,
-    fasc_cont_thresh: int,
-    min_width: int,
-    min_pennation: int,
-    max_pennation: int,
+    settings: dict,
     gui,
+    image_frame=None,
 ) -> None:
     """Function to calculate muscle architecture in longitudinal
     ultrasonography images of human lower limb muscles. The values
@@ -346,11 +554,11 @@ def calculateBatch(
     fasc_modelpath : str
         String variable containing the absolute path to the fascicle
         neural network.
-    flip_flag_path : str
+    flip_file_path : str
         String variabel containing the absolute path to the flip flag
         .txt file containing the flip flags. Flipping is necessary as the
         models were trained on images of with specific fascicle orientation.
-    filetype : str
+    file_type : str
         String variable containg the respective type of the images.
         This is needed to select only the relevant image files
         in the root directory.
@@ -370,47 +578,8 @@ def calculateBatch(
     filter_fasc : bool
         If True, fascicles will be filtered so that no crossings are included.
         This may reduce number of totally detected fascicles.
-    apo_threshold : float
-        Float variable containing the threshold applied to predicted
-        aponeurosis pixels by our neural networks. By varying this
-        threshold, different structures will be classified as
-        aponeurosis as the threshold for classifying
-        a pixel as aponeurosis is changed. Must be non-zero and
-        non-negative.
-    apo_length_tresh : int
-        Integer variable containing the threshold applied to predicted
-        aponeurosis length in pixels. By varying this
-        threshold, different structures will be classified as
-        aponeurosis depending on their length. Must be non-zero and
-        non-negative.
-    fasc_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        pixels by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle as the threshold for
-        classifying a pixel as fascicle is changed.
-    fasc_cont_threshold : float
-        Float variable containing the threshold applied to predicted fascicle
-        segments by our neural networks. By varying this threshold, different
-        structures will be classified as fascicle. By increasing, longer
-        fascicle segments will be considered, by lowering shorter segments.
-        Must be non-zero and non-negative.
-    min_width : int
-        Integer variable containing the minimal distance between aponeuroses
-        to be detected. The aponeuroses must be at least this distance apart
-        to be detected. The distance is specified in pixels.
-        Must be non-zero and non-negative.
-    min_pennation : int
-        Integer variable containing the mininmal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles
-        with lower pennation angles will be excluded.
-        The pennation angle is calculated as the amgle of insertion between
-        extrapolated fascicle and detected aponeurosis. Must be non-negative.
-    max_pennation : int
-        Integer variable containing the maximal (physiological) acceptable
-        pennation angle occuring in the analyzed image/muscle. Fascicles
-        with higher pennation angles will be excluded.
-        The pennation angle is calculated as the amgle of insertion between
-        extrapolated fascicle and detected aponeurosis. Must be non-negative.
+    settings : dict
+        Dictionary containing the analysis settings of the GUI.
     gui : tk.TK
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
@@ -436,73 +605,53 @@ def calculateBatch(
     >>> calculateBatch(rootpath="C:/Users/admin/Dokuments/images",
                        apo_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
                        fasc_modelpath="C:/Users/admin/Dokuments/models/apo_model.h5",
-                       flip_flag_path="C:/Users/admin/Dokuments/flip_flags.txt",
-                       filetype="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
-                       apo_threshold=0.1, apo_length_tresh=600,
-                       fasc_threshold=0.05, fasc_cont_thres=40, curvature=3,
-                       min_pennation=10, max_pennation=35,
+                       flip_file_path="C:/Users/admin/Dokuments/flip_flags.txt",
+                       file_type="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
+                       settings=settings,
                        gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
     """
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)
 
-    try:
-        # Load models
-        model_apo = load_model(apo_modelpath, custom_objects={"IoU": IoU})
-        model_fasc = load_model(fasc_modelpath, custom_objects={"IoU": IoU})
-
-    except OSError:
-        tk.messagebox.showerror("Information",
-                                "Apo/Fasc model path is incorrect.")
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
-        return
-
     # Check validity of flipflag path and rais execption
-    try:
-        flip_flags = getFlipFlagsList(flip_file_path)
+    flip_flags = getFlipFlagsList(flip_file_path, gui)
 
-    except FileNotFoundError:
-        tk.messagebox.showerror(
-            "Information", "Location of flipflag file is incorrect."
-        )
-        gui.should_stop = False
-        gui.is_running = False
-        gui.do_break()
-        return
+    # Check analysis parameters for positive values
+    for _, value in settings.items():
+        # Ensure value is not empty or zero
+        if isinstance(value, str):
+            if not value.strip():  # Check if string is empty or whitespace
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+        else:
+            if float(value) <= 0:  # Check if numeric value is <= 0
+                tk.messagebox.showerror(
+                    "Information",
+                    "Analysis parameters must be non-zero and non-negative",
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
-    # Create dictionary with aponeurosis/fascicle analysis values
-    dic = {
-        "apo_treshold": apo_treshold,
-        "apo_length_tresh": apo_length_tresh,
-        "fasc_threshold": fasc_threshold,
-        "fasc_cont_thresh": fasc_cont_thresh,
-        "min_width": min_width,
-        "min_pennation": min_pennation,
-        "max_pennation": max_pennation,
-    }
-
-    # Check if analysis parameters are postive
-    for _, value in dic.items():
-
-        if float(value) <= 0:
-            tk.messagebox.showerror(
-                "Information",
-                "Analysis paremters must be non-zero" + " and non-negative",
-            )
-            gui.should_stop = False
-            gui.is_running = False
-            gui.do_break()
-            return
-
-    # Create Dataframe for result saving
-    dataframe = pd.DataFrame(
-        columns=["File", "Fasicle Length", "Pennation Angle", "Midthick"]
-    )
+    # Get fascicle calcilation approach
+    fasc_calculation_approach = settings["fascicle_calculation_method"]
 
     # Define list for failed files
     failed_files = []
+
+    # Define lists for paramters of all images
+    fascicles_all = []
+    pennation_all = []
+    x_low_all = []
+    x_high_all = []
+    thickness_all = []
 
     # Define count for index in .xlsx file
     count = 0
@@ -513,6 +662,9 @@ def calculateBatch(
         # Only continue with equal amount of images/flip flags
         if len(list_of_files) == len(flip_flags):
 
+            image_processor = ImageProcessor(
+                apo_modelpath, fasc_modelpath, preprocess_function
+            )
             # Exceptions raised during the analysis process.
             try:
                 start_time = time.time()
@@ -532,7 +684,9 @@ def calculateBatch(
                     flip = flip_flags.pop(0)
 
                     # Load image
-                    img, img_copy, nonflipped_img, height, width, filename = importAndReshapeImage(imagepath, int(flip))
+                    img, img_copy, nonflipped_img, height, width, filename = (
+                        importAndReshapeImage(imagepath, int(flip))
+                    )
 
                     # Determine scaling type and continue analysis
                     if scaling == "Bar":
@@ -550,33 +704,138 @@ def calculateBatch(
                             warnings.warn("Image fails with StaticScalingError")
                             continue
 
-                    # Manual scaling
-                    elif scaling == "Manual":
-                        calibrate_fn = calibrateDistanceManually
-                        calib_dist, scale_statement = calibrate_fn(
-                            nonflipped_img, spacing
-                        )
+                    # Manual scaling here because only applied once on first image
+                    if scaling == "Manual":
+                        calib_dist = gui.calib_dist
+                        scale_statement = f"10 mm corresponds to {calib_dist} pixels"
 
                     # No sclaing option
                     else:
                         calib_dist = None
                         scale_statement = ""
-                
-                    # Continue with analysis and predict apos and fasicles
-                    fasc_l, pennation, _, _, midthick, fig = doCalculations(
-                        img=img,
-                        img_copy=img_copy,
-                        h=height,
-                        w=width,
-                        calib_dist=calib_dist,
-                        spacing=spacing,
-                        filename=filename,
-                        model_apo=model_apo,
-                        model_fasc=model_fasc,
-                        scale_statement=scale_statement,
-                        dictionary=dic,
-                        filter_fasc=filter_fasc
-                    )
+
+                    if fasc_calculation_approach == "linear_extrapolation":
+
+                        # Continue with analysis and predict apos and fasicles
+                        fasc_l, pennation, x_low, x_high, midthick, fig = (
+                            doCalculations(
+                                original_image=img,
+                                img_copy=img_copy,
+                                h=height,
+                                w=width,
+                                calib_dist=calib_dist,
+                                spacing=spacing,
+                                model_apo=image_processor.model_apo,
+                                model_fasc=image_processor.model_fasc,
+                                dictionary=settings,
+                                filter_fasc=filter_fasc,
+                                image_callback=image_frame,
+                            )
+                        )
+
+                    elif fasc_calculation_approach == "curve_polyfitting":
+
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve polifitting is not yet fully implemented.",
+                        )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_polyfitting",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
+
+                    elif fasc_calculation_approach == "curve_connect_linear":
+
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve connect linear is not yet fully implemented.",
+                        )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_connect_linear",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
+
+                    elif fasc_calculation_approach == "curve_connect_poly":
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Curve connect poly is not yet fully implemented.",
+                        )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="curve_connect_poly",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
+
+                    elif fasc_calculation_approach == "orientation_map":
+                        tk.messagebox.showinfo(
+                            "Information",
+                            "Orientation map is not yet fully implemented.",
+                        )
+                        gui.should_stop = False
+                        gui.is_running = False
+                        gui.do_break()
+                        # fasc_l, pennation, midthick, x_low, x_high, fig = (
+                        #     doCalculations_curved(
+                        #         original_image=img,
+                        #         img_copy=img_copy,
+                        #         h=height,
+                        #         w=width,
+                        #         model_apo=image_processor.model_apo,
+                        #         model_fasc=image_processor.model_fasc,
+                        #         dic=settings,
+                        #         filter_fasc=filter_fasc,
+                        #         calib_dist=calib_dist,
+                        #         spacing=spacing,
+                        #         approach="orientation_map",
+                        #         image_callback=image_frame,
+                        #     )
+                        # )
+                        # x_low = None
+                        # x_high = None
 
                     # Append warning to failes files when no aponeurosis was
                     # found and continue analysis
@@ -585,21 +844,29 @@ def calculateBatch(
                         failed_files.append(fail)
                         continue
 
-                    # Define output dataframe
-                    dataframe2 = pd.DataFrame(
+                    # Sort parameters
+                    # Creating a DataFrame from the lists
+                    df = pd.DataFrame(
                         {
-                            "File": filename,
-                            "Fasicle Length": np.median(fasc_l),
-                            "Pennation Angle": np.median(pennation),
-                            "Midthick": midthick,
-                        },
-                        index=[count],
+                            "Fascicles": fasc_l,
+                            "Pennation": pennation,
+                            "X_low": x_low,
+                            "X_high": x_high,
+                        }
                     )
 
-                    # Append results to dataframe
-                    dataframe = pd.concat([dataframe, dataframe2], axis=0)
+                    # Sorting the DataFrame according to X_low
+                    df_sorted = df.sort_values(by="X_low")
+
+                    # Append parameters to overall list
+                    fascicles_all.append(df_sorted["Fascicles"].tolist())
+                    pennation_all.append(df_sorted["Pennation"].tolist())
+                    x_low_all.append(df_sorted["X_low"].tolist())
+                    x_high_all.append(df_sorted["X_high"].tolist())
+                    thickness_all.append(midthick)
 
                     # Save figures of fascicles and apos to PDF
+                    fig.tight_layout()
                     pdf.savefig(fig)
                     plt.close(fig)
 
@@ -614,29 +881,75 @@ def calculateBatch(
                 duration = time.time() - start_time
                 print(f"duration total analysis: {duration}")
 
+                # Apply Hampel Filter to the results to avoid outliers
+                # This is done here to loop over the final dataframe
+                fasc_l_all_filtered = [
+                    hampelFilterList(fasc_l, win_size=4, num_dev=1)["filtered"]
+                    for fasc_l in fascicles_all
+                ]
+                pennation_all_filtered = [
+                    hampelFilterList(pennation, win_size=4, num_dev=1)["filtered"]
+                    for pennation in pennation_all
+                ]
+
+                # Save results as.xlsx file
+                exportToExcel(
+                    rootpath,
+                    fascicles_all,
+                    pennation_all,
+                    x_low_all,
+                    x_high_all,
+                    thickness_all,
+                    filtered_fasc=fasc_l_all_filtered,
+                    filtered_pennation=pennation_all_filtered,
+                    analysis_mode="image",
+                    image_filenames=[os.path.basename(f) for f in list_of_files],
+                )
+
             except FileNotFoundError:
-                tk.messagebox.showerror("Information",
-                                        "Input directory is incorrect.")
+                tk.messagebox.showerror("Information", "Input directory is incorrect.")
                 gui.should_stop = False
                 gui.is_running = False
                 gui.do_break()
                 return
-            
-            # except ValueError:
-            #     tk.messagebox.showerror("Information",
-            #                             "Aponeurosis not detected during the analysis process." +
-            #                             "\nChange aponeurosis threshold.")
-            #     gui.should_stop = False
-            #     gui.is_running = False
-            #     gui.do_break()
-            #     return
+
+            except ValueError:
+                error_details = traceback.format_exc()
+                tk.messagebox.showerror(
+                    "Fascicle detection Error",
+                    "Adapt analysis parameters or model for valid detection.\n"
+                    + "If 'bar scaling' is selected, remove failed images and analyse without scaling.\n\n"
+                    + error_details,
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+
+            except PermissionError:
+                tk.messagebox.showerror(
+                    "Information", "Close results file berfore ongoing analysis."
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
+
+            except IndexError:
+                error_details = traceback.format_exc()
+                tk.messagebox.showerror(
+                    "Fascicle detection Error",
+                    "Adapt analysis parameters or model for valid detection.\n\n"
+                    + error_details,
+                )
+                gui.should_stop = False
+                gui.is_running = False
+                gui.do_break()
+                return
 
             # Subsequent to analysis of all images, results are saved and
             # the GUI is stopped
             finally:
-
-                # Save predicted area results
-                compileSaveResults(rootpath, dataframe)
 
                 # Write failed images in file
                 if len(failed_files) >= 1:
@@ -663,8 +976,7 @@ def calculateBatch(
         # Filpflage != number of images
         else:
             tk.messagebox.showerror(
-                "Information",
-                "Number of flipflags must match number of images."
+                "Information", "Number of flipflags must match number of images."
             )
             gui.should_stop = False
             gui.is_running = False
@@ -750,8 +1062,7 @@ def calculateBatchManual(rootpath: str, filetype: str, gui):
 
     except IndexError:
         tk.messagebox.showerror(
-            "Information", "No image files founds" +
-            "\nEnter correct file type"
+            "Information", "No image files founds" + "\nEnter correct file type"
         )
         gui.do_break()
         gui.should_stop = False
