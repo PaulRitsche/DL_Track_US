@@ -663,8 +663,8 @@ class AdvancedAnalysis:
             cap = cv2.VideoCapture(self.video_path)
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             fps = int(cap.get(cv2.CAP_PROP_FPS))
-            width = self.desired_width
-            height = self.desired_height
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
@@ -674,11 +674,10 @@ class AdvancedAnalysis:
                 if not ret:
                     break
 
-                resized_frame = cv2.resize(
-                    frame, (self.desired_width, self.desired_height)
-                )
-                resized_frame[y0:y1, x0:x1] = 0  # Black out the selected area
-                out.write(resized_frame)
+                frame[y0:y1, x0:x1] = 0  # Black out the selected area
+                # Resize the frame to the original dimensions
+                frame = cv2.resize(frame, (width, height))
+                out.write(frame)
 
                 frame_count += 1
 
@@ -686,6 +685,7 @@ class AdvancedAnalysis:
             out.release()
 
             out.release()
+            print(f"Processed {frame_count} frames.")
             tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
 
         except AttributeError:
@@ -693,6 +693,7 @@ class AdvancedAnalysis:
         except TypeError:
             tk.messagebox.showerror("Error", "No selection made.")
 
+   
     def resize_video(self):
         """
         Crops the selected area from the video and saves the cropped video.

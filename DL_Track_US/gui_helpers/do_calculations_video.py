@@ -55,6 +55,79 @@ from DL_Track_US.gui_helpers.do_calculations import (
 )
 
 
+def compute_muscle_thickness(upp_x, upp_y, low_x, low_y):
+    """
+    Estimate muscle thickness by computing the shortest distance between
+    upper and lower aponeuroses in the central overlapping third of their x-values.
+
+    Parameters
+    ----------
+    upp_x : np.ndarray of shape (N,)
+        X-coordinates of the upper aponeurosis contour.
+    upp_y : np.ndarray of shape (N,)
+        Y-coordinates of the upper aponeurosis contour.
+    low_x : np.ndarray of shape (M,)
+        X-coordinates of the lower aponeurosis contour.
+    low_y : np.ndarray of shape (M,)
+        Y-coordinates of the lower aponeurosis contour.
+
+    Returns
+    -------
+    float
+        The minimum vertical distance (in pixels) between the upper and lower aponeuroses
+        in the middle third of their overlapping x-range.
+
+    Raises
+    ------
+    ValueError
+        If there are fewer than 3 overlapping x-values between upper and lower aponeuroses.
+
+    Notes
+    -----
+    This function assumes that both aponeuroses are already extracted as contours
+    and that the x-values are integers or can be exactly matched.
+
+    Examples
+    --------
+    >>> thickness = compute_muscle_thickness(
+    ...     upp_x=np.array([10, 20, 30, 40, 50]),
+    ...     upp_y=np.array([100, 95, 90, 85, 80]),
+    ...     low_x=np.array([20, 30, 40, 50, 60]),
+    ...     low_y=np.array([130, 125, 120, 115, 110])
+    ... )
+    >>> print(f"Muscle thickness (px): {thickness:.2f}")
+    Muscle thickness (px): 30.00
+    """
+    shared_x = sorted(set(upp_x).intersection(set(low_x)))
+    n_shared = len(shared_x)
+
+    if n_shared < 3:
+        raise ValueError("Not enough overlapping x-values to compute thickness.")
+
+    start_idx = int(n_shared * 0.33)
+    end_idx = int(n_shared * 0.66)
+    central_x_vals = shared_x[start_idx:end_idx]
+
+    mindist = float("inf")
+
+    for x in central_x_vals:
+        try:
+            upp_idx = np.where(upp_x == x)[0][0]
+            low_idx = np.where(low_x == x)[0][0]
+
+            dist = math.dist(
+                (upp_x[upp_idx], upp_y[upp_idx]),
+                (low_x[low_idx], low_y[low_idx])
+            )
+
+            if dist < mindist:
+                mindist = dist
+
+        except IndexError:
+            continue
+
+    return mindist
+
 def optimize_fascicle_loop(
     contoursF3,
     new_Y_UA,
@@ -148,7 +221,7 @@ def optimize_fascicle_loop(
     """
 
     data_rows = []
-    newX = np.linspace(-400, width + 400, 5000)
+    newX = np.linspace(-0.5*width, width * 1.5, 5000)
 
     for cnt in contoursF3:
         if len(cnt) <= fasc_cont_thresh:
@@ -159,11 +232,18 @@ def optimize_fascicle_loop(
         f = np.poly1d(z)
         newY = f(newX)
 
-        diffU = np.abs(newY - new_Y_UA)
+        diffU = np.abs(newY - (new_Y_UA+10))
         diffL = np.abs(newY - new_Y_LA)
 
         locU = np.argmin(diffU)
         locL = np.argmin(diffL)
+
+        # still is not filtering out fascicles that are outside the extrapolation range
+        if locU == 0 or locU == len(newX) - 1:
+            continue
+        if locL == 0 or locL == len(newX) - 1:
+            continue
+
 
         coordsX = newX[locL:locU]
         coordsY = newY[locL:locU]
@@ -413,6 +493,8 @@ def doCalculationsVideo(
         frames_stacked = []
         original_frames = []
 
+        print("\nReading frames...")
+
         for i in range(vid_len):
             ret, frame = cap.read()
 
@@ -533,16 +615,15 @@ def doCalculationsVideo(
                 cv2.drawContours(maskT, [cnt], 0, 255, -1)
 
             # Merge nearby contours
-            for countU in range(0, len(contours_re2) - 1):
-                if (
-                    xs1[countU + 1] > xs2[countU]
-                ):  # Check if x of contour2 is higher than x of contour 1
-                    y1 = ys2[countU]
-                    y2 = ys1[countU + 1]
-                    if y1 - 10 <= y2 <= y1 + 10:
-                        m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
+            for i in range(len(contours_re2)):
+                for j in range(i + 1, len(contours_re2)):
+                    x_gap = xs1[j] - xs2[i]
+                    y_diff = abs(ys2[i] - ys1[j])
+
+                    if 0 < x_gap <= 50 and y_diff <= 10:
+                        m = np.vstack((contours_re2[i], contours_re2[j]))
                         cv2.drawContours(maskT, [m], 0, 255, -1)
-                countU += 1
+
 
             # Make binary
             maskT[maskT > 0] = 1
@@ -600,30 +681,9 @@ def doCalculationsVideo(
 
                 # Calculate slope of central portion of each aponeurosis
                 # & use this to compute muscle thickness
-                Alist = list(set(upp_x).intersection(low_x))
-                Alist = sorted(Alist)
-                Alen = len(
-                    list(set(upp_x).intersection(low_x))
-                )  # How many values overlap between x-axes
-                A1 = int(Alist[0] + (0.33 * Alen))
-                A2 = int(Alist[0] + (0.66 * Alen))
-                mid = int((A2 - A1) / 2 + A1)
-                mindist = 10000
-                upp_ind = np.where(upp_x == mid)
-
-                if upp_ind == len(upp_x):
-                    upp_ind -= 1
-
-                for val in range(A1, A2):
-                    if val >= len(low_x):
-                        continue
-                    else:
-                        dist = math.dist(
-                            (upp_x[upp_ind], upp_y_new[upp_ind]),
-                            (low_x[val], low_y_new[val]),
-                        )
-                        if dist < mindist:
-                            mindist = dist
+                mindist = compute_muscle_thickness(
+                    upp_x, upp_y_new, low_x, low_y_new
+                )
 
                 # Add aponeuroses to a mask for display
                 imgT = np.zeros((h, w, 3), np.uint8)
