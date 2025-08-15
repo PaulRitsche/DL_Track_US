@@ -668,18 +668,29 @@ class AdvancedAnalysis:
 
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
+            # Calculate scaling factors between preview and original frame
+            scale_x = width / self.desired_width   # original width / preview width (800)
+            scale_y = height / self.desired_height # original height / preview height (600)
+
+            # Adapt selection coordinates to original resolution
+            x0_scaled = int(x0 * scale_x)
+            x1_scaled = int(x1 * scale_x)
+            y0_scaled = int(y0 * scale_y)
+            y1_scaled = int(y1 * scale_y)
+
             frame_count = 0
             while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     break
 
-                frame[y0:y1, x0:x1] = 0  # Black out the selected area
-                # Resize the frame to the original dimensions
-                frame = cv2.resize(frame, (width, height))
-                out.write(frame)
+                # Black out the scaled area
+                frame[y0_scaled:y1_scaled, x0_scaled:x1_scaled] = 0
+
+                out.write(frame)  # No need to resize, already at (width, height)
 
                 frame_count += 1
+
 
             cap.release()
             out.release()

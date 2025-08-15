@@ -1323,15 +1323,16 @@ class DLTrack(ctk.CTk):
                 self.processed_frames = []
 
             # Get input dir
-            selected_input_dir = self.input_dir
+            if hasattr(self, "input_dir"):
+                selected_input_dir = self.input_dir
 
-            # Make sure some kind of input directory is specified.
-            if len(selected_input_dir) < 3:
-                tk.messagebox.showerror("Information", "Input directory is incorrect.")
-                self.should_stop = False
-                self.is_running = False
-                self.do_break()
-                return
+                # Make sure some kind of input directory is specified.
+                if len(selected_input_dir) < 3:
+                    tk.messagebox.showerror("Information", "Input directory is incorrect.")
+                    self.should_stop = False
+                    self.is_running = False
+                    self.do_break()
+                    return
 
             # Start thread depending on Analysis type
             if self.analysis_type.get() == "image":
@@ -1452,7 +1453,7 @@ class DLTrack(ctk.CTk):
                     ),
                 )
             else:
-                selected_video_path = self.video.get()
+                selected_video_path = self.video_path.get()
 
                 # Make sure some kind of input directory is specified.
                 if len(selected_video_path) < 3:

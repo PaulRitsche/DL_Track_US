@@ -108,7 +108,7 @@ def importVideo(vpath: str):
     --------
     >>> importVideo(vpath="C:/Users/Dokuments/videos/video1.avi")
     """
-    # Video properties (do not edit)
+    # Video properties
     cap = cv2.VideoCapture(vpath)
     vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     vid_fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -158,7 +158,7 @@ def importVideoManual(vpath: str):
     >>> importVideo(vpath="C:/Users/Dokuments/videos/video1.avi")
     """
 
-    # Video properties (do not edit)
+    # Video properties
     cap = cv2.VideoCapture(vpath)
     vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     filename = os.path.splitext(os.path.basename(vpath))[0]

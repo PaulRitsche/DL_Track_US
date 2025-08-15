@@ -487,91 +487,153 @@ def doCalculationsVideo(
             [] for _ in range(5)
         )
 
+        # height, width = 512, 512
+        # frames_single = []
+        # frames_single_resized = []
+        # frames_stacked = []
+        # original_frames = []
+
+        # print("\nReading frames...")
+
+        # for i in range(vid_len):
+        #     ret, frame = cap.read()
+
+        #     if not ret:
+        #         break
+
+        #     if flip == "flip":
+        #         frame = cv2.flip(frame, 1)
+
+        #     # single frame part
+        #     img = img_to_array(frame)
+        #     if i % step == 0:  # store only used frames
+        #         original_frames.append(img.copy())
+        #     img = resize(img, (height, width, 3))
+        #     img_normalized = img / 255.0
+        #     img_input = np.expand_dims(img_normalized, axis=0)
+        #     frames_single.append(img_input)
+
+        #     # resize frames for 3dunet
+        #     # img = img_to_array(frame)
+        #     # if i % step == 0:  # store only used frames
+        #     #     original_frames.append(img.copy())
+        #     # img = resize(img, (256, 256, 3))
+        #     # img_normalized = img / 255.0
+        #     # img_input = np.expand_dims(img_normalized, axis=0)
+        #     # frames_single_resized.append(img_input)
+
+        #     # stacked frames for IFSS
+        #     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #     gray_frame = cv2.resize(gray_frame, (height, width))
+        #     gray_frame = gray_frame.astype(np.float32) / 255.0
+        #     gray_frame = np.expand_dims(gray_frame, axis=-1)
+        #     frames_stacked.append(gray_frame)
+
+        # print("Total frames read:", len(frames_stacked))
+
+        # # Loop through each frame of the video
+        # # for a in range(0, len(frames_single) - 2, step):
+        # for a in range(0, vid_len - 1, step):
+        #     if gui.should_stop:
+        #         break  # there was an input to stop the calculations
+
+        #     # time the video frame processing
+        #     start_time = time.time()
+
+        #     img_orig = original_frames[a // step]  # or just original_frames[a] if 1:1
+        #     h, w, _ = img_orig.shape
+
+        #     # Predict aponeurosis and fascicle segments
+        #     pred_apo = apo_model.predict(frames_single[a])
+        #     pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
+        #     pred_apo = resize(pred_apo[0], (h, w), preserve_range=True)
+        #     pred_apo_t = resize(pred_apo_t[0], (h, w), preserve_range=True)
+
+        #     # Get image for fascicle prediction
+        #     if segmentation_mode == "stacked":
+        #         if a + 2 >= len(frames_stacked):
+        #             break  # not enough frames to make a stack
+        #         stacked = np.stack(
+        #             [frames_stacked[a], frames_stacked[a + 1], frames_stacked[a + 2]],
+        #             axis=0,
+        #         )
+        #         fasc_input = np.expand_dims(stacked, axis=0)  # (1, 3, 512, 512, 1)
+        #         pred_fasc = fasc_model([fasc_input], training=False)
+        #         pred_fasc = tf.clip_by_value(pred_fasc, 0, 1).numpy()
+
+        #     else:
+        #         fasc_input = frames_single[a]
+        #         pred_fasc = fasc_model.predict(fasc_input)
+
+        #     if segmentation_mode == "stacked":
+        #         pred_fasc = np.array(pred_fasc[:, 1, :, :, 0])  # take only middle frame
+        #         pred_fasc = np.expand_dims(pred_fasc, axis=-1)
+
+        #     pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)
+        #     pred_fasc = resize(pred_fasc[0], (h, w), preserve_range=True)
+        #     pred_fasc_t = resize(pred_fasc_t[0], (h, w), preserve_range=True)
+        from collections import deque
+        last3 = deque(maxlen=3)
+
         height, width = 512, 512
-        frames_single = []
-        frames_single_resized = []
-        frames_stacked = []
-        original_frames = []
 
-        print("\nReading frames...")
+        print("\nProcessing frames...")
 
-        for i in range(vid_len):
+        # Process sequentially
+        frame_idx = 0
+        while frame_idx < vid_len:
+            if gui.should_stop:
+                break
+
             ret, frame = cap.read()
-
             if not ret:
                 break
+            
+            start_time = time.time()
 
             if flip == "flip":
                 frame = cv2.flip(frame, 1)
 
-            # single frame part
-            img = img_to_array(frame)
-            if i % step == 0:  # store only used frames
-                original_frames.append(img.copy())
-            img = resize(img, (height, width, 3))
-            img_normalized = img / 255.0
-            img_input = np.expand_dims(img_normalized, axis=0)
-            frames_single.append(img_input)
+            # Keep original for drawing/metrics (only when needed)
+            if frame_idx % step == 0:
+                img_orig = frame.copy()
+                w, h, _ = img_orig.shape
 
-            # resize frames for 3dunet
-            # img = img_to_array(frame)
-            # if i % step == 0:  # store only used frames
-            #     original_frames.append(img.copy())
-            # img = resize(img, (256, 256, 3))
-            # img_normalized = img / 255.0
-            # img_input = np.expand_dims(img_normalized, axis=0)
-            # frames_single_resized.append(img_input)
+            # Build gray frame for IFSS
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.resize(gray, (width, height), interpolation=cv2.INTER_AREA)
+            gray = gray.astype(np.float32) / 255.0
+            gray = gray[..., None]  # (H, W, 1)
+            last3.append(gray)
 
-            # stacked frames for IFSS
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray_frame = cv2.resize(gray_frame, (height, width))
-            gray_frame = gray_frame.astype(np.float32) / 255.0
-            gray_frame = np.expand_dims(gray_frame, axis=-1)
-            frames_stacked.append(gray_frame)
+            # Build single-frame input only on step frames
+            if frame_idx % step == 0:
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                rgb = cv2.resize(rgb, (width, height), interpolation=cv2.INTER_AREA)
+                single_input = (rgb.astype(np.float32) / 255.0)[None, ...]  # (1, H, W, 3)
 
-        print("Total frames read:", len(frames_stacked))
+                # ----- PREDICT APO -----
+                h, w = img_orig.shape[:2]
+                pred_apo = apo_model.predict(single_input)
+                pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
+                pred_apo = cv2.resize(pred_apo[0], (w, h), interpolation=cv2.INTER_NEAREST)
+                pred_apo_t = cv2.resize(pred_apo_t[0], (w, h), interpolation=cv2.INTER_NEAREST)
 
-        # Loop through each frame of the video
-        # for a in range(0, len(frames_single) - 2, step):
-        for a in range(0, vid_len - 1, step):
-            if gui.should_stop:
-                break  # there was an input to stop the calculations
+                # ----- PREDICT FASC -----
+                if segmentation_mode == "stacked":
+                    if len(last3) < 3:
+                        frame_idx += 1
+                        continue  # not enough frames for a stack
+                    stacked = np.stack(last3, axis=0)[None, ...]  # (1, 3, H, W, 1)
+                    pred_fasc = fasc_model([stacked], training=False)
+                    pred_fasc = tf.clip_by_value(pred_fasc, 0, 1).numpy()
+                    pred_fasc = np.array(pred_fasc[:, 1, :, :, 0])[..., None]
+                else:
+                    pred_fasc = fasc_model.predict(single_input)
 
-            # time the video frame processing
-            start_time = time.time()
-
-            img_orig = original_frames[a // step]  # or just original_frames[a] if 1:1
-            h, w, _ = img_orig.shape
-
-            # Predict aponeurosis and fascicle segments
-            pred_apo = apo_model.predict(frames_single[a])
-            pred_apo_t = (pred_apo > apo_threshold).astype(np.uint8)
-            pred_apo = resize(pred_apo[0], (h, w), preserve_range=True)
-            pred_apo_t = resize(pred_apo_t[0], (h, w), preserve_range=True)
-
-            # Get image for fascicle prediction
-            if segmentation_mode == "stacked":
-                if a + 2 >= len(frames_stacked):
-                    break  # not enough frames to make a stack
-                stacked = np.stack(
-                    [frames_stacked[a], frames_stacked[a + 1], frames_stacked[a + 2]],
-                    axis=0,
-                )
-                fasc_input = np.expand_dims(stacked, axis=0)  # (1, 3, 512, 512, 1)
-                pred_fasc = fasc_model([fasc_input], training=False)
-                pred_fasc = tf.clip_by_value(pred_fasc, 0, 1).numpy()
-
-            else:
-                fasc_input = frames_single[a]
-                pred_fasc = fasc_model.predict(fasc_input)
-
-            if segmentation_mode == "stacked":
-                pred_fasc = np.array(pred_fasc[:, 1, :, :, 0])  # take only middle frame
-                pred_fasc = np.expand_dims(pred_fasc, axis=-1)
-
-            pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)
-            pred_fasc = resize(pred_fasc[0], (h, w), preserve_range=True)
-            pred_fasc_t = resize(pred_fasc_t[0], (h, w), preserve_range=True)
+                pred_fasc_t = (pred_fasc > fasc_threshold).astype(np.uint8)
+                pred_fasc = cv2.resize(pred_fasc[0], (w, h), interpolation=cv2.INTER_NEAREST)
+                pred_fasc_t = cv2.resize(pred_fasc_t[0], (w, h), interpolation=cv2.INTER_NEAREST)
 
             # Compute the contours to identify aponeuroses
             _, thresh = cv2.threshold(pred_apo_t, 0, 255, cv2.THRESH_BINARY)
@@ -640,7 +702,7 @@ def doCalculationsVideo(
             )
 
             # Create new mask later used for plotting
-            mask_apoE = np.zeros(thresh.shape, np.uint8)
+            mask_apoE = np.zeros((thresh.shape), np.uint8)
 
             # Select only long contours and draw to mask
             contoursE = [i for i in contoursE if len(i) > apo_length_thresh]
@@ -822,12 +884,34 @@ def doCalculationsVideo(
             else:
                 unit = "px"
 
-            comb = cv2.addWeighted(img_orig.astype(np.uint8), 1, imgT, 0.8, 0)
+            # --- make overlay inputs consistent (same size, 3 channels, uint8) ---
+            base = img_orig
+            overlay = imgT
+
+            # ensure size match
+            if overlay.shape[:2] != base.shape[:2]:
+                overlay = cv2.resize(overlay, (base.shape[1], base.shape[0]),
+                                    interpolation=cv2.INTER_NEAREST)
+
+            # ensure 3 channels on both
+            if base.ndim == 2:
+                base = cv2.cvtColor(base, cv2.COLOR_GRAY2BGR)
+            if overlay.ndim == 2:
+                overlay = cv2.cvtColor(overlay, cv2.COLOR_GRAY2BGR)
+
+            # ensure dtype uint8
+            if base.dtype != np.uint8:
+                base = base.astype(np.uint8)
+            if overlay.dtype != np.uint8:
+                overlay = overlay.astype(np.uint8)
+
+            # blend
+            comb = cv2.addWeighted(base, 1.0, overlay, 0.8, 0.0)
 
             vid_out.write(comb)  # Write each image to video file
             cv2.putText(
                 comb,
-                ("Frame: " + str(a + 1) + " of " + str(vid_len)),
+                ("Frame: " + str(frame_idx + 1) + " of " + str(vid_len)),
                 (125, 380),
                 cv2.FONT_HERSHEY_DUPLEX,
                 0.75,
@@ -876,6 +960,9 @@ def doCalculationsVideo(
             # Send frame to UI
             if frame_callback:
                 frame_callback(comb)
+
+            
+            frame_idx +=1
 
         # Release video and close all analysis windows when analysis finished
         cap.release()
