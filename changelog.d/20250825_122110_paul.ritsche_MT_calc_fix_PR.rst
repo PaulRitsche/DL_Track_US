@@ -1,0 +1,40 @@
+.. A new scriv changelog fragment.
+..
+.. Uncomment the section that is right (remove the leading dots).
+.. For top level release notes, leave all the headers commented out.
+..
+.. Removed
+.. -------
+..
+.. - A bullet item for the Removed category.
+..
+Added
+-----
+
+- Tangetial extrapolation of Aponeurosis in each direction
+- Faster PA calculation
+- PA to results plot in Main UI
+
+..
+.. Changed
+.. -------
+..
+.. - A bullet item for the Changed category.
+..
+.. Deprecated
+.. ----------
+..
+.. - A bullet item for the Deprecated category.
+..
+Fixed
+-----
+
+- MT calculation based on middle image region
+- Fascicle intersection with muscle apo
+- Manual Video analysis loading
+
+.. Security
+.. --------
+..
+.. - A bullet item for the Security category.
+..

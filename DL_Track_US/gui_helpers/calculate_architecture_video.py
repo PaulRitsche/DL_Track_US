@@ -356,6 +356,9 @@ def calculateArchitectureVideo(
             else:
                 calib_dist = None
 
+            # Clear canvas to save memory
+            gui.processed_frames = [] #TODO make this more robust
+
             # predict apos and fasicles
             calculate = doCalculationsVideo
             (

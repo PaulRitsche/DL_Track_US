@@ -757,54 +757,106 @@ class DLTrack(ctk.CTk):
         input_df_raw,
         input_df_filtered,
         input_df_medians,
+        input_df_pa_raw=None,
+        input_df_pa_filtered=None,
+        input_df_pa_medians=None,
     ):
         """
-        Instance method that displays all analysis results in the
-        output terminal using Pandastable. Input must be a Pandas dataframe.
-
-        Executed trough functions with calculated anylsis results.
+        Display analysis results (video mode): median Fascicle Length (FL) curves and, optionally,
+        Pennation Angle (PA) curves. Both y-axes are shown on the LEFT side with offset spines.
 
         Parameters
         ----------
         input_df_raw : pd.DataFrame
-            Dataftame containing the raw analysis results.
+            Raw FL results (first column is an index/frame number).
         input_df_filtered : pd.DataFrame
-            Dataftame containing the filtered analysis results.
+            Filtered FL results (first column is an index/frame number).
         input_df_medians : pd.DataFrame
-            Dataftame containing the filtered median results.
+            Per-frame median FL (first column is an index/frame number or a single column).
+        input_df_pa_raw : pd.DataFrame, optional
+            Raw PA results (layout identical to input_df_raw).
+        input_df_pa_filtered : pd.DataFrame, optional
+            Filtered PA results (layout identical to input_df_filtered).
+        input_df_pa_medians : pd.DataFrame, optional
+            Per-frame median PA (layout identical to input_df_medians).
         """
         if self.analysis_type.get() == "video":
-            # Calculate the median length of the fascicles
-            # Drop the first column if it's just row indices
-            data_raw_cleaned = input_df_raw.iloc[:, 1:]
-            data_filtered_cleaned = input_df_filtered.iloc[:, 1:]
+            # --- FL: compute medians row-wise (drop first col if it's the frame index) ---
+            fl_raw_cleaned = input_df_raw.iloc[:, 1:] 
+            fl_filt_cleaned = input_df_filtered.iloc[:, 1:]
+            fl_medians_raw = fl_raw_cleaned.median(axis=1, skipna=True)
+            fl_medians_filt = fl_filt_cleaned.median(axis=1, skipna=True)
 
-            # Compute row-wise median for each DataFrame
-            medians_raw = data_raw_cleaned.median(axis=1, skipna=True)
-            medians_filtered = data_filtered_cleaned.median(axis=1, skipna=True)
-            filtered_medians = input_df_medians.iloc[:, 1:]
+            # input_df_medians may already be a single median series per frame
+            fl_medians_final = input_df_medians.iloc[:, 1:]
 
-            # Create a new figure for the plot
-            fig, ax = plt.subplots()
-            ax.plot(medians_raw, "o-", label="Median Fascicle Length")
-            ax.plot(
-                medians_filtered,
-                "+-",
-                label="Median Filtered Fascicle Length",
-                color="green",
-            )  # Add filtered lengths in green
-            ax.plot(
-                filtered_medians,
-                "x-",
-                label="Filtered Median Fascicle Length",
-                color="yellow",
-            )  # Add filtered lengths in green
-            ax.set_xlabel("Frame")
-            ax.legend()
-            ax.grid(True)
+            # --- PA: compute medians if provided ---
+            has_pa = (
+                input_df_pa_raw is not None and
+                input_df_pa_filtered is not None and
+                input_df_pa_medians is not None
+            )
+
+            if has_pa:
+                pa_raw_cleaned = input_df_pa_raw.iloc[:, 1:] 
+                pa_filt_cleaned = input_df_pa_filtered.iloc[:, 1:] 
+
+                pa_medians_raw = pa_raw_cleaned.median(axis=1, skipna=True)
+                pa_medians_filt = pa_filt_cleaned.median(axis=1, skipna=True)
+                pa_medians_final = input_df_pa_medians.iloc[:, 1:] 
+
+            # --- Figure with two LEFT y-axes (FL + PA) ---
+            fig, ax_fl = plt.subplots()
+
+            # Primary left axis: Fascicle Length
+            ln1, = ax_fl.plot(fl_medians_raw, "o-", label="FL Median")
+            ln2, = ax_fl.plot(fl_medians_filt, "+-", label="FL Hampel", color="green")
+            ln3 = ax_fl.plot(fl_medians_final, "x-", label="FL Savgol", color="yellow")
+
+            ax_fl.set_xlabel("Frame")
+            ax_fl.set_ylabel("Fascicle Length")
+            ax_fl.grid(True)
+
+            # Secondary axis sharing x, but move its spine to right with an outward offset
+            ax_pa = None
+            if has_pa:
+                ax_pa = ax_fl.twinx()  # create a twin axis
+                # Make the PA axis appear on the right (offset so both scales are visible)
+                ax_pa.spines["right"].set_position(("outward", 0))
+                ax_pa.yaxis.set_label_position("right")
+                ax_pa.yaxis.tick_right()
+                ax_pa.grid(False)
+
+                # Hide the default right spine/ticks of the twin axis
+                ax_pa.spines["right"].set_visible(False)
+                ax_pa.yaxis.set_ticks_position("right")
+
+                # Plot PA series on the PA axis
+                ln4, = ax_pa.plot(pa_medians_raw, "s--", label="PA Median")
+                ln5, = ax_pa.plot(pa_medians_filt, "d--", label="PA Hampel")
+                ln6 = ax_pa.plot(pa_medians_final, "x-", label="PA Savgol")
+                ax_pa.set_ylabel("Pennation Angle (°)")
+
+            # Combine legends from both axes
+            handles = [ln1, ln2] + (ln3 if isinstance(ln3, list) else [ln3])
+            if has_pa:
+                # ln6 might be a list if multiple columns; normalize
+                pa_handles = [ln4, ln5] + (ln6 if isinstance(ln6, list) else [ln6])
+                handles += pa_handles
+
+            # Flatten handles if some are lists of lines
+            flat_handles = []
+            for h in handles:
+                if isinstance(h, list):
+                    flat_handles.extend(h)
+                else:
+                    flat_handles.append(h)
+
+            ax_fl.legend(flat_handles, [lh.get_label() for lh in flat_handles], loc="upper right")
+
             plt.tight_layout()
 
-            # Display the plot in the video_canvas
+            # --- Embed in Tkinter ---
             if hasattr(self, "result_canvas"):
                 self.result_canvas.get_tk_widget().destroy()
 
@@ -814,9 +866,10 @@ class DLTrack(ctk.CTk):
             result_widget.grid(column=0, row=0, columnspan=16, sticky=(W, E))
             result_widget.config(height=200)
 
-            # Configure resizing of the figure
+            # Responsive sizing
             self.terminal.grid_columnconfigure(0, weight=1)
             self.terminal.grid_rowconfigure(0, weight=1)
+
 
     def on_processing_complete(self):
         """
@@ -840,24 +893,48 @@ class DLTrack(ctk.CTk):
         else:
             results_file_path = os.path.join(self.input_dir, "Results.xlsx")
 
+
         if self.analysis_type.get() == "video":
-            try:
-                if os.path.exists(results_file_path):
-                    results_data_raw = pd.read_excel(
-                        results_file_path, sheet_name="Fasc_length_raw"
+            
+            if not os.path.exists(results_file_path):
+                print("No results file found.")
+
+            else:
+                # --- Fascicle Length sheets (current names kept) ---
+                fl_data_raw = pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_raw"
+                )
+                fl_data_filtered = pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_filtered"
+                )
+                fl_data_medians =pd.read_excel(
+                    results_file_path, sheet_name="Fasc_length_filtered_median"
+                )
+
+                if fl_data_raw is None or fl_data_filtered is None or fl_data_medians is None:
+                    print("Missing fascicle length sheets in the results file.")
+                else:
+                    # --- Pennation Angle sheets (same naming pattern as FL) ---
+                    pa_data_raw = pd.read_excel(
+                        results_file_path, sheet_name="Pennation_raw"
                     )
-                    results_data_filtered = pd.read_excel(
-                        results_file_path, sheet_name="Fasc_length_filtered"
+                    pa_data_filtered = pd.read_excel(
+                        results_file_path, sheet_name="Pennation_filtered"
                     )
-                    results_data_medians = pd.read_excel(
-                        results_file_path, sheet_name="Fasc_length_filtered_median"
+                    pa_data_medians = pd.read_excel(
+                        results_file_path, sheet_name="Pennation_filtered_median"
                     )
 
+                    # Call the enhanced display function. If PA is missing, pass None (function handles it).
                     self.display_results(
-                        results_data_raw, results_data_filtered, results_data_medians
+                        fl_data_raw,
+                        fl_data_filtered,
+                        fl_data_medians,
+                        input_df_pa_raw=pa_data_raw,
+                        input_df_pa_filtered=pa_data_filtered,
+                        input_df_pa_medians=pa_data_medians,
                     )
-            except:
-                print("No results file found.")
+
 
     def display_frame(self, item):
         """

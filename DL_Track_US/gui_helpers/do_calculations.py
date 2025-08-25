@@ -195,7 +195,7 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
     return df[df["keep"]].drop(columns=["keep"])
 
 
-def doCalculations(  # TODO adapt docstring
+def doCalculations(  
     original_image: np.ndarray,
     img_copy: np.ndarray,
     h: int,
