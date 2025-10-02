@@ -57,7 +57,7 @@ from DL_Track_US.gui_helpers.do_calculations import (
 def build_apo_from_edges(
     upp_x, upp_y, low_x, low_y, w,
     smooth_win: int = 81, smooth_poly: int = 2,
-    tail_frac: float = 0.20,   # ← use 40% of each side
+    tail_frac: float = 0.50,   
 ):
     """
     Build dense, smoothed, and extrapolated aponeurosis curves from detected edges.
@@ -132,8 +132,6 @@ def build_apo_from_edges(
     >>> len(segs_upper), len(segs_lower)
     (3, 3)
     """
-    #TODO docs
-
     new_X = np.linspace(-0.5 * w, 1.5 * w, 5000).astype(np.float32)
 
     def _savgol(y):
@@ -605,7 +603,6 @@ def doCalculationsVideo(
         If calib_dist is specified, then the distance is computed
         in centimeter.
         This is computed for each frame in the video.
-
 
     Examples
     --------
@@ -1112,8 +1109,10 @@ def doCalculationsVideo(
     except IndexError:
         error_details = traceback.format_exc()
         tk.messagebox.showerror(
-            "Fascicle detection Error",
-            "Adapt analysis parameters for valid detection.\n\n" + error_details,
+            "Fascicle/Aponeurosis detection Error",
+            "Adapt analysis Fascicle Length Threshold or \n" +
+            "Minimal Muscle Thickness for valid detection.\n\n"
+             + error_details,
         )
         gui.should_stop = False
         gui.is_running = False

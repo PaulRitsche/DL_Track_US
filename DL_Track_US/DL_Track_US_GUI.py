@@ -1280,7 +1280,7 @@ class DLTrack(ctk.CTk):
         This must be an absolute path.
         """
         self.video_path = filedialog.askopenfilename(
-            title="Open video file for manual analysis", filetypes=[("*.mp4", "*.avi")]
+            title="Open video file for manual analysis", filetypes=[("Video Files", "*.mp4;*.avi")]
         )
 
     # ---------------------------------------------------------------------------------------------------
@@ -1455,7 +1455,7 @@ class DLTrack(ctk.CTk):
             elif self.analysis_type.get() == "video":
 
                 def processing_done_callback():
-                    self.on_processing_complete()  # Update slider range here
+                    pass  # Update slider range here
 
                 selected_filetype = self.filetype.get()
 
@@ -1511,6 +1511,9 @@ class DLTrack(ctk.CTk):
                 )
             elif self.analysis_type.get() == "image_manual":
 
+                def processing_done_callback():
+                    self.on_processing_complete()  # Update slider range here
+
                 selected_filetype = self.filetype.get()
 
                 # Make sure some kind of filetype is specified.
@@ -1530,7 +1533,11 @@ class DLTrack(ctk.CTk):
                     ),
                 )
             else:
-                selected_video_path = self.video_path.get()
+
+                def processing_done_callback():
+                    pass  # Update slider range here
+                    
+                selected_video_path = self.video_path
 
                 # Make sure some kind of input directory is specified.
                 if len(selected_video_path) < 3:
