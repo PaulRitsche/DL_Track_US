@@ -1,4 +1,22 @@
 
+2025-11-18
+==========
+
+Added
+-----
+
+- Tangetial extrapolation of Aponeurosis in each direction
+- Faster PA calculation
+- PA to results plot in Main UI
+- pyproject.toml / setup.cfg / setup.py: Bump version to 0.3.1
+
+Fixed
+-----
+
+- MT calculation based on middle image region
+- Fascicle intersection with muscle apo
+- Manual Video analysis loading
+
 2025-06-02
 ==========
 

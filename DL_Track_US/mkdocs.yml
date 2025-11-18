@@ -60,7 +60,10 @@ plugins:
     type: date  # (or 'timeago' for "3 days ago")
     timezone: Europe/Zurich  # or your preferred timezone
     locale: en
-- mike
+- mike:
+  alias_type: symlink
+  version_selector: true
+  
 
 
 # Specify custom pages-menu order.

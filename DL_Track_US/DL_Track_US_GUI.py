@@ -877,6 +877,7 @@ class DLTrack(ctk.CTk):
         Updates the slider range based on the processed frames or figures.
         """
         num_items = len(self.processed_frames)
+        print(f"Processing complete. Number of processed items: {num_items}")
         if num_items > 0:
             self.frame_slider.config(
                 from_=0,
@@ -1455,7 +1456,7 @@ class DLTrack(ctk.CTk):
             elif self.analysis_type.get() == "video":
 
                 def processing_done_callback():
-                    pass  # Update slider range here
+                    self.on_processing_complete() # Update slider range here
 
                 selected_filetype = self.filetype.get()
 
