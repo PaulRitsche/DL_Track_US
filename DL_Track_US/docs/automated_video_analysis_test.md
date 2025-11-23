@@ -1,4 +1,4 @@
-# 🖼 Testing Automated Video Analysis
+# 🧪 Testing Automated Video Analysis
 
 This page explains how to test the **automated video analysis** functionality in DL_Track_US.
 
@@ -28,13 +28,14 @@ When the analysis is complete, two new files will appear in the `DL_Track_US_exa
 
 ### How to verify the results:
 
-1. Open the `calf_raise.xlsx` file.
-2. For all frames, calculate the **average** values for:
-   - Fascicle length
-   - Pennation angle
-   - Muscle thickness
+Open the `calf_raise.xlsx` file.
+For all frames, calculate the **average** values for:
 
-3. Compare your results to the reference results shown below:
+- Fasc_length_filtered_median
+- Pennation_filtered_median
+- Muscle thickness
+
+Compare your results to the reference results shown below:
 
 ![results](md_graphics/ava_test/results.png)
 

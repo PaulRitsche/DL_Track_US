@@ -1,6 +1,10 @@
 # 📰 News
 
 ---
+## v0.3.1 
+
+- Released version 0.3.1 with minor upgrades and bugfixes. 
+- New feature: Weighted aponeurosis calculation and queing of loaded video frames to increase processing speed. 
 
 ## v0.3.0 Release Notes
 

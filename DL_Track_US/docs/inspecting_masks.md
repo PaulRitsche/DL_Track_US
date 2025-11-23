@@ -26,7 +26,7 @@ You need to specify three directories:
 - 📁 **fascicle_masks** — contains fascicle masks
 - 📁 **aponeurosis_masks** — contains aponeurosis masks
 
-These folders should have been created during the [Image Labeling](training_your_own_networks.md#7-image-labels) process.
+These folders should have been created during the [Image Labeling](training_your_own_networks.md##7-Labeling-Your-Own-Images) process.
 
 > Fascicle and aponeurosis masks must be inspected **separately**.
 

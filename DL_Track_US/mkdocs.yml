@@ -19,7 +19,8 @@ theme:
     custom_dir: docs/overrides
   logo: md_graphics/DLTrack_logo.png
   favicon: md_graphics/DLTrack_logo.png
-  # features:
+  features:
+    - versioning
   palette:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
@@ -56,13 +57,13 @@ plugins:
 - tags:
 - git-revision-date-localized:
     enable_creation_date: true
+    enable_git_follow: false
     fallback_to_build_date: true
-    type: date  # (or 'timeago' for "3 days ago")
-    timezone: Europe/Zurich  # or your preferred timezone
+    type: date  
+    timezone: Europe/Zurich  
     locale: en
-- mike:
-  alias_type: symlink
-  version_selector: true
+- mike
+
   
 
 
@@ -89,6 +90,8 @@ nav:
     - Manual Img/Vid Analysis Test: manual_image_video_analysis_test.md
     - Automated Video Analysis Test: automated_video_analysis_test.md
     - Model Training Test: model_training_test.md
+  - Older Versions:
+    - DL_Track_US v0.3.0: older_versions.md
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
   - About Us: about_us.md
@@ -127,8 +130,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: GiacomoValliPhD
-      repo: openhdemg
+      user: Paul Ritsche
+      repo: DLTrackUS
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences:
@@ -160,9 +163,10 @@ extra:
     actions:
       - accept
       - manage
-      # - reject
+      - reject
     version: 
       provider: mike
+      default: stable
 
 # Need to have or pip install:
 # mkdocs

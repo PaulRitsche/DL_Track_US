@@ -1,4 +1,12 @@
 
+2025-11-23
+==========
+
+Fixed
+-----
+
+- Qeueing in UI to speed up image loading.
+
 2025-11-18
 ==========
 

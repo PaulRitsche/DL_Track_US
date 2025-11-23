@@ -38,6 +38,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import copy
 
 from scipy.signal import savgol_filter
 from skimage.morphology import skeletonize
@@ -733,7 +734,8 @@ def doCalculations(
         plt.tight_layout()  # Adjust layout for text and plot
 
         if image_callback:
-            image_callback(fig)
+            fig_copy = copy.deepcopy(fig)
+            image_callback(fig_copy)
 
         return (
             fasc_l,

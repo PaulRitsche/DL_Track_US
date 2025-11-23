@@ -585,6 +585,7 @@ def calculateBatch(
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
         the calculation process after each image.
+    image_frame : tk.Frame, optional
 
     See Also
     --------
@@ -609,7 +610,8 @@ def calculateBatch(
                        flip_file_path="C:/Users/admin/Dokuments/flip_flags.txt",
                        file_type="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
                        settings=settings,
-                       gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
+                       gui=<__main__.DL_Track_US object at 0x000002BFA7528190>,
+                       image_frame=None)
     """
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)
