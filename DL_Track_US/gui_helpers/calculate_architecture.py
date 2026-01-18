@@ -79,7 +79,7 @@ from DL_Track_US.gui_helpers.do_calculations import doCalculations
 from DL_Track_US.gui_helpers.manual_tracing import ManualAnalysis
 
 # from DL_Track_US.gui_helpers.do_calculations_curved import doCalculations_curved
-from DL_Track_US.gui_helpers.filter_data import hampelFilterList
+from DL_Track_US.gui_helpers.filter_data import hampelFilterList, apply_rate_limit
 from DL_Track_US.gui_helpers.model_training import dice_bce_loss, IoU, dice_score
 
 # Ensure eager execution is enabled
@@ -433,8 +433,7 @@ def exportToExcel(
             df61_savgol.to_excel(
                 writer, sheet_name="Fasc_length_filtered_median", index=True
             )
-            # df61.to_excel(writer, sheet_name="Fasc_length_filtered_median", index=True)
-
+            
     # Add filtered pennation angle (if provided)
     if filtered_pennation is not None:
         pe_filtered = create_array(filtered_pennation)
@@ -464,7 +463,9 @@ def exportToExcel(
             df71_savgol.to_excel(
                 writer, sheet_name="Pennation_filtered_median", index=True
             )
-            # df71.to_excel(writer, sheet_name="Pennation_filtered_median", index=True)
+            df72_rate_limit = pd.Series(apply_rate_limit(df71.iloc[:,0]))
+            df72_rate_limit.to_excel(writer, sheet_name="Pennation_FM_rateLimit", index=True)
+
 
     writer.close()
 
@@ -584,6 +585,7 @@ def calculateBatch(
         A tkinter.TK class instance that represents a GUI. By passing this
         argument, interaction with the GUI is possible i.e., stopping
         the calculation process after each image.
+    image_frame : tk.Frame, optional
 
     See Also
     --------
@@ -608,7 +610,8 @@ def calculateBatch(
                        flip_file_path="C:/Users/admin/Dokuments/flip_flags.txt",
                        file_type="/**/*.tif, scaline="bar", spacing=10, filter_fasc=False,
                        settings=settings,
-                       gui=<__main__.DL_Track_US object at 0x000002BFA7528190>)
+                       gui=<__main__.DL_Track_US object at 0x000002BFA7528190>,
+                       image_frame=None)
     """
     # Get list of files
     list_of_files = glob.glob(rootpath + file_type, recursive=True)

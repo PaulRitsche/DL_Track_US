@@ -39,7 +39,7 @@ long_descr = (this_directory / "README_Pypi.md").read_text()
 if __name__ == "__main__":
     setup(
         name="DL_Track_US",
-        version="0.3.0",
+        version="0.3.1",
         maintainer="Paul Ritsche",
         maintainer_email="paul.ritsche@unibas.ch",
         long_description=long_descr,

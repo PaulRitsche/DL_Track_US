@@ -146,3 +146,46 @@ def hampelFilterList(data: list, win_size=5, num_dev=1, center_win=True):
         "outliers": outlier_values.tolist(),
         "is_outlier": outlier_idx.tolist(),
     }
+
+
+def apply_rate_limit(pa_values, max_jump=0.5):
+    """
+    Apply hard rate limiting to a sequence of pennation angles (deg).
+    
+    Parameters
+    ----------
+    pa_values : array-like
+        List/array of per-frame pennation angles (floats, may contain NaN).
+    max_jump : float, optional
+        Maximum allowed change per frame (deg). Default is 4.0.
+    
+    Returns
+    -------
+    np.ndarray
+        Array of rate-limited pennation angles, same length as input.
+    
+    Notes
+    -----
+    - NaNs are carried forward as the last valid value.
+    - The first frame is kept as-is (if valid).
+    - Each subsequent frame changes by at most `max_jump` compared to the previous output.
+    """
+    pa_values = np.asarray(pa_values, dtype=float)
+    pa_limited = np.full_like(pa_values, np.nan)
+
+    prev = None
+    for i, val in enumerate(pa_values):
+        if not np.isfinite(val):
+            # if invalid, just carry previous
+            pa_limited[i] = prev if prev is not None else np.nan
+            continue
+
+        if prev is None:
+            pa_limited[i] = val
+        else:
+            delta = np.clip(val - prev, -max_jump, max_jump)
+            pa_limited[i] = prev + delta
+
+        prev = pa_limited[i]
+
+    return pa_limited

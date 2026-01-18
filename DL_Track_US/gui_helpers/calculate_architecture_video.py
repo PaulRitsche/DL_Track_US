@@ -52,10 +52,12 @@ import os
 import time
 import tkinter as tk
 import traceback
+import gc
 
 import cv2
 import matplotlib.pyplot as plt
 from keras.models import load_model
+import tensorflow as tf
 
 
 from DL_Track_US.gui_helpers.do_calculations_video import doCalculationsVideo
@@ -108,7 +110,7 @@ def importVideo(vpath: str):
     --------
     >>> importVideo(vpath="C:/Users/Dokuments/videos/video1.avi")
     """
-    # Video properties (do not edit)
+    # Video properties
     cap = cv2.VideoCapture(vpath)
     vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     vid_fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -158,7 +160,7 @@ def importVideoManual(vpath: str):
     >>> importVideo(vpath="C:/Users/Dokuments/videos/video1.avi")
     """
 
-    # Video properties (do not edit)
+    # Video properties
     cap = cv2.VideoCapture(vpath)
     vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     filename = os.path.splitext(os.path.basename(vpath))[0]
@@ -339,9 +341,26 @@ def calculateArchitectureVideo(
                 # there was an input to stop the calculations
                 break
 
+            # Robust in-place clear so any other references see the list become empty
+            if hasattr(gui, "processed_frames") and gui.processed_frames is not None:
+                try:
+                    gui.processed_frames.clear()
+                except AttributeError:
+                    del gui.processed_frames[:]     
+
+            plt.close('all')
+            gc.collect()
+
+            # release any OpenCV handles left around (doCalculationsVideo does this too)
+            cv2.destroyAllWindows()
+
+            # reset TF/Keras and reload models for the next loop iteration
+            tf.keras.backend.clear_session()
+            gc.collect()
+
             # Check if result already exists to skip reprocessing
             filename = os.path.splitext(os.path.basename(video))[0]
-            output_excel = os.path.join(rootpath, f"{filename}_results.xlsx")
+            output_excel = os.path.join(rootpath, f"{filename}.xlsx")
             if os.path.exists(output_excel):
                 print(f"Skipping {filename} — already processed.")
                 continue

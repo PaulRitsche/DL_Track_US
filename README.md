@@ -15,7 +15,7 @@ For detailled information about installaion of the DL_Track_US python package we
 
 Once installed, DL_Track_US can be started from the command prompt with the respective environment activated:
 
-``(DL_Track_US0.3.0) C:/User/Desktop/ python -m DL_Track_US`` 
+``(DL_Track_US0.3.1) C:/User/Desktop/ python -m DL_Track_US`` 
 
 In case you have downloaded the executable, simply double-click the DL_Track_US icon.
 
@@ -37,10 +37,15 @@ Wheter you want to contribute, report a bug or have troubles with the DL_Track_U
 
 ## Research
 
+### v0.3.1 
+
+- Released version 0.3.1 with minor upgrades and bugfixes. 
+- New feature: Weighted aponeurosis calculation and queing of loaded video frames to increase processing speed for videos.
+
 ### v0.3.0
 
 - Major upgrades and bugfixes!
-- New features: anual scaling tool, resize Video tool, crop video length tool & remove video parts tool.
+- New features: manual scaling tool, resize Video tool, crop video length tool & remove video parts tool.
 - Faster model predictions & optional stacked (sequential) predictions.
 - Improved user interface with visualization of model predictions and filtering/plotting of results.
 - Automatic `settings.json` in GUI for easy switching of model parameters.

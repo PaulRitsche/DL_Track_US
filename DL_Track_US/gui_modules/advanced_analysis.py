@@ -663,10 +663,20 @@ class AdvancedAnalysis:
             cap = cv2.VideoCapture(self.video_path)
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             fps = int(cap.get(cv2.CAP_PROP_FPS))
-            width = self.desired_width
-            height = self.desired_height
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
             out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+            # Calculate scaling factors between preview and original frame
+            scale_x = width / self.desired_width   # original width / preview width (800)
+            scale_y = height / self.desired_height # original height / preview height (600)
+
+            # Adapt selection coordinates to original resolution
+            x0_scaled = int(x0 * scale_x)
+            x1_scaled = int(x1 * scale_x)
+            y0_scaled = int(y0 * scale_y)
+            y1_scaled = int(y1 * scale_y)
 
             frame_count = 0
             while cap.isOpened():
@@ -674,18 +684,19 @@ class AdvancedAnalysis:
                 if not ret:
                     break
 
-                resized_frame = cv2.resize(
-                    frame, (self.desired_width, self.desired_height)
-                )
-                resized_frame[y0:y1, x0:x1] = 0  # Black out the selected area
-                out.write(resized_frame)
+                # Black out the scaled area
+                frame[y0_scaled:y1_scaled, x0_scaled:x1_scaled] = 0
+
+                out.write(frame)  # No need to resize, already at (width, height)
 
                 frame_count += 1
+
 
             cap.release()
             out.release()
 
             out.release()
+            print(f"Processed {frame_count} frames.")
             tk.messagebox.showinfo("Success", f"Video saved to {output_path}")
 
         except AttributeError:
@@ -693,6 +704,7 @@ class AdvancedAnalysis:
         except TypeError:
             tk.messagebox.showerror("Error", "No selection made.")
 
+   
     def resize_video(self):
         """
         Crops the selected area from the video and saves the cropped video.
