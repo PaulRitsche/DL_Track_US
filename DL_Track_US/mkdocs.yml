@@ -9,7 +9,7 @@ repo_name: DL_Track_US
 repo_url: https://github.com/PaulRitsche/DL_Track_US
 
 copyright: >
-  Copyright &copy; 2022 - 2025. DL_Track_US -
+  Copyright &copy; 2022 - 2026. DL_Track_US -
   <a href="#__consent">Change cookie settings</a>
 
 theme:
@@ -166,7 +166,7 @@ extra:
       - reject
     version: 
       provider: mike
-      default: stable
+      default: latest
 
 # Need to have or pip install:
 # mkdocs

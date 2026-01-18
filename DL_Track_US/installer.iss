@@ -10,11 +10,11 @@ SolidCompression=yes
 SetupIconFile=gui_helpers\gui_files\DLTrack_logo.ico
 
 [Files]
-Source: "dist\DL_Track_US_0.3.1\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\DL_Track_US_GUI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\DLTrackUS"; Filename: "{app}\DLTrackUS.exe"
-Name: "{commondesktop}\DLTrackUS"; Filename: "{app}\DLTrackUS.exe"; Tasks: desktopicon
+Name: "{group}\DLTrackUS0.3.1"; Filename: "{app}\DL_Track_US_GUI.exe"
+Name: "{commondesktop}\DLTrackUS0.3.1"; Filename: "{app}\DL_Track_US_GUI.exe"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"

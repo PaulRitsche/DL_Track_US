@@ -13,7 +13,7 @@ For detailled information about installaion of the DL_Track_US python package we
 
 Once installed, DL_Track_US can be started from the command prompt with the respective environment activated:
 
-``(DL_Track_US0.3.0) C:/User/Desktop/ python -m DL_Track_US`` 
+``(DL_Track_US0.3.1) C:/User/Desktop/ python -m DL_Track_US`` 
 
 In case you have downloaded the executable, simply double-click the DL_Track_US icon.
 

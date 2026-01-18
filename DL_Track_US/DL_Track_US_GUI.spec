@@ -41,5 +41,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='DL_Track_US_GUI',
+    name='DL_Track_US',
 )

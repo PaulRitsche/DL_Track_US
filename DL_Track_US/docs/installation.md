@@ -11,7 +11,7 @@ We provide **two ways** to install DL_Track_US:
 
 > **No programming required**
 
-1. Visit our [OSF project page](https://osf.io/7mjsc/?view_only=) and anvigate to `Files/v0.3.0/´
+1. Visit our [OSF project page](https://osf.io/7mjsc/?view_only=) and anvigate to `Files/v0.3.1/´
 2. Download and unzip the file: `DL_Track_US_example0.3.0.zip`
 3. Inside the unzipped folder, open:  
    `DL_Track_US_example/DL_Track_US_Installer/DLTrackUS_Installer_Windows.exe`
@@ -55,6 +55,8 @@ conda activate DL_Track_US0.3.0
 ### Step 3 - Install DL_Track_US
 
 #### **Windows users:**
+
+⚠️ *Please note that v0.3.1 is not yet available on pypi*
 
 ```bash
 pip install DL-Track-US==0.3.0
