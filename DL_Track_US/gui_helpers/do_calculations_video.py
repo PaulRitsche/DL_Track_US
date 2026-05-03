@@ -50,9 +50,10 @@ import tensorflow as tf
 from collections import deque
 from DL_Track_US.gui_helpers.do_calculations import (
     contourEdge,
-    sortContours,
     filter_fascicles,
+    sortContours
 )
+
 
 def build_apo_from_edges(
     upp_x, upp_y, low_x, low_y, w,
@@ -64,7 +65,7 @@ def build_apo_from_edges(
 
     This function constructs upper and lower aponeuroses on a shared dense x-grid
     spanning [-0.5*w, 1.5*w]. The detected aponeurosis edges are smoothed with a
-    Savitzky–Golay filter, interpolated within their detected domain, and
+    Savitzky Golay filter, interpolated within their detected domain, and
     extrapolated linearly on both left and right sides. Extrapolation uses
     a tangent estimated from a fraction of points at each end.
 
@@ -827,12 +828,44 @@ def doCalculationsVideo(
                 valid = np.isfinite(new_Y_UA) & np.isfinite(new_Y_LA)
                 if np.count_nonzero(valid) >= 30:
                     idx = np.where(valid)[0]
-                    s = idx[int(0.33*len(idx))]
-                    e = idx[int(0.66*len(idx))]
-                    midthick = float(np.nanmin(np.abs(new_Y_LA[s:e] - new_Y_UA[s:e])))
+                    s = idx[int(0.4 * len(idx))]
+                    e = idx[int(0.6 * len(idx))]
+                    midthick = float(np.nanmean(np.abs(new_Y_LA[s:e] - new_Y_UA[s:e])))
                 else:
                     midthick = float("nan")
 
+                # Thickness region / measurement location for overlay
+                thickness_region_pts_upper = None
+                thickness_region_pts_lower = None
+
+                if np.count_nonzero(valid) >= 30:
+                    x_reg = new_X[s:e]
+                    y_ua_reg = new_Y_UA[s:e]
+                    y_la_reg = new_Y_LA[s:e]
+
+                    # valid image coordinates only
+                    mask_reg = (
+                        np.isfinite(x_reg) &
+                        np.isfinite(y_ua_reg) &
+                        np.isfinite(y_la_reg) &
+                        (x_reg >= 0) & (x_reg < w) &
+                        (y_ua_reg >= 0) & (y_ua_reg < h) &
+                        (y_la_reg >= 0) & (y_la_reg < h)
+                    )
+
+                    x_reg = x_reg[mask_reg]
+                    y_ua_reg = y_ua_reg[mask_reg]
+                    y_la_reg = y_la_reg[mask_reg]
+
+                    if len(x_reg) > 1:
+                        thickness_region_pts_upper = np.stack(
+                            [x_reg.astype(np.int32), y_ua_reg.astype(np.int32)], axis=1
+                        )
+                        thickness_region_pts_lower = np.stack(
+                            [x_reg.astype(np.int32), y_la_reg.astype(np.int32)], axis=1
+                        )
+
+                    
                 # --- Region mask between extrapolated aponeuroses ---
                 ex_mask = np.zeros((h, w), np.uint8)
 
@@ -855,7 +888,6 @@ def doCalculationsVideo(
 
                 # --- Draw detected & extrapolated apo on imgT (overlay) ---
                 # Upper: draw detected in green-ish, extrapolated in darker green
-                
                 imgT = np.zeros((h, w, 3), np.uint8)
                 for k, seg in enumerate(segs_upper):
                     if len(seg) < 2: 
@@ -871,6 +903,23 @@ def doCalculationsVideo(
                     pts = seg.reshape(-1, 1, 2)
                     color = (0, 128, 255) if k == 0 else (0, 90, 180)
                     cv2.polylines(imgT, [pts], isClosed=False, color=color, thickness=3)
+
+                # Draw shaded thickness region
+                if thickness_region_pts_upper is not None and thickness_region_pts_lower is not None:
+                    poly_pts = np.vstack([
+                        thickness_region_pts_upper,
+                        thickness_region_pts_lower[::-1]
+                    ]).reshape((-1, 1, 2))
+
+                    overlay_region = imgT.copy()
+                    cv2.fillPoly(overlay_region, [poly_pts], color=(255, 180, 0))  # blue-ish/orange-ish in BGR
+                    imgT = cv2.addWeighted(overlay_region, 0.25, imgT, 0.75, 0)
+
+                    # yellow dots on apo sections
+                    for pt in thickness_region_pts_upper[::10]:
+                        cv2.circle(imgT, tuple(pt), 2, (0, 255, 255), -1)
+                    for pt in thickness_region_pts_lower[::10]:
+                        cv2.circle(imgT, tuple(pt), 2, (0, 255, 255), -1)
 
                 # --- Feed to existing fascicle pipeline (unchanged) ---
                 _, threshF = cv2.threshold(pred_fasc_t, 0, 255, cv2.THRESH_BINARY)

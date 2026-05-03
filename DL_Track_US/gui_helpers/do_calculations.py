@@ -195,6 +195,240 @@ def filter_fascicles(df: pd.DataFrame) -> pd.DataFrame:
 
     return df[df["keep"]].drop(columns=["keep"])
 
+def optimize_fascicle_loop(
+    contoursF3,
+    new_Y_UA,
+    new_Y_LA,
+    new_X_UA,
+    new_X_LA,
+    width,
+    min_pennation,
+    max_pennation,
+    filter_fascicles_func=None,
+    fasc_cont_thresh=40,
+    calib_dist=None,
+    spacing=10,
+):
+    """
+    Extract, extrapolate, and filter fascicle contours.
+
+    This version is usable for both image and video analysis.
+    If calib_dist is given, fascicle length is converted from pixels to mm
+    using calib_dist / spacing.
+    """
+    newX = np.linspace(-0.5 * width, 1.5 * width, 5000)
+
+    data_rows = []
+
+    for cnt_idx, cnt in enumerate(contoursF3):
+        if len(cnt) <= fasc_cont_thresh:
+            continue
+
+        x_f, y_f = contourEdge("B", cnt)
+
+        if len(x_f) < 2:
+            continue
+
+        # Fit fascicle fragment and extrapolate it
+        z = np.polyfit(np.array(x_f, float), np.array(y_f, float), 1)
+        f = np.poly1d(z)
+        newY = f(newX)
+
+        # Find closest intersections with upper and lower aponeuroses
+        difU = np.abs(newY - new_Y_UA)
+        difL = np.abs(newY - new_Y_LA)
+
+        locU = int(np.argmin(difU))
+        locL = int(np.argmin(difL))
+
+        # Reject invalid intersection positions
+        if locU <= 0 or locU >= len(newX) - 1:
+            continue
+
+        if locL <= 0 or locL >= len(newX) - 1:
+            continue
+
+        if locL >= locU:
+            continue
+
+        coordsX = newX[locL:locU]
+        coordsY = newY[locL:locU]
+
+        if len(coordsX) < 2:
+            continue
+
+        # Compute local lower aponeurosis angle
+        step = 10
+        max_step = (len(newX) - 1) - locL
+        j = int(min(step, max(1, max_step)))
+
+        den = new_X_LA[locL + j] - new_X_LA[locL]
+
+        if den == 0 or not np.isfinite(den):
+            continue
+
+        apo_slope = (new_Y_LA[locL] - new_Y_LA[locL + j]) / den
+        Apoangle = 90.0 + abs(np.degrees(np.arctan(apo_slope)))
+
+        # Compute fascicle angle
+        num = coordsX[0] - coordsX[-1]
+        den = new_Y_LA[locL] - new_Y_UA[locU]
+
+        if den == 0 or not np.isfinite(den):
+            continue
+
+        FascAng = -np.degrees(np.arctan(num / den))
+        ActualAng = Apoangle - FascAng
+
+        if not (min_pennation <= ActualAng <= max_pennation):
+            continue
+
+        # Fascicle length in pixels
+        length1 = float(
+            np.hypot(
+                coordsX[-1] - coordsX[0],
+                coordsY[-1] - coordsY[0],
+            )
+        )
+
+        data_rows.append(
+            {
+                "x_low": int(coordsX[0]),
+                "x_high": int(coordsX[-1]),
+                "y_low": int(coordsY[0]),
+                "y_high": int(coordsY[-1]),
+                "coordsX": coordsX,
+                "coordsY": coordsY,
+                "fasc_l": length1,
+                "penn_a": float(ActualAng),
+            }
+        )
+
+    fascicle_data = (
+        pd.DataFrame(data_rows)
+        if data_rows
+        else pd.DataFrame(
+            columns=[
+                "x_low",
+                "x_high",
+                "y_low",
+                "y_high",
+                "coordsX",
+                "coordsY",
+                "fasc_l",
+                "penn_a",
+            ]
+        )
+    )
+
+    if filter_fascicles_func is not None and not fascicle_data.empty:
+        fascicle_data = filter_fascicles_func(fascicle_data)
+
+    if calib_dist and not fascicle_data.empty:
+        scale = calib_dist / int(spacing)
+        fascicle_data["fasc_l"] = fascicle_data["fasc_l"] / scale
+
+    return fascicle_data
+
+def build_apo_from_edges(
+    upp_x, upp_y, low_x, low_y, w,
+    smooth_win: int = 81,
+    smooth_poly: int = 2,
+    tail_frac: float = 0.50,
+):
+    """
+    Build dense, smoothed, and extrapolated aponeurosis curves from detected edges.
+    This matches the aponeurosis logic used in do_calculations_video.py.
+    """
+    new_X = np.linspace(-0.5 * w, 1.5 * w, 5000).astype(np.float32)
+
+    def _savgol(y):
+        y = np.asarray(y, float)
+        if y.size < 7:
+            return y
+
+        win = min(y.size if y.size % 2 == 1 else y.size - 1, smooth_win)
+        win = max(7, win)
+
+        if win % 2 == 0:
+            win -= 1
+
+        return savgol_filter(
+            y,
+            window_length=win,
+            polyorder=min(smooth_poly, win - 1),
+        )
+
+    def _both_side_extrap(x, y_sm):
+        y_out = np.full_like(new_X, np.nan, dtype=np.float32)
+        segs = []
+
+        if len(x) < 2:
+            return y_out, segs
+
+        x = np.asarray(x, float)
+
+        # Interpolate detected part
+        yi = np.interp(new_X, x, y_sm, left=np.nan, right=np.nan)
+        dom_mask = (new_X >= x[0]) & (new_X <= x[-1])
+        y_out[dom_mask] = yi[dom_mask]
+
+        # Tail length for extrapolation
+        n = len(x)
+        k = max(5, int(np.ceil(tail_frac * n)))
+        k = min(k, n)
+
+        # Left extrapolation
+        if k >= 2:
+            mL, bL = np.polyfit(x[:k], y_sm[:k], 1)
+            left_mask = new_X < x[0]
+            y_out[left_mask] = (mL * new_X[left_mask] + bL).astype(np.float32)
+
+        # Right extrapolation
+        if k >= 2:
+            mR, bR = np.polyfit(x[-k:], y_sm[-k:], 1)
+            right_mask = new_X > x[-1]
+            y_out[right_mask] = (mR * new_X[right_mask] + bR).astype(np.float32)
+
+        # Drawing segments
+        xr = new_X[dom_mask]
+        yr = y_out[dom_mask]
+        if xr.size > 1:
+            segs.append(np.stack([xr.astype(int), yr.astype(int)], axis=1))
+
+        left_mask = new_X < x[0]
+        xr = new_X[left_mask]
+        yr = y_out[left_mask]
+        if xr.size > 1 and np.isfinite(yr).any():
+            segs.append(np.stack([xr.astype(int), yr.astype(int)], axis=1))
+
+        right_mask = new_X > x[-1]
+        xr = new_X[right_mask]
+        yr = y_out[right_mask]
+        if xr.size > 1 and np.isfinite(yr).any():
+            segs.append(np.stack([xr.astype(int), yr.astype(int)], axis=1))
+
+        return y_out, segs
+
+    # Upper aponeurosis
+    new_Y_UA = np.full_like(new_X, np.nan, dtype=np.float32)
+    segs_upper = []
+
+    if len(upp_x) > 1:
+        ux = np.asarray(upp_x, float)
+        uy_sm = _savgol(upp_y)
+        new_Y_UA, segs_upper = _both_side_extrap(ux, uy_sm)
+
+    # Lower aponeurosis
+    new_Y_LA = np.full_like(new_X, np.nan, dtype=np.float32)
+    segs_lower = []
+
+    if len(low_x) > 1:
+        lx = np.asarray(low_x, float)
+        ly_sm = _savgol(low_y)
+        new_Y_LA, segs_lower = _both_side_extrap(lx, ly_sm)
+
+    return new_X, new_Y_UA, new_Y_LA, segs_upper, segs_lower
 
 def doCalculations(  
     original_image: np.ndarray,
@@ -400,16 +634,14 @@ def doCalculations(
         xs2.append(cnt[-1][0])
         cv2.drawContours(maskT, [cnt], 0, 255, -1)
 
-    for countU in range(0, len(contours_re2) - 1):
-        if (
-            xs1[countU + 1] > xs2[countU]
-        ):  # Check if x of contour2 is higher than x of contour 1
-            y1 = ys2[countU]
-            y2 = ys1[countU + 1]
-            if y1 - 10 <= y2 <= y1 + 10:
-                m = np.vstack((contours_re2[countU], contours_re2[countU + 1]))
+    for i in range(len(contours_re2)):
+        for j in range(i + 1, len(contours_re2)):
+            x_gap = xs1[j] - xs2[i]
+            y_diff = abs(ys2[i] - ys1[j])
+
+            if 0 < x_gap <= 100 and y_diff <= 20:
+                m = np.vstack((contours_re2[i], contours_re2[j]))
                 cv2.drawContours(maskT, [m], 0, 255, -1)
-        countU += 1
 
     maskT[maskT > 0] = 1
     skeleton = skeletonize(maskT).astype(np.uint8)
@@ -440,71 +672,67 @@ def doCalculations(
         else:
             low_x, low_y = contourEdge("T", contoursE[2])
 
-        upp_y_new = savgol_filter(upp_y, 81, 2)  # window size 51, polynomial 3
-        low_y_new = savgol_filter(low_y, 81, 2)
+        # Build aponeurosis arrays exactly like do_calculations_video.py
+        new_X, new_Y_UA, new_Y_LA, segs_upper, segs_lower = build_apo_from_edges(
+            upp_x=upp_x,
+            upp_y=upp_y,
+            low_x=low_x,
+            low_y=low_y,
+            w=w,
+            smooth_win=81,
+            smooth_poly=2,
+        )
 
-        # Make a binary mask to only include fascicles within the region
-        # between the 2 aponeuroses
-        ex_mask = np.zeros(thresh.shape, np.uint8)
-        ex_1 = 0
-        ex_2 = np.minimum(len(low_x), len(upp_x))
+        # Thickness: central third of valid overlap
+        valid = np.isfinite(new_Y_UA) & np.isfinite(new_Y_LA)
 
-        for ii in range(ex_1, ex_2):
-            ymin = int(np.floor(upp_y_new[ii]))
-            ymax = int(np.ceil(low_y_new[ii]))
+        if np.count_nonzero(valid) >= 30:
+            idx = np.where(valid)[0]
+            s = idx[int(0.4 * len(idx))]
+            e = idx[int(0.6 * len(idx))]
+            midthick = float(np.nanmean(np.abs(new_Y_LA[s:e] - new_Y_UA[s:e])))
+        else:
+            midthick = float("nan")
 
-            ex_mask[:ymin, ii] = 0
-            ex_mask[ymax:, ii] = 0
-            ex_mask[ymin:ymax, ii] = 255
+        # Store thickness region for plotting
+        thickness_region_x = None
+        thickness_region_ua = None
+        thickness_region_la = None
 
-        # Calculate slope of central portion of each aponeurosis & use this to
-        # compute muscle thickness
-        Alist = list(set(upp_x).intersection(low_x))
-        Alist = sorted(Alist)
-        Alen = len(
-            list(set(upp_x).intersection(low_x))
-        )  # How many values overlap between x-axes
-        A1 = int(Alist[0] + (0.33 * Alen))
-        A2 = int(Alist[0] + (0.66 * Alen))
-        mid = int((A2 - A1) / 2 + A1)
-        mindist = 10000
-        upp_ind = np.where(upp_x == mid)
+        if np.count_nonzero(valid) >= 30:
+            thickness_region_x = new_X[s:e]
+            thickness_region_ua = new_Y_UA[s:e]
+            thickness_region_la = new_Y_LA[s:e]
 
-        if upp_ind == len(upp_x):
+        # Region mask between extrapolated aponeuroses
+        ex_mask = np.zeros((h, w), np.uint8)
 
-            upp_ind -= 1
+        xs = new_X.astype(int)
 
-        for val in range(A1, A2):
-            if val >= len(low_x):
+        for xi, yu, yl in zip(xs, new_Y_UA, new_Y_LA):
+            if np.isnan(yu) or np.isnan(yl):
                 continue
-            else:
-                dist = math.dist(
-                    (upp_x[upp_ind], upp_y_new[upp_ind]), (low_x[val], low_y_new[val])
-                )
-                if dist < mindist:
-                    mindist = dist
 
-        # Compute functions to approximate the shape of the aponeuroses
-        zUA = np.polyfit(upp_x, upp_y_new, 1)
-        g = np.poly1d(zUA)
-        zLA = np.polyfit(low_x, low_y_new, 1)
-        h = np.poly1d(zLA)
+            if xi < 0 or xi >= w:
+                continue
 
-        mid = (low_x[-1] - low_x[0]) / 2 + low_x[0]  # Find middle
-        x1 = np.linspace(
-            low_x[0] - 700, low_x[-1] + 700, 10000
-        )  # Extrapolate polynomial fits to either side of the mid-point
-        y_UA = g(x1)
-        y_LA = h(x1)
+            y0 = int(np.floor(min(yu, yl)))
+            y1 = int(np.ceil(max(yu, yl)))
 
-        new_X_UA = np.linspace(
-            mid - 700, mid + 700, 5000
-        )  # Extrapolate x,y data using f function
-        new_Y_UA = g(new_X_UA)
-        new_X_LA = np.linspace(
-            mid - 700, mid + 700, 5000
-        )  # Extrapolate x,y data using f function
-        new_Y_LA = h(new_X_LA)
+            if y1 <= y0:
+                continue
+
+            y0 = max(0, min(h - 1, y0))
+            y1 = max(0, min(h - 1, y1))
+
+            ex_mask[y0:y1, xi] = 255
+
+        # For compatibility with the existing plotting code
+        upp_y_new = np.interp(upp_x, new_X, new_Y_UA)
+        low_y_new = np.interp(low_x, new_X, new_Y_LA)
+
+        new_X_UA = new_X
+        new_X_LA = new_X
 
         # Compute contours to identify fascicles/fascicle orientation
         _, threshF = cv2.threshold(fas_image, 0, 255, cv2.THRESH_BINARY)
@@ -528,112 +756,22 @@ def doCalculations(
 
         fig, ax = plt.subplots(figsize=(10, 6))  # Adjust figure size for better clarity
 
-        fascicle_data = pd.DataFrame(
-            columns=[
-                "x_low",
-                "x_high",
-                "y_low",
-                "y_high",
-                "coordsX",
-                "coordsY",
-                "fasc_l",
-                "penn_a",
-            ]
+        fascicle_data = optimize_fascicle_loop(
+            contoursF3,
+            new_Y_UA=new_Y_UA,
+            new_Y_LA=new_Y_LA,
+            new_X_UA=new_X,
+            new_X_LA=new_X,
+            width=w,
+            min_pennation=min_pennation,
+            max_pennation=max_pennation,
+            filter_fascicles_func=filter_fascicles if filter_fasc == 1 else None,
+            fasc_cont_thresh=fasc_cont_thresh,
+            calib_dist=None,  # important: keep scaling outside for image function
         )
 
-        for contour in contoursF2:
-            x, y = contourEdge("B", contour)
-            if len(x) == 0:
-                continue
-            z = np.polyfit(np.array(x), np.array(y), 1)
-            f = np.poly1d(z)
-            newX = np.linspace(
-                -400, w + 400, 5000
-            )  # Extrapolate x,y data using f function
-            newY = f(newX)
-
-            # Find intersection between each fascicle and the aponeuroses.
-            diffU = newY - new_Y_UA  # Find intersections
-            locU = np.where(diffU == min(diffU, key=abs))[0]
-            diffL = newY - new_Y_LA
-            locL = np.where(diffL == min(diffL, key=abs))[0]
-            # Get coordinates of fascicle between the two aponeuroses
-            coordsX = newX[int(locL) : int(locU)]
-
-            coordsY = newY[
-                int(locL) : int(locU)
-            ]  # These are the coordinates of the fascicles between the two aponeuroses
-
-            # Get angle of aponeurosis in region close to fascicle intersection
-            if locL >= 4950:
-                Apoangle = int(
-                    np.arctan(
-                        (new_Y_LA[locL - 50] - new_Y_LA[locL - 50])
-                        / (new_X_LA[locL] - new_X_LA[locL - 50])
-                    )
-                    * 180
-                    / np.pi
-                )
-            else:
-                Apoangle = int(
-                    np.arctan(
-                        (new_Y_LA[locL] - new_Y_LA[locL + 50])
-                        / (new_X_LA[locL + 50] - new_X_LA[locL])
-                    )
-                    * 180
-                    / np.pi
-                )  # Angle relative to horizontal
-            Apoangle = 90.0 + abs(Apoangle)
-
-            # Don't include fascicles that are completely outside of the FoV
-            # those that don't pass through central 1/3 of the image
-            if (
-                np.sum(coordsX) > 0
-                and coordsX[-1] > 0
-                and coordsX[0] < np.maximum(upp_x[-1], low_x[-1])
-                and Apoangle != float("nan")
-            ):
-                FascAng = (
-                    float(
-                        np.arctan(
-                            (coordsX[0] - coordsX[-1])
-                            / (new_Y_LA[locL] - new_Y_UA[locU])
-                        )
-                        * 180
-                        / np.pi
-                    )
-                    * -1
-                )
-                ActualAng = Apoangle - FascAng
-
-                if (
-                    ActualAng <= max_pennation and ActualAng >= min_pennation
-                ):  # Don't include 'fascicles' beyond a range of PA
-                    length1 = np.sqrt(
-                        (newX[locU] - newX[locL]) ** 2 + (y_UA[locU] - y_LA[locL]) ** 2
-                    )
-                    fascicle_data_temp = pd.DataFrame(
-                        {
-                            "x_low": [coordsX[0].astype("int32")],
-                            "x_high": [coordsX[-1].astype("int32")],
-                            "y_low": [coordsY[0].astype("int32")],
-                            "y_high": [coordsY[-1].astype("int32")],
-                            "coordsX": [coordsX],
-                            "coordsY": [coordsY],
-                            "fasc_l": [length1[0]],
-                            "penn_a": Apoangle - FascAng,
-                        }
-                    )
-                    fascicle_data = pd.concat(
-                        [fascicle_data, fascicle_data_temp], ignore_index=True
-                    )
-
-        # Filter out fascicles that intersect with their right neighbors
-        if filter_fasc == 1:
-            data = filter_fascicles(fascicle_data)
-        else:
-            data = fascicle_data
-
+        data = fascicle_data.sort_values(by="x_low").reset_index(drop=True)
+  
         # Sort data by x_low
         data = data.sort_values(by="x_low").reset_index(drop=True)
 
@@ -665,6 +803,17 @@ def doCalculations(
             label="Upper Aponeurosis",
         )
 
+        # Plot thickness region if available
+        if thickness_region_x is not None and thickness_region_ua is not None and thickness_region_la is not None:
+            ax.fill_between(
+                thickness_region_x,
+                thickness_region_ua,
+                thickness_region_la,
+                color="deepskyblue",
+                alpha=0.25,
+                label="Thickness Region",
+            )
+        
         # Plot fascicles with unique colors
         colormap = plt.cm.get_cmap("rainbow", len(data))
         handles = []  # For legend
@@ -682,16 +831,20 @@ def doCalculations(
             handles.append(line)
             labels.append(f"Fascicle {index}")
 
-        # Store the results for each frame and normalise using scale factor
-        # (if calibration was done above)
-        try:
-            midthick = mindist[0]  # Muscle thickness
-        except:
-            midthick = mindist
-
         # get fascicle length & pennation from dataframe
-        fasc_l = list(data["fasc_l"])
-        pennation = list(data["penn_a"])
+        fasc_l = np.asarray(data["fasc_l"], dtype=float)
+        pennation = np.asarray(data["penn_a"], dtype=float)
+
+        unit = "pix"
+
+        if calib_dist:
+            scale = calib_dist / int(spacing)
+            fasc_l = fasc_l / scale
+            midthick = midthick / scale
+            unit = "mm"
+
+        fasc_l = fasc_l.tolist()
+        pennation = pennation.tolist()
 
         unit = "pix"
         # scale data
